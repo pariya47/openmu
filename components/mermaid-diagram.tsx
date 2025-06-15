@@ -5,6 +5,7 @@ import mermaid from 'mermaid';
 import { cn } from '@/lib/utils';
 import { AlertTriangle, X, Maximize2 } from 'lucide-react';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
+import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -23,14 +24,14 @@ interface DiagramState {
   scale: number;
   position: { x: number; y: number };
   isDragging: boolean;
-  lastMousePosition: { x: number; y: number };
+  // lastMousePosition was here, removed as it's not used from state for rendering
   isTextSelecting: boolean;
 }
 
 // Fullscreen state
 interface FullscreenState {
   isFullscreen: boolean;
-  // isAnimating and shouldShowModal might be removed if Dialog handles them
+  // Comment removed: isAnimating and shouldShowModal might be removed if Dialog handles them
 }
 
 export interface MermaidDiagramProps {
@@ -60,7 +61,7 @@ const MermaidDiagramComponent = ({
     scale: 1,
     position: { x: 0, y: 0 },
     isDragging: false,
-    lastMousePosition: { x: 0, y: 0 },
+    // lastMousePosition: { x: 0, y: 0 }, // Removed
     isTextSelecting: false,
   });
 
@@ -110,7 +111,7 @@ const MermaidDiagramComponent = ({
     fullscreenContainerRef.current = el;
     diagramTransformRef.current = el; // This is for pan/zoom styling
     setFullscreenContainerReady(!!el);
-  }, []); // Dependencies should be empty as it only uses refs and setState
+  }, []); // Comment removed: Dependencies should be empty as it only uses refs and setState
 
   // Throttled state sync for position and scale
   const syncStateWithRefs = useCallback(() => {
@@ -124,8 +125,8 @@ const MermaidDiagramComponent = ({
         position: { ...positionRef.current },
         scale: scaleRef.current,
         isDragging: isDraggingRef.current,
-        isTextSelecting: isTextSelectingRef.current,
-        lastMousePosition: { ...lastMousePositionRef.current }
+        isTextSelecting: isTextSelectingRef.current
+        // lastMousePosition: { ...lastMousePositionRef.current } // Removed
       }));
     });
   }, []);
@@ -264,12 +265,11 @@ const MermaidDiagramComponent = ({
     if (fullscreenState.isFullscreen && fullscreenContainerReady && fullscreenContainerRef.current) {
       renderDiagram(fullscreenContainerRef.current);
     }
-    // Optional: consider if cleanup is needed if fullscreenContainerReady becomes false while in fullscreen
-    // For now, existing cleanup in renderDiagram (clearing innerHTML) should suffice on subsequent renders.
+    // Comment removed: Optional: consider if cleanup is needed...
   }, [fullscreenState.isFullscreen, fullscreenContainerReady, renderDiagram]);
 
   // Escape key and body overflow are handled by Shadcn Dialog.
-  // We might need to ensure onOpenChange on Dialog correctly calls toggleFullscreen(false)
+  // Comment removed: We might need to ensure onOpenChange on Dialog correctly calls toggleFullscreen(false)
 
   // Mouse event handlers for fullscreen drag/pan
   const handleMouseDown = useCallback((e: React.MouseEvent) => {
@@ -385,12 +385,12 @@ const MermaidDiagramComponent = ({
       : null;
 
     if (activeContainer) {
-      activeContainer.addEventListener('wheel', handleWheel, { passive: false });
+      activeContainer.addEventListener('wheel', handleWheel as EventListener, { passive: false });
       return () => {
-        activeContainer.removeEventListener('wheel', handleWheel);
+        activeContainer.removeEventListener('wheel', handleWheel as EventListener);
       };
     }
-  }, [fullscreenState.isFullscreen, handleWheel]); // Rerun if fullscreen state changes
+  }, [fullscreenState.isFullscreen, handleWheel]); // Comment removed: Rerun if fullscreen state changes
 
   // Cleanup animation frame on unmount
   useEffect(() => {
@@ -407,8 +407,9 @@ const MermaidDiagramComponent = ({
     try {
       errorData = diagramState.error ? JSON.parse(diagramState.error) : null;
     } catch {
+      // More user-friendly default message
       errorData = { 
-        userMessage: "Unable to render diagram", 
+        userMessage: "Oops! Something went wrong while preparing the diagram.",
         technicalMessage: diagramState.error,
         timestamp: new Date().toISOString()
       };
@@ -416,39 +417,44 @@ const MermaidDiagramComponent = ({
 
     return (
       <Alert variant="destructive" className={cn("relative", className)}>
-        <div className="flex items-start gap-3">
-          <div className="flex-shrink-0 mt-0.5"> {/* Adjusted margin for better alignment with AlertTriangle */}
-            <AlertTriangle className="h-5 w-5" /> {/* text color will be inherited */}
+        <div className="flex items-start gap-x-3"> {/* Use gap-x for horizontal spacing only if needed, gap-3 is fine */}
+          <div className="flex-shrink-0 pt-0.5"> {/* Adjusted pt for better alignment with new title size */}
+            <AlertTriangle className="h-5 w-5" aria-hidden="true" /> {/* text color will be inherited, explicit aria-hidden */}
           </div>
-          <div className="flex-1 space-y-1"> {/* Reduced space-y for tighter packing */}
-            <AlertTitle>
-              {errorData?.userMessage || "Unable to render diagram"}
+          <div className="flex-1 space-y-2"> {/* Increased space-y for better separation */}
+            <AlertTitle className="text-lg font-semibold"> {/* Prominent title */}
+              {errorData?.userMessage || "Oops! There's a problem with this diagram."}
             </AlertTitle>
-            <AlertDescription>
-              There was an issue rendering this diagram. The diagram will automatically retry when you fix the syntax.
-              <div className="flex items-center gap-2 mt-2"> {/* Adjusted margin */}
+            <AlertDescription className="text-sm"> {/* Ensure consistent text size for description */}
+              We encountered an issue trying to display this diagram. You can try to fix the syntax if applicable, or see more technical details below.
+              <div className="mt-3 mb-2"> {/* Added margin top and bottom for the button */}
                 <Button
-                  variant="link"
+                  variant="outline" // Changed variant for better visual distinction
                   size="sm"
                   onClick={() => setDiagramState(prev => ({
                     ...prev,
                     showErrorDetails: !prev.showErrorDetails
                   }))}
-                  // Adjusted text color for destructive variant, or rely on Button's default for link
-                  className="px-0 h-auto text-destructive-foreground/80 hover:text-destructive-foreground"
+                  // Removed custom text color, rely on button's variant styling
+                  className="text-destructive-foreground hover:bg-destructive/10" // Adjusted for destructive context
+                  aria-expanded={diagramState.showErrorDetails} // For accessibility
+                  aria-controls="error-details" // For accessibility
                 >
-                  {diagramState.showErrorDetails ? 'Hide' : 'Show'} Details
+                  {diagramState.showErrorDetails ? 'Hide Details' : 'Show Details'}
                 </Button>
               </div>
               {diagramState.showErrorDetails && errorData && (
-                <div className="mt-2 p-2 bg-red-100 dark:bg-red-900/30 rounded border border-red-200 dark:border-red-800">
-                  <h4 className="text-xs font-medium text-red-800 dark:text-red-200 mb-1"> {/* Reduced margin */}
+                <div
+                  id="error-details" // For aria-controls
+                  className="mt-3 p-3 rounded-md border bg-red-50 dark:bg-red-900/40 border-red-300 dark:border-red-700" // Enhanced styling
+                >
+                  <h4 className="text-sm font-medium text-red-800 dark:text-red-100 mb-1.5"> {/* Adjusted heading */}
                     Technical Details:
                   </h4>
-                  <code className="text-xs text-red-700 dark:text-red-300 font-mono break-all">
+                  <code className="block whitespace-pre-wrap break-all text-xs text-red-700 dark:text-red-200 font-mono bg-transparent p-0"> {/* Ensure code block respects formatting and is readable */}
                     {errorData.technicalMessage}
                   </code>
-                  <div className="text-xs text-red-600 dark:text-red-400 mt-1"> {/* Reduced margin */}
+                  <div className="text-xs text-red-500 dark:text-red-400 mt-2"> {/* Adjusted text color & margin */}
                     Time: {new Date(errorData.timestamp).toLocaleString()}
                   </div>
                 </div>
@@ -481,8 +487,19 @@ const MermaidDiagramComponent = ({
         }}
       >
         {diagramState.isLoading && (
-          <div className="flex items-center justify-center p-8">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+          <div
+            className="flex flex-col items-center justify-center p-8 space-y-4"
+            aria-busy="true"
+            aria-live="polite"
+            role="status"
+            aria-label="Loading diagram preview..."
+          >
+            <Skeleton className="h-12 w-1/2" />
+            <div className="flex w-full justify-around space-x-4">
+              <Skeleton className="h-8 w-1/3" />
+              <Skeleton className="h-8 w-1/3" />
+            </div>
+            <Skeleton className="h-10 w-3/4" />
           </div>
         )}
         <div 
@@ -492,9 +509,9 @@ const MermaidDiagramComponent = ({
             diagramState.isLoading ? "opacity-0" : "opacity-100"
           )}
         />
-        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-colors duration-200 flex items-center justify-center opacity-0 group-hover:opacity-100">
+        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-colors duration-200 flex items-center justify-center opacity-0 group-hover:opacity-100" aria-hidden="true"> {/* Hide decorative hover overlay from AT */}
           <div className="bg-white/90 backdrop-blur-sm rounded-full p-2 shadow-lg dark:bg-slate-800/90">
-            <Maximize2 className="h-5 w-5 text-foreground/70 group-hover:text-foreground/90" />
+            <Maximize2 className="h-5 w-5 text-foreground/70 group-hover:text-foreground/90" aria-hidden="true" /> {/* Icon is decorative, parent button has label */}
           </div>
         </div>
       </div>
@@ -546,11 +563,14 @@ const MermaidDiagramComponent = ({
 
           {/* Zoom controls */}
           <div className="absolute bottom-4 left-4 bg-background/80 backdrop-blur-sm rounded-lg p-2 shadow-lg">
-            <div className="flex items-center gap-1 text-sm ">
-              <span className="mr-1 text-muted-foreground">Zoom: {Math.round(diagramState.scale * 100)}%</span>
+            {/* Increased gap for better spacing, and adjusted label margin */}
+            <div className="flex items-center gap-1.5 text-sm">
+              <span className="mr-2 text-muted-foreground">Zoom: {Math.round(diagramState.scale * 100)}%</span>
               <Button
                 variant="outline"
-                size="sm" // Changed to sm for consistency
+                size="sm"
+                aria-label="Zoom out" // Accessibility: Added aria-label
+                className="transition-transform duration-100 ease-in-out hover:scale-105 active:scale-95" // Styling: Added hover/active effects
                 onClick={(e) => {
                   e.stopPropagation();
                   const newScale = Math.max(0.1, scaleRef.current - 0.1);
@@ -564,6 +584,8 @@ const MermaidDiagramComponent = ({
               <Button
                 variant="outline"
                 size="sm"
+                aria-label="Reset zoom" // Accessibility: Added aria-label
+                className="transition-transform duration-100 ease-in-out hover:scale-105 active:scale-95" // Styling: Added hover/active effects
                 onClick={(e) => {
                   e.stopPropagation();
                   scaleRef.current = 1;
@@ -577,6 +599,8 @@ const MermaidDiagramComponent = ({
               <Button
                 variant="outline"
                 size="sm"
+                aria-label="Zoom in" // Accessibility: Added aria-label
+                className="transition-transform duration-100 ease-in-out hover:scale-105 active:scale-95" // Styling: Added hover/active effects
                 onClick={(e) => {
                   e.stopPropagation();
                   const newScale = Math.min(5, scaleRef.current + 0.1);
