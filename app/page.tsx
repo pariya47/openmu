@@ -1,5 +1,5 @@
-import { MermaidDemo } from "@/components/mermaid-demo";
+import { HelloWorld } from "@/components/hello-world";
 
 export default function Home() {
-  return <MermaidDemo />;
+  return <HelloWorld />;
 }
