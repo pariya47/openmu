@@ -5,6 +5,7 @@ import mermaid from 'mermaid';
 import { cn } from '@/lib/utils';
 import { AlertTriangle, X, Maximize2 } from 'lucide-react';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
+import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -384,9 +385,9 @@ const MermaidDiagramComponent = ({
       : null;
 
     if (activeContainer) {
-      activeContainer.addEventListener('wheel', handleWheel, { passive: false });
+      activeContainer.addEventListener('wheel', handleWheel as EventListener, { passive: false });
       return () => {
-        activeContainer.removeEventListener('wheel', handleWheel);
+        activeContainer.removeEventListener('wheel', handleWheel as EventListener);
       };
     }
   }, [fullscreenState.isFullscreen, handleWheel]); // Comment removed: Rerun if fullscreen state changes
