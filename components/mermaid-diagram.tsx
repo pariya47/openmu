@@ -29,6 +29,9 @@ export function MermaidDiagram({
   const [position, setPosition] = useState({ x: 0, y: 0 });
   const [isDragging, setIsDragging] = useState(false);
   const [lastMousePosition, setLastMousePosition] = useState({ x: 0, y: 0 });
+  const [isTextSelecting, setIsTextSelecting] = useState(false);
+  const [isAnimating, setIsAnimating] = useState(false);
+  const [shouldShowModal, setShouldShowModal] = useState(false);
 
   // Initialize Mermaid
   useEffect(() => {
@@ -68,13 +71,20 @@ export function MermaidDiagram({
         svgElement.style.width = '100%';
         svgElement.style.height = 'auto';
         svgElement.style.display = 'block';
-        svgElement.style.margin = '0 auto';
-      } else if (svgElement && targetContainer) {
-        // For fullscreen view - prepare for zoom/pan
+        svgElement.style.margin = '0 auto';        } else if (svgElement && targetContainer) {
+        // For fullscreen view - prepare for zoom/pan and enable text selection
         svgElement.style.width = '100%';
         svgElement.style.height = '100%';
         svgElement.style.display = 'block';
         svgElement.style.transformOrigin = 'center center';
+        
+        // Enable text selection on text elements
+        const textElements = svgElement.querySelectorAll('text');
+        textElements.forEach(textEl => {
+          textEl.style.userSelect = 'text';
+          textEl.style.cursor = 'text';
+          textEl.style.pointerEvents = 'auto';
+        });
       }
       
       setIsLoading(false);
@@ -93,17 +103,33 @@ export function MermaidDiagram({
 
   // Handle fullscreen toggle
   const toggleFullscreen = useCallback(() => {
-    setIsFullscreen(!isFullscreen);
     if (!isFullscreen) {
-      // Reset zoom and position when entering fullscreen
+      // Entering fullscreen
+      setShouldShowModal(true);
+      setIsAnimating(true); // Start with animation state
       setScale(1);
       setPosition({ x: 0, y: 0 });
-      // Re-render diagram for fullscreen
+      
+      // Set fullscreen state and trigger animation
       setTimeout(() => {
-        if (fullscreenContainerRef.current) {
-          renderDiagram(fullscreenContainerRef.current);
-        }
-      }, 100);
+        setIsFullscreen(true);
+        setIsAnimating(false);
+        
+        // Render diagram after animation starts
+        setTimeout(() => {
+          if (fullscreenContainerRef.current) {
+            renderDiagram(fullscreenContainerRef.current);
+          }
+        }, 50);
+      }, 16); // Single frame delay
+    } else {
+      // Exiting fullscreen - start exit animation
+      setIsAnimating(true);
+      setTimeout(() => {
+        setIsFullscreen(false);
+        setShouldShowModal(false);
+        setIsAnimating(false);
+      }, 250);
     }
   }, [isFullscreen, renderDiagram]);
 
@@ -131,12 +157,20 @@ export function MermaidDiagram({
   // Handle mouse events for drag and zoom in fullscreen
   const handleMouseDown = useCallback((e: React.MouseEvent) => {
     if (!isFullscreen) return;
+    
+    // Check if user is trying to select text
+    const target = e.target as HTMLElement;
+    if (target.tagName === 'text' || target.closest('text')) {
+      setIsTextSelecting(true);
+      return;
+    }
+    
     setIsDragging(true);
     setLastMousePosition({ x: e.clientX, y: e.clientY });
   }, [isFullscreen]);
 
   const handleMouseMove = useCallback((e: React.MouseEvent) => {
-    if (!isDragging || !isFullscreen) return;
+    if (!isDragging || !isFullscreen || isTextSelecting) return;
     
     const deltaX = e.clientX - lastMousePosition.x;
     const deltaY = e.clientY - lastMousePosition.y;
@@ -147,10 +181,11 @@ export function MermaidDiagram({
     }));
     
     setLastMousePosition({ x: e.clientX, y: e.clientY });
-  }, [isDragging, lastMousePosition, isFullscreen]);
+  }, [isDragging, lastMousePosition, isFullscreen, isTextSelecting]);
 
   const handleMouseUp = useCallback(() => {
     setIsDragging(false);
+    setIsTextSelecting(false);
   }, []);
 
   const handleWheel = useCallback((e: React.WheelEvent) => {
@@ -168,8 +203,16 @@ export function MermaidDiagram({
       setScale(1);
       setPosition({ x: 0, y: 0 });
       setIsDragging(false);
+      setIsTextSelecting(false);
     }
   }, [isFullscreen]);
+
+  // Handle modal cleanup
+  useEffect(() => {
+    if (!isFullscreen && !isAnimating) {
+      setShouldShowModal(false);
+    }
+  }, [isFullscreen, isAnimating]);
 
   if (error) {
     return (
@@ -226,13 +269,23 @@ export function MermaidDiagram({
       </div>
 
       {/* Fullscreen modal */}
-      {isFullscreen && (
+      {shouldShowModal && (
         <div 
-          className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4"
+          className={cn(
+            "fixed inset-0 z-50 flex items-center justify-center p-4 transition-all duration-200 ease-out",
+            !isFullscreen || isAnimating
+              ? "bg-black/0 backdrop-blur-none" 
+              : "bg-black/30 backdrop-blur-sm"
+          )}
           onClick={toggleFullscreen}
         >
           <div 
-            className="relative bg-white rounded-lg shadow-2xl w-full h-full max-w-[95vw] max-h-[95vh] overflow-hidden flex flex-col"
+            className={cn(
+              "relative bg-white rounded-lg shadow-2xl w-full h-full max-w-[95vw] max-h-[95vh] overflow-hidden flex flex-col transition-all duration-200 ease-out",
+              !isFullscreen || isAnimating
+                ? "opacity-0 scale-90" 
+                : "opacity-100 scale-100"
+            )}
             onClick={(e) => e.stopPropagation()}
           >
             {/* Close button */}
@@ -246,15 +299,15 @@ export function MermaidDiagram({
             
             {/* Fullscreen diagram with drag and zoom */}
             <div 
-              className="flex-1 overflow-hidden flex items-center justify-center relative cursor-grab active:cursor-grabbing"
+              className={cn(
+                "flex-1 overflow-hidden flex items-center justify-center relative transition-all duration-200",
+                isTextSelecting ? "cursor-text" : isDragging ? "cursor-grabbing" : "cursor-grab"
+              )}
               onMouseDown={handleMouseDown}
               onMouseMove={handleMouseMove}
               onMouseUp={handleMouseUp}
               onMouseLeave={handleMouseUp}
               onWheel={handleWheel}
-              style={{ 
-                cursor: isDragging ? 'grabbing' : 'grab'
-              }}
             >
               <div 
                 ref={fullscreenContainerRef}
