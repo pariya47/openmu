@@ -239,7 +239,7 @@ export function MermaidDiagram({
     setIsTextSelecting(false);
   }, []);
 
-  const handleWheel = useCallback((e: React.WheelEvent) => {
+  const handleWheel = useCallback((e: WheelEvent) => {
     if (!isFullscreen) return;
     e.preventDefault();
     
@@ -257,6 +257,19 @@ export function MermaidDiagram({
       setIsTextSelecting(false);
     }
   }, [isFullscreen]);
+
+  // Handle wheel events for zooming in fullscreen with non-passive listener
+  useEffect(() => {
+    const fullscreenContainer = fullscreenContainerRef.current?.parentElement;
+    if (!fullscreenContainer || !isFullscreen) return;
+
+    // Add non-passive wheel event listener to prevent default scrolling
+    fullscreenContainer.addEventListener('wheel', handleWheel, { passive: false });
+
+    return () => {
+      fullscreenContainer.removeEventListener('wheel', handleWheel);
+    };
+  }, [isFullscreen, handleWheel]);
 
   // Handle modal cleanup
   useEffect(() => {
@@ -408,7 +421,6 @@ export function MermaidDiagram({
               onMouseMove={handleMouseMove}
               onMouseUp={handleMouseUp}
               onMouseLeave={handleMouseUp}
-              onWheel={handleWheel}
             >
               <div 
                 ref={fullscreenContainerRef}
