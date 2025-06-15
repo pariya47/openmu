@@ -132,113 +132,70 @@ export function TestMermaidClient() {
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="container mx-auto px-4 py-8 max-w-7xl">
+      <div className="container mx-auto px-4 py-8 max-w-6xl">
         {/* Header Section */}
-        <div className="text-center space-y-6 mb-12">
-          <div className="flex items-center justify-center gap-3 mb-4">
-            <div className="p-3 bg-primary rounded-xl">
-              <TestTube className="h-8 w-8 text-primary-foreground" />
-            </div>
-            <Typography variant="h1" className="font-bold">
-              Mermaid Test Suite
-            </Typography>
-          </div>
-          
-          <Typography variant="muted" className="max-w-3xl mx-auto text-lg">
-            Comprehensive testing environment for interactive Mermaid diagrams with error handling, 
-            recovery mechanisms, and fullscreen capabilities.
+        <div className="text-center space-y-4 mb-12 border-b pb-8">
+          <Typography variant="h1" className="font-bold text-3xl">
+            Mermaid Diagram Test Cases
           </Typography>
-
-          <div className="flex flex-wrap justify-center gap-2 mt-6">
-            <Badge variant="secondary" className="flex items-center gap-1">
-              <CheckCircle className="h-3 w-3" />
-              Interactive Testing
-            </Badge>
-            <Badge variant="secondary" className="flex items-center gap-1">
-              <AlertTriangle className="h-3 w-3" />
-              Error Handling
-            </Badge>
-            <Badge variant="secondary" className="flex items-center gap-1">
-              <Zap className="h-3 w-3" />
-              Real-time Recovery
-            </Badge>
-          </div>
+          
+          <Typography variant="muted" className="max-w-2xl mx-auto">
+            Comprehensive test cases for Mermaid diagram rendering, error handling, and interactive features.
+          </Typography>
         </div>
 
-        <div className="space-y-12">
+        <div className="space-y-16">
           {/* Working Examples Section */}
-          <div className="space-y-6">
-            <div className="flex items-center gap-3">
-              <CheckCircle className="h-6 w-6 text-green-600" />
-              <Typography variant="h2" className="text-2xl font-semibold">
-                Working Examples
-              </Typography>
-            </div>
-            
-            <div className="grid gap-6 md:grid-cols-2">
-              {/* Flowchart Card */}
-              <Card>
-                <CardHeader>
-                  <div className="flex items-center gap-2 mb-2">
-                    <GitBranch className="h-5 w-5 text-muted-foreground" />
-                    <Badge variant="outline">Flowchart</Badge>
-                  </div>
-                  <CardTitle>Decision Flow</CardTitle>
-                  <CardDescription>
-                    Interactive decision flowchart demonstrating conditional logic and process flow.
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="border rounded-lg p-4 min-h-[250px]">
-                    <MermaidDiagram 
-                      diagram={flowchartDiagram}
-                      onError={handleError}
-                      className="w-full min-h-[200px]"
-                      config={{ scale: 0.8 }}
-                    />
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Sequence Diagram Card */}
-              <Card>
-                <CardHeader>
-                  <div className="flex items-center gap-2 mb-2">
-                    <Users className="h-5 w-5 text-muted-foreground" />
-                    <Badge variant="outline">Sequence</Badge>
-                  </div>
-                  <CardTitle>System Interaction</CardTitle>
-                  <CardDescription>
-                    Actor interactions showing communication flow between system components.
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="border rounded-lg p-4 min-h-[280px]">
-                    <MermaidDiagram 
-                      diagram={sequenceDiagram}
-                      onError={handleError}
-                      className="w-full min-h-[230px]"
-                      config={{ scale: 1.5 }}
-                    />
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-
-            {/* Gantt Chart - Full Width Section */}
-            <Card>
-              <CardHeader>
-                <div className="flex items-center gap-2 mb-2">
-                  <Calendar className="h-5 w-5 text-muted-foreground" />
-                  <Badge variant="outline">Timeline</Badge>
+          <section>
+            <div className="space-y-8">
+              {/* Flowchart Test Case */}
+              <div className="space-y-3">
+                <div className="flex items-center gap-2">
+                  <Typography variant="h3" className="font-medium">Flowchart</Typography>
+                  <Badge variant="outline" className="text-xs">Test Case 1</Badge>
                 </div>
-                <CardTitle>Project Development Timeline</CardTitle>
-                <CardDescription>
-                  Comprehensive project management visualization with multiple phases, tasks, dependencies, and milestone tracking.
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="border rounded-lg p-6 min-h-[400px] overflow-x-auto">
+                <Typography variant="muted" className="text-sm">
+                  Decision tree with conditional branching and loops.
+                </Typography>
+                <div className="border rounded p-4 min-h-[250px] bg-muted/20">
+                  <MermaidDiagram 
+                    diagram={flowchartDiagram}
+                    onError={handleError}
+                    className="w-full min-h-[200px]"
+                    config={{ scale: 0.8 }}
+                  />
+                </div>
+              </div>
+
+              {/* Sequence Diagram Test Case */}
+              <div className="space-y-3">
+                <div className="flex items-center gap-2">
+                  <Typography variant="h3" className="font-medium">Sequence Diagram</Typography>
+                  <Badge variant="outline" className="text-xs">Test Case 2</Badge>
+                </div>
+                <Typography variant="muted" className="text-sm">
+                  Actor interactions and message flow between system components.
+                </Typography>
+                <div className="border rounded p-4 min-h-[280px] bg-muted/20">
+                  <MermaidDiagram 
+                    diagram={sequenceDiagram}
+                    onError={handleError}
+                    className="w-full min-h-[230px]"
+                    config={{ scale: 1.5 }}
+                  />
+                </div>
+              </div>
+
+              {/* Gantt Chart Test Case */}
+              <div className="space-y-3">
+                <div className="flex items-center gap-2">
+                  <Typography variant="h3" className="font-medium">Gantt Chart</Typography>
+                  <Badge variant="outline" className="text-xs">Test Case 3</Badge>
+                </div>
+                <Typography variant="muted" className="text-sm">
+                  Project timeline with phases, tasks, and milestones.
+                </Typography>
+                <div className="border rounded p-6 min-h-[400px] bg-muted/20 overflow-x-auto">
                   <MermaidDiagram 
                     diagram={ganttDiagram}
                     onError={handleError}
@@ -246,7 +203,7 @@ export function TestMermaidClient() {
                     config={{ 
                       gantt: {
                         fontSize: 14,
-                        fontFamily: 'Inter, system-ui, sans-serif',
+                        fontFamily: 'system-ui, sans-serif',
                         gridLineStartPadding: 350,
                         bottomPadding: 50,
                         leftPadding: 120,
@@ -259,184 +216,141 @@ export function TestMermaidClient() {
                     }}
                   />
                 </div>
-              </CardContent>
-            </Card>
-          </div>
+              </div>
+            </div>
+          </section>
 
-          {/* Error Handling Tests Section */}
-          <div className="space-y-6">
-            <div className="flex items-center gap-3">
-              <AlertTriangle className="h-6 w-6 text-red-600" />
-              <Typography variant="h2" className="text-2xl font-semibold">
-                Error Handling & Recovery Tests
+          {/* Error Handling Section */}
+          <section>
+            <div className="mb-8">
+              <Typography variant="h2" className="text-xl font-semibold mb-2">
+                ⚠ Error Handling Tests
+              </Typography>
+              <Typography variant="muted" className="text-sm">
+                Test cases for malformed syntax and error recovery mechanisms.
               </Typography>
             </div>
 
-            <div className="grid gap-6 lg:grid-cols-2">
+            <div className="space-y-8">
               {/* Static Error Test */}
-              <Card className="border-destructive/50">
-                <CardHeader>
-                  <div className="flex items-center gap-2 mb-2">
-                    <AlertTriangle className="h-5 w-5 text-destructive" />
-                    <Badge variant="destructive">Static Error</Badge>
-                  </div>
-                  <CardTitle className="text-destructive">Persistent Error State</CardTitle>
-                  <CardDescription>
-                    Demonstrates consistent error handling with malformed syntax.
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="border rounded-lg p-4 min-h-[200px]">
-                    <MermaidDiagram 
-                      diagram={errorDiagram}
-                      onError={handleError}
-                      className="w-full min-h-[150px]"
-                    />
-                  </div>
-                </CardContent>
-              </Card>
+              <div className="space-y-3">
+                <div className="flex items-center gap-2">
+                  <Typography variant="h3" className="font-medium">Static Error</Typography>
+                  <Badge variant="destructive" className="text-xs">Test Case 4</Badge>
+                </div>
+                <Typography variant="muted" className="text-sm">
+                  Persistent error state with malformed syntax (missing closing brackets).
+                </Typography>
+                <div className="border border-destructive/30 rounded p-4 min-h-[200px] bg-destructive/5">
+                  <MermaidDiagram 
+                    diagram={errorDiagram}
+                    onError={handleError}
+                    className="w-full min-h-[150px]"
+                  />
+                </div>
+              </div>
 
               {/* Interactive Error Test */}
-              <Card className="border-orange-500/50">
-                <CardHeader>
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <div className="flex items-center gap-2 mb-2">
-                        <RotateCcw className="h-5 w-5 text-orange-500" />
-                        <Badge variant="outline" className="border-orange-300">Interactive</Badge>
-                      </div>
-                      <CardTitle className="text-orange-700 dark:text-orange-400">Dynamic Error ↔ Success</CardTitle>
-                      <CardDescription>
-                        Test real-time syntax correction and automatic re-rendering.
-                      </CardDescription>
-                    </div>
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Typography variant="h3" className="font-medium">Interactive Error Recovery</Typography>
+                    <Badge variant="outline" className="text-xs">Test Case 5</Badge>
                   </div>
-                  <div className="flex gap-2 mt-4">
+                  <div className="flex gap-2">
                     <Button
                       onClick={fixInteractiveError}
                       size="sm"
-                      className="gap-2"
+                      variant="outline"
+                      className="text-xs"
                     >
-                      <CheckCircle className="h-4 w-4" />
                       Fix Syntax
                     </Button>
                     <Button
                       onClick={breakInteractiveError}
                       size="sm"
-                      variant="destructive"
-                      className="gap-2"
+                      variant="outline"
+                      className="text-xs"
                     >
-                      <AlertTriangle className="h-4 w-4" />
                       Break Syntax
                     </Button>
                   </div>
-                </CardHeader>
-                <CardContent>
-                  <div className="border rounded-lg p-4 min-h-[200px]">
-                    <MermaidDiagram 
-                      diagram={interactiveErrorDiagram}
-                      onError={handleError}
-                      className="w-full min-h-[150px]"
-                    />
-                  </div>
-                </CardContent>
-              </Card>
+                </div>
+                <Typography variant="muted" className="text-sm">
+                  Dynamic syntax correction with automatic re-rendering. Toggle between error and success states.
+                </Typography>
+                <div className="border rounded p-4 min-h-[200px] bg-muted/20">
+                  <MermaidDiagram 
+                    diagram={interactiveErrorDiagram}
+                    onError={handleError}
+                    className="w-full min-h-[150px]"
+                  />
+                </div>
+              </div>
 
               {/* First Load Error Test */}
-              <Card className="border-purple-500/50 lg:col-span-2">
-                <CardHeader>
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <div className="flex items-center gap-2 mb-2">
-                        <Play className="h-5 w-5 text-purple-500" />
-                        <Badge variant="outline" className="border-purple-300">Recovery Test</Badge>
-                      </div>
-                      <CardTitle className="text-purple-700 dark:text-purple-400">Initial Load Error → Recovery</CardTitle>
-                      <CardDescription>
-                        Starts with broken syntax on first load, demonstrates error recovery capabilities.
-                      </CardDescription>
-                    </div>
-                    <Button
-                      onClick={fixFirstLoadError}
-                      className="gap-2"
-                    >
-                      <Zap className="h-4 w-4" />
-                      Recover Diagram
-                    </Button>
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Typography variant="h3" className="font-medium">Initial Load Error</Typography>
+                    <Badge variant="outline" className="text-xs">Test Case 6</Badge>
                   </div>
-                </CardHeader>
-                <CardContent>
-                  <div className="border rounded-lg p-4 min-h-[200px]">
-                    <MermaidDiagram 
-                      diagram={firstLoadErrorDiagram}
-                      onError={handleError}
-                      className="w-full min-h-[150px]"
-                    />
-                  </div>
-                </CardContent>
-              </Card>
+                  <Button
+                    onClick={fixFirstLoadError}
+                    size="sm"
+                    variant="outline"
+                    className="text-xs"
+                  >
+                    Recover Diagram
+                  </Button>
+                </div>
+                <Typography variant="muted" className="text-sm">
+                  Error on first load with recovery capability. Demonstrates error-to-success transition.
+                </Typography>
+                <div className="border rounded p-4 min-h-[200px] bg-muted/20">
+                  <MermaidDiagram 
+                    diagram={firstLoadErrorDiagram}
+                    onError={handleError}
+                    className="w-full min-h-[150px]"
+                  />
+                </div>
+              </div>
             </div>
-          </div>
+          </section>
 
-          {/* Instructions Card */}
-          <Card>
-            <CardHeader>
-              <div className="flex items-center gap-2 mb-2">
-                <Info className="h-5 w-5 text-muted-foreground" />
-                <CardTitle>Testing Instructions</CardTitle>
+          {/* Test Instructions */}
+          <section className="border-t pt-8">
+            <div className="mb-6">
+              <Typography variant="h2" className="text-xl font-semibold mb-2">
+                Test Instructions
+              </Typography>
+              <Typography variant="muted" className="text-sm">
+                Guidelines for manual testing and validation of diagram functionality.
+              </Typography>
+            </div>
+            
+            <div className="grid gap-8 md:grid-cols-2">
+              <div>
+                <Typography variant="h3" className="font-medium mb-3">General Testing</Typography>
+                <ul className="space-y-2 text-sm text-muted-foreground">
+                  <li>• Click any diagram to enter fullscreen mode</li>
+                  <li>• Use ESC key or click outside to exit fullscreen</li>
+                  <li>• Mouse wheel to zoom, drag to pan in fullscreen</li>
+                  <li>• Test responsive behavior by resizing window</li>
+                </ul>
               </div>
-              <CardDescription>
-                Complete guide for testing all diagram features and error scenarios.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="grid gap-6 md:grid-cols-2">
-                <div className="space-y-4">
-                  <Badge className="mb-2">General Testing</Badge>
-                  <ul className="space-y-2 text-sm text-muted-foreground">
-                    <li className="flex items-start gap-2">
-                      <div className="w-1.5 h-1.5 bg-primary rounded-full mt-2 flex-shrink-0"></div>
-                      <span>Click any diagram to enter fullscreen mode with pan/zoom controls</span>
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <div className="w-1.5 h-1.5 bg-primary rounded-full mt-2 flex-shrink-0"></div>
-                      <span>Press ESC or click outside to exit fullscreen view</span>
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <div className="w-1.5 h-1.5 bg-primary rounded-full mt-2 flex-shrink-0"></div>
-                      <span>Test responsiveness by resizing browser window</span>
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <div className="w-1.5 h-1.5 bg-primary rounded-full mt-2 flex-shrink-0"></div>
-                      <span>Mouse wheel to zoom, drag to pan in fullscreen</span>
-                    </li>
-                  </ul>
-                </div>
-                
-                <div className="space-y-4">
-                  <Badge variant="destructive" className="mb-2">Error Testing</Badge>
-                  <ul className="space-y-2 text-sm text-muted-foreground">
-                    <li className="flex items-start gap-2">
-                      <div className="w-1.5 h-1.5 bg-destructive rounded-full mt-2 flex-shrink-0"></div>
-                      <span><strong>Static Error:</strong> Shows persistent error handling</span>
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <div className="w-1.5 h-1.5 bg-destructive rounded-full mt-2 flex-shrink-0"></div>
-                      <span><strong>Interactive Test:</strong> Toggle between error and success states</span>
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <div className="w-1.5 h-1.5 bg-destructive rounded-full mt-2 flex-shrink-0"></div>
-                      <span><strong>Recovery Test:</strong> Error on load → automatic recovery</span>
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <div className="w-1.5 h-1.5 bg-destructive rounded-full mt-2 flex-shrink-0"></div>
-                      <span>Check console - errors logged once per diagram change</span>
-                    </li>
-                  </ul>
-                </div>
+              
+              <div>
+                <Typography variant="h3" className="font-medium mb-3">Error Testing</Typography>
+                <ul className="space-y-2 text-sm text-muted-foreground">
+                  <li>• <strong>Test Case 4:</strong> Verify error display consistency</li>
+                  <li>• <strong>Test Case 5:</strong> Toggle error/success states</li>
+                  <li>• <strong>Test Case 6:</strong> Test error recovery workflow</li>
+                  <li>• Check browser console for error logging</li>
+                </ul>
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          </section>
         </div>
       </div>
     </div>
