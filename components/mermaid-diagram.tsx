@@ -3,7 +3,7 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import mermaid from 'mermaid';
 import { cn } from '@/lib/utils';
-import { Maximize2, X } from 'lucide-react';
+import { AlertTriangle, RefreshCw, X, Maximize2 } from 'lucide-react';
 
 export interface MermaidDiagramProps {
   diagram: string;
@@ -23,6 +23,8 @@ export function MermaidDiagram({
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [showErrorDetails, setShowErrorDetails] = useState(false);
+  const [lastDiagramContent, setLastDiagramContent] = useState<string>("");
   
   // Fullscreen zoom and pan state
   const [scale, setScale] = useState(1);
@@ -36,9 +38,10 @@ export function MermaidDiagram({
   // Initialize Mermaid
   useEffect(() => {
     mermaid.initialize({
-      startOnLoad: false,
+      startOnLoad: true,
       theme: 'default',
       securityLevel: 'loose',
+      suppressErrorRendering: true,
       ...config
     });
   }, [config]);
@@ -71,7 +74,8 @@ export function MermaidDiagram({
         svgElement.style.width = '100%';
         svgElement.style.height = 'auto';
         svgElement.style.display = 'block';
-        svgElement.style.margin = '0 auto';        } else if (svgElement && targetContainer) {
+        svgElement.style.margin = '0 auto';
+      } else if (svgElement && targetContainer) {
         // For fullscreen view - prepare for zoom/pan and enable text selection
         svgElement.style.width = '100%';
         svgElement.style.height = '100%';
@@ -87,19 +91,66 @@ export function MermaidDiagram({
         });
       }
       
+      // Success! Clear error state and update last diagram content
+      setError(null);
+      setLastDiagramContent(diagram);
       setIsLoading(false);
     } catch (err) {
       const error = err as Error;
-      setError(error.message);
+      
+      // Create user-friendly error message
+      let userFriendlyMessage = "Unable to render diagram";
+      
+      if (error.message.toLowerCase().includes("syntax")) {
+        userFriendlyMessage = "Invalid diagram syntax";
+      } else if (error.message.toLowerCase().includes("parse")) {
+        userFriendlyMessage = "Diagram format error";
+      } else if (error.message.toLowerCase().includes("lexical")) {
+        userFriendlyMessage = "Invalid diagram structure";
+      } else if (error.message.toLowerCase().includes("unexpected")) {
+        userFriendlyMessage = "Unexpected diagram content";
+      } else if (error.message.toLowerCase().includes("expecting") && error.message.toLowerCase().includes("got")) {
+        userFriendlyMessage = "Invalid diagram syntax - missing or incorrect symbols";
+      } else if (error.message.toLowerCase().includes("pipe")) {
+        userFriendlyMessage = "Invalid character usage in diagram";
+      } else if (error.message.toLowerCase().includes("diamond_stop") || error.message.toLowerCase().includes("tagend")) {
+        userFriendlyMessage = "Missing closing brackets or incomplete syntax";
+      }
+      
+      setError(JSON.stringify({
+        userMessage: userFriendlyMessage,
+        technicalMessage: error.message,
+        timestamp: new Date().toISOString()
+      }));
+      setLastDiagramContent(diagram); // Update this even on error to track content changes
       setIsLoading(false);
+      
+      // Call onError callback
       onError?.(error);
     }
   }, [diagram, onError]);
 
   // Re-render when diagram changes
   useEffect(() => {
-    renderDiagram();
-  }, [renderDiagram]);
+    // If diagram content has changed, clear any existing error and re-render
+    if (diagram !== lastDiagramContent) {
+      setLastDiagramContent(diagram);
+      setError(null); // Clear error when diagram content changes
+      setShowErrorDetails(false);
+      renderDiagram();
+    }
+    // Also render if no error and diagram exists but container is empty
+    else if (!error && diagram && containerRef.current && !containerRef.current.innerHTML) {
+      renderDiagram();
+    }
+  }, [diagram, lastDiagramContent, error, renderDiagram]);
+
+  // Initial render
+  useEffect(() => {
+    if (diagram && !lastDiagramContent) {
+      renderDiagram();
+    }
+  }, [diagram, lastDiagramContent, renderDiagram]);
 
   // Handle fullscreen toggle
   const toggleFullscreen = useCallback(() => {
@@ -215,14 +266,64 @@ export function MermaidDiagram({
   }, [isFullscreen, isAnimating]);
 
   if (error) {
+    let errorData;
+    try {
+      errorData = error ? JSON.parse(error) : null;
+    } catch {
+      errorData = { 
+        userMessage: "Unable to render diagram", 
+        technicalMessage: error,
+        timestamp: new Date().toISOString()
+      };
+    }
+
     return (
       <div className={cn(
-        "p-4 border border-destructive/20 rounded-lg bg-destructive/5",
+        "relative border rounded-lg border-red-200 bg-red-50 dark:bg-red-950/20 dark:border-red-800",
         className
       )}>
-        <p className="text-destructive text-sm">
-          Error rendering diagram: {error}
-        </p>
+        {/* Content */}
+        <div className="p-6">
+          {/* Error state */}
+          <div className="flex items-start gap-3">
+            <div className="flex-shrink-0 mt-1">
+              <AlertTriangle className="h-5 w-5 text-red-600 dark:text-red-400" />
+            </div>
+            <div className="flex-1 space-y-2">
+              <h3 className="text-sm font-medium text-red-800 dark:text-red-200">
+                {errorData?.userMessage || "Unable to render diagram"}
+              </h3>
+              <p className="text-sm text-red-700 dark:text-red-300">
+                There was an issue rendering this diagram. The diagram will automatically retry when you fix the syntax.
+              </p>
+              
+              {/* Action button for details */}
+              <div className="flex items-center gap-2 mt-3">
+                <button
+                  onClick={() => setShowErrorDetails(!showErrorDetails)}
+                  className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-200 transition-colors"
+                >
+                  {showErrorDetails ? 'Hide' : 'Show'} Details
+                </button>
+              </div>
+
+              {/* Technical details (collapsible) */}
+              {showErrorDetails && errorData && (
+                <div className="mt-3 p-3 bg-red-100 dark:bg-red-900/30 rounded border border-red-200 dark:border-red-800">
+                  <h4 className="text-xs font-medium text-red-800 dark:text-red-200 mb-2">
+                    Technical Details:
+                  </h4>
+                  <code className="text-xs text-red-700 dark:text-red-300 font-mono break-all">
+                    {errorData.technicalMessage}
+                  </code>
+                  <div className="text-xs text-red-600 dark:text-red-400 mt-2">
+                    Time: {new Date(errorData.timestamp).toLocaleString()}
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
       </div>
     );
   }
