@@ -10,6 +10,7 @@ import {
   Dialog,
   DialogContent,
   DialogClose,
+  DialogTitle,
 } from '@/components/ui/dialog';
 
 // Consolidated state interface for better performance
@@ -65,6 +66,7 @@ const MermaidDiagramComponent = ({
   const [fullscreenState, setFullscreenState] = useState<FullscreenState>({
     isFullscreen: false,
   });
+  const [fullscreenContainerReady, setFullscreenContainerReady] = useState(false);
 
   // Refs for smooth mouse interactions without re-renders
   const isDraggingRef = useRef(false);
@@ -105,8 +107,9 @@ const MermaidDiagramComponent = ({
   // Callback ref for fullscreen container
   const setFullscreenContainerRef = useCallback((el: HTMLDivElement | null) => {
     fullscreenContainerRef.current = el;
-    diagramTransformRef.current = el;
-  }, []);
+    diagramTransformRef.current = el; // This is for pan/zoom styling
+    setFullscreenContainerReady(!!el);
+  }, []); // Dependencies should be empty as it only uses refs and setState
 
   // Throttled state sync for position and scale
   const syncStateWithRefs = useCallback(() => {
@@ -257,11 +260,12 @@ const MermaidDiagramComponent = ({
 
   // Effect to render diagram when fullscreen is activated and container is ready
   useEffect(() => {
-    if (fullscreenState.isFullscreen && fullscreenContainerRef.current) {
+    if (fullscreenState.isFullscreen && fullscreenContainerReady && fullscreenContainerRef.current) {
       renderDiagram(fullscreenContainerRef.current);
     }
-    // This effect should also handle cleanup if renderDiagram has side effects tied to the container
-  }, [fullscreenState.isFullscreen, renderDiagram]);
+    // Optional: consider if cleanup is needed if fullscreenContainerReady becomes false while in fullscreen
+    // For now, existing cleanup in renderDiagram (clearing innerHTML) should suffice on subsequent renders.
+  }, [fullscreenState.isFullscreen, fullscreenContainerReady, renderDiagram]);
 
   // Escape key and body overflow are handled by Shadcn Dialog.
   // We might need to ensure onOpenChange on Dialog correctly calls toggleFullscreen(false)
@@ -506,6 +510,7 @@ const MermaidDiagramComponent = ({
           onPointerDownOutside={(e) => e.preventDefault()} // Allow interaction with diagram elements like text
           onInteractOutside={(e) => e.preventDefault()} // Allow interaction with diagram elements like text
         >
+          <DialogTitle className="sr-only">Fullscreen Diagram View</DialogTitle>
           {/* Fullscreen diagram area */}
           <div
             className={cn(
@@ -529,7 +534,7 @@ const MermaidDiagramComponent = ({
             />
           </div>
 
-          <DialogClose className="absolute top-3 right-3 z-10">
+          <DialogClose asChild className="absolute top-3 right-3 z-10">
             <Button variant="ghost" size="icon" aria-label="Close fullscreen view">
               <X className="h-5 w-5" />
             </Button>
