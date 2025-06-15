@@ -1,9 +1,29 @@
 "use client";
 
-import React, { useEffect, useRef, useState, useCallback } from 'react';
+import React, { useEffect, useRef, useState, useCallback, useMemo, memo } from 'react';
 import mermaid from 'mermaid';
 import { cn } from '@/lib/utils';
 import { AlertTriangle, RefreshCw, X, Maximize2 } from 'lucide-react';
+
+// Consolidated state interface for better performance
+interface DiagramState {
+  isLoading: boolean;
+  error: string | null;
+  showErrorDetails: boolean;
+  lastDiagramContent: string;
+  scale: number;
+  position: { x: number; y: number };
+  isDragging: boolean;
+  lastMousePosition: { x: number; y: number };
+  isTextSelecting: boolean;
+}
+
+// Consolidated fullscreen state
+interface FullscreenState {
+  isFullscreen: boolean;
+  isAnimating: boolean;
+  shouldShowModal: boolean;
+}
 
 export interface MermaidDiagramProps {
   diagram: string;
@@ -12,57 +32,123 @@ export interface MermaidDiagramProps {
   config?: any;
 }
 
-export function MermaidDiagram({ 
+const MermaidDiagramComponent = ({ 
   diagram, 
   className, 
   onError,
   config = {}
-}: MermaidDiagramProps) {
-  const containerRef = useRef<HTMLDivElement>(null);
-  const fullscreenContainerRef = useRef<HTMLDivElement>(null);
-  const [isFullscreen, setIsFullscreen] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [showErrorDetails, setShowErrorDetails] = useState(false);
-  const [lastDiagramContent, setLastDiagramContent] = useState<string>("");
-  
-  // Fullscreen zoom and pan state
-  const [scale, setScale] = useState(1);
-  const [position, setPosition] = useState({ x: 0, y: 0 });
-  const [isDragging, setIsDragging] = useState(false);
-  const [lastMousePosition, setLastMousePosition] = useState({ x: 0, y: 0 });
-  const [isTextSelecting, setIsTextSelecting] = useState(false);
-  const [isAnimating, setIsAnimating] = useState(false);
-  const [shouldShowModal, setShouldShowModal] = useState(false);
+}: MermaidDiagramProps) => {
+  const containerRef = useRef<HTMLDivElement | null>(null);
+  const fullscreenContainerRef = useRef<HTMLDivElement | null>(null);
+  const mermaidInitializedRef = useRef<boolean>(false);
+  const currentDiagramIdRef = useRef<string | null>(null);
 
-  // Initialize Mermaid
+  // Consolidated state for better performance
+  const [diagramState, setDiagramState] = useState<DiagramState>({
+    isLoading: true,
+    error: null,
+    showErrorDetails: false,
+    lastDiagramContent: "",
+    scale: 1,
+    position: { x: 0, y: 0 },
+    isDragging: false,
+    lastMousePosition: { x: 0, y: 0 },
+    isTextSelecting: false,
+  });
+
+  const [fullscreenState, setFullscreenState] = useState<FullscreenState>({
+    isFullscreen: false,
+    isAnimating: false,
+    shouldShowModal: false,
+  });
+
+  // Refs for smooth mouse interactions without re-renders
+  const isDraggingRef = useRef(false);
+  const isTextSelectingRef = useRef(false);
+  const lastMousePositionRef = useRef({ x: 0, y: 0 });
+  const positionRef = useRef({ x: 0, y: 0 });
+  const scaleRef = useRef(1);
+  const animationFrameRef = useRef<number | null>(null);
+  const diagramTransformRef = useRef<HTMLDivElement | null>(null);
+
+  // Memoize mermaid config to prevent unnecessary re-initializations
+  const mermaidConfig = useMemo(() => ({
+    startOnLoad: true,
+    theme: 'default',
+    securityLevel: 'loose',
+    suppressErrorRendering: true,
+    ...config
+  }), [config]);
+
+  // Initialize Mermaid only once
   useEffect(() => {
-    mermaid.initialize({
-      startOnLoad: true,
-      theme: 'default',
-      securityLevel: 'loose',
-      suppressErrorRendering: true,
-      ...config
-    });
-  }, [config]);
+    if (!mermaidInitializedRef.current) {
+      mermaid.initialize(mermaidConfig);
+      mermaidInitializedRef.current = true;
+    }
+  }, [mermaidConfig]);
 
-  // Render diagram
+  // Optimized transform update function for smooth mouse interactions
+  const updateTransform = useCallback(() => {
+    if (diagramTransformRef.current) {
+      const { x, y } = positionRef.current;
+      const scale = scaleRef.current;
+      diagramTransformRef.current.style.transform = 
+        `translate(${x}px, ${y}px) scale(${scale})`;
+    }
+  }, []);
+
+  // Callback ref for fullscreen container
+  const setFullscreenContainerRef = useCallback((el: HTMLDivElement | null) => {
+    fullscreenContainerRef.current = el;
+    diagramTransformRef.current = el;
+  }, []);
+
+  // Throttled state sync for position and scale
+  const syncStateWithRefs = useCallback(() => {
+    if (animationFrameRef.current) {
+      cancelAnimationFrame(animationFrameRef.current);
+    }
+    
+    animationFrameRef.current = requestAnimationFrame(() => {
+      setDiagramState(prev => ({
+        ...prev,
+        position: { ...positionRef.current },
+        scale: scaleRef.current,
+        isDragging: isDraggingRef.current,
+        isTextSelecting: isTextSelectingRef.current,
+        lastMousePosition: { ...lastMousePositionRef.current }
+      }));
+    });
+  }, []);
+
+  // Optimized render diagram function with better error handling and cleanup
   const renderDiagram = useCallback(async (targetContainer?: HTMLDivElement) => {
     const container = targetContainer || containerRef.current;
     if (!container || !diagram) return;
 
-    setIsLoading(true);
-    setError(null);
+    // Cleanup previous diagram if exists
+    if (currentDiagramIdRef.current) {
+      try {
+        // Remove any existing SVG content
+        container.innerHTML = '';
+      } catch (err) {
+        console.warn('Error cleaning up previous diagram:', err);
+      }
+    }
+
+    setDiagramState(prev => ({ ...prev, isLoading: true, error: null }));
 
     try {
-      // Clear previous content
-      container.innerHTML = '';
-      
       // Generate unique ID for this diagram
-      const id = `mermaid-${Math.random().toString(36).substr(2, 9)}`;
+      const id = `mermaid-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+      currentDiagramIdRef.current = id;
       
       // Render the diagram
       const { svg } = await mermaid.render(id, diagram);
+      
+      // Check if this is still the current diagram (avoid race conditions)
+      if (currentDiagramIdRef.current !== id) return;
       
       // Insert the SVG
       container.innerHTML = svg;
@@ -91,12 +177,18 @@ export function MermaidDiagram({
         });
       }
       
-      // Success! Clear error state and update last diagram content
-      setError(null);
-      setLastDiagramContent(diagram);
-      setIsLoading(false);
+      // Success! Update state
+      setDiagramState(prev => ({
+        ...prev,
+        error: null,
+        lastDiagramContent: diagram,
+        isLoading: false
+      }));
     } catch (err) {
       const error = err as Error;
+      
+      // Check if this is still the current diagram
+      if (currentDiagramIdRef.current === null) return;
       
       // Create user-friendly error message
       let userFriendlyMessage = "Unable to render diagram";
@@ -117,54 +209,73 @@ export function MermaidDiagram({
         userFriendlyMessage = "Missing closing brackets or incomplete syntax";
       }
       
-      setError(JSON.stringify({
-        userMessage: userFriendlyMessage,
-        technicalMessage: error.message,
-        timestamp: new Date().toISOString()
+      setDiagramState(prev => ({
+        ...prev,
+        error: JSON.stringify({
+          userMessage: userFriendlyMessage,
+          technicalMessage: error.message,
+          timestamp: new Date().toISOString()
+        }),
+        lastDiagramContent: diagram,
+        isLoading: false
       }));
-      setLastDiagramContent(diagram); // Update this even on error to track content changes
-      setIsLoading(false);
       
       // Call onError callback
       onError?.(error);
     }
   }, [diagram, onError]);
 
-  // Re-render when diagram changes
+  // Optimized effect for diagram changes with debouncing
   useEffect(() => {
     // If diagram content has changed, clear any existing error and re-render
-    if (diagram !== lastDiagramContent) {
-      setLastDiagramContent(diagram);
-      setError(null); // Clear error when diagram content changes
-      setShowErrorDetails(false);
+    if (diagram !== diagramState.lastDiagramContent) {
+      setDiagramState(prev => ({
+        ...prev,
+        lastDiagramContent: diagram,
+        error: null,
+        showErrorDetails: false
+      }));
       renderDiagram();
     }
     // Also render if no error and diagram exists but container is empty
-    else if (!error && diagram && containerRef.current && !containerRef.current.innerHTML) {
+    else if (!diagramState.error && diagram && containerRef.current && !containerRef.current.innerHTML) {
       renderDiagram();
     }
-  }, [diagram, lastDiagramContent, error, renderDiagram]);
+  }, [diagram, diagramState.lastDiagramContent, diagramState.error, renderDiagram]);
 
-  // Initial render
+  // Initial render effect
   useEffect(() => {
-    if (diagram && !lastDiagramContent) {
+    if (diagram && !diagramState.lastDiagramContent) {
       renderDiagram();
     }
-  }, [diagram, lastDiagramContent, renderDiagram]);
+  }, [diagram, diagramState.lastDiagramContent, renderDiagram]);
 
-  // Handle fullscreen toggle
+  // Optimized fullscreen toggle with better state management
   const toggleFullscreen = useCallback(() => {
-    if (!isFullscreen) {
+    if (!fullscreenState.isFullscreen) {
       // Entering fullscreen
-      setShouldShowModal(true);
-      setIsAnimating(true); // Start with animation state
-      setScale(1);
-      setPosition({ x: 0, y: 0 });
+      setFullscreenState(prev => ({
+        ...prev,
+        shouldShowModal: true,
+        isAnimating: true
+      }));
+      
+      // Reset zoom and position refs
+      scaleRef.current = 1;
+      positionRef.current = { x: 0, y: 0 };
+      setDiagramState(prev => ({
+        ...prev,
+        scale: 1,
+        position: { x: 0, y: 0 }
+      }));
       
       // Set fullscreen state and trigger animation
       setTimeout(() => {
-        setIsFullscreen(true);
-        setIsAnimating(false);
+        setFullscreenState(prev => ({
+          ...prev,
+          isFullscreen: true,
+          isAnimating: false
+        }));
         
         // Render diagram after animation starts
         setTimeout(() => {
@@ -175,24 +286,30 @@ export function MermaidDiagram({
       }, 16); // Single frame delay
     } else {
       // Exiting fullscreen - start exit animation
-      setIsAnimating(true);
+      setFullscreenState(prev => ({
+        ...prev,
+        isAnimating: true
+      }));
       setTimeout(() => {
-        setIsFullscreen(false);
-        setShouldShowModal(false);
-        setIsAnimating(false);
+        setFullscreenState(prev => ({
+          ...prev,
+          isFullscreen: false,
+          shouldShowModal: false,
+          isAnimating: false
+        }));
       }, 250);
     }
-  }, [isFullscreen, renderDiagram]);
+  }, [fullscreenState.isFullscreen, renderDiagram]);
 
-  // Handle escape key
+  // Optimized escape key handler
   useEffect(() => {
     const handleEscape = (event: KeyboardEvent) => {
-      if (event.key === 'Escape' && isFullscreen) {
-        setIsFullscreen(false);
+      if (event.key === 'Escape' && fullscreenState.isFullscreen) {
+        setFullscreenState(prev => ({ ...prev, isFullscreen: false }));
       }
     };
 
-    if (isFullscreen) {
+    if (fullscreenState.isFullscreen) {
       document.addEventListener('keydown', handleEscape);
       document.body.style.overflow = 'hidden';
     } else {
@@ -203,65 +320,148 @@ export function MermaidDiagram({
       document.removeEventListener('keydown', handleEscape);
       document.body.style.overflow = '';
     };
-  }, [isFullscreen]);
+  }, [fullscreenState.isFullscreen]);
 
-  // Handle mouse events for drag and zoom in fullscreen
+  // Optimized mouse event handlers with refs for smooth performance
   const handleMouseDown = useCallback((e: React.MouseEvent) => {
-    if (!isFullscreen) return;
+    if (!fullscreenState.isFullscreen) return;
     
     // Check if user is trying to select text
     const target = e.target as HTMLElement;
     if (target.tagName === 'text' || target.closest('text')) {
-      setIsTextSelecting(true);
+      isTextSelectingRef.current = true;
+      syncStateWithRefs();
       return;
     }
     
-    setIsDragging(true);
-    setLastMousePosition({ x: e.clientX, y: e.clientY });
-  }, [isFullscreen]);
+    isDraggingRef.current = true;
+    lastMousePositionRef.current = { x: e.clientX, y: e.clientY };
+    
+    // Disable transitions during drag for smoother performance
+    if (diagramTransformRef.current) {
+      diagramTransformRef.current.style.transition = 'none';
+    }
+    
+    // Sync state only when needed
+    syncStateWithRefs();
+    
+    // Prevent default to avoid text selection
+    e.preventDefault();
+  }, [fullscreenState.isFullscreen, syncStateWithRefs]);
 
   const handleMouseMove = useCallback((e: React.MouseEvent) => {
-    if (!isDragging || !isFullscreen || isTextSelecting) return;
-    
-    const deltaX = e.clientX - lastMousePosition.x;
-    const deltaY = e.clientY - lastMousePosition.y;
-    
-    setPosition(prev => ({
-      x: prev.x + deltaX,
-      y: prev.y + deltaY
-    }));
-    
-    setLastMousePosition({ x: e.clientX, y: e.clientY });
-  }, [isDragging, lastMousePosition, isFullscreen, isTextSelecting]);
-
-  const handleMouseUp = useCallback(() => {
-    setIsDragging(false);
-    setIsTextSelecting(false);
+    // This is just for local moves, global moves are handled by document listeners
+    e.preventDefault();
   }, []);
 
+  const handleMouseUp = useCallback(() => {
+    // This is handled by global mouse up, but kept for completeness
+    if (isDraggingRef.current) {
+      isDraggingRef.current = false;
+      isTextSelectingRef.current = false;
+      syncStateWithRefs();
+      
+      // Re-enable transitions
+      if (diagramTransformRef.current) {
+        diagramTransformRef.current.style.transition = 'transform 0.1s ease-out';
+      }
+    }
+  }, [syncStateWithRefs]);
+
   const handleWheel = useCallback((e: WheelEvent) => {
-    if (!isFullscreen) return;
+    if (!fullscreenState.isFullscreen) return;
     e.preventDefault();
     
     const delta = e.deltaY * -0.001;
-    const newScale = Math.max(0.1, Math.min(5, scale + delta));
-    setScale(newScale);
-  }, [isFullscreen, scale]);
+    const newScale = Math.max(0.1, Math.min(5, scaleRef.current + delta));
+    
+    // Update ref immediately for smooth zooming
+    scaleRef.current = newScale;
+    updateTransform();
+    
+    // Throttle state updates for performance
+    syncStateWithRefs();
+  }, [fullscreenState.isFullscreen, updateTransform, syncStateWithRefs]);
 
   // Reset zoom and pan when leaving fullscreen
   useEffect(() => {
-    if (!isFullscreen) {
-      setScale(1);
-      setPosition({ x: 0, y: 0 });
-      setIsDragging(false);
-      setIsTextSelecting(false);
+    if (!fullscreenState.isFullscreen) {
+      // Reset refs
+      scaleRef.current = 1;
+      positionRef.current = { x: 0, y: 0 };
+      isDraggingRef.current = false;
+      isTextSelectingRef.current = false;
+      
+      // Update state
+      setDiagramState(prev => ({
+        ...prev,
+        scale: 1,
+        position: { x: 0, y: 0 },
+        isDragging: false,
+        isTextSelecting: false
+      }));
     }
-  }, [isFullscreen]);
+  }, [fullscreenState.isFullscreen]);
+
+  // Add global mouse event listeners for smoother dragging
+  useEffect(() => {
+    if (!fullscreenState.isFullscreen) return;
+
+    const handleGlobalMouseMove = (e: MouseEvent) => {
+      if (!isDraggingRef.current || isTextSelectingRef.current) return;
+      
+      const deltaX = e.clientX - lastMousePositionRef.current.x;
+      const deltaY = e.clientY - lastMousePositionRef.current.y;
+      
+      // Update refs directly for immediate visual feedback
+      positionRef.current = {
+        x: positionRef.current.x + deltaX,
+        y: positionRef.current.y + deltaY
+      };
+      lastMousePositionRef.current = { x: e.clientX, y: e.clientY };
+      
+      // Apply transform immediately for smooth dragging
+      updateTransform();
+      
+      // Prevent default to avoid any browser interference
+      e.preventDefault();
+    };
+
+    const handleGlobalMouseUp = () => {
+      if (isDraggingRef.current) {
+        isDraggingRef.current = false;
+        isTextSelectingRef.current = false;
+        syncStateWithRefs();
+        
+        // Re-enable transitions
+        if (diagramTransformRef.current) {
+          diagramTransformRef.current.style.transition = 'transform 0.1s ease-out';
+        }
+      }
+    };
+
+    // Use passive: false for mousemove to allow preventDefault
+    document.addEventListener('mousemove', handleGlobalMouseMove, { passive: false });
+    document.addEventListener('mouseup', handleGlobalMouseUp);
+    
+    // Disable text selection during drag
+    document.addEventListener('selectstart', (e) => {
+      if (isDraggingRef.current) e.preventDefault();
+    });
+
+    return () => {
+      document.removeEventListener('mousemove', handleGlobalMouseMove);
+      document.removeEventListener('mouseup', handleGlobalMouseUp);
+      document.removeEventListener('selectstart', (e) => {
+        if (isDraggingRef.current) e.preventDefault();
+      });
+    };
+  }, [fullscreenState.isFullscreen, updateTransform, syncStateWithRefs]);
 
   // Handle wheel events for zooming in fullscreen with non-passive listener
   useEffect(() => {
     const fullscreenContainer = fullscreenContainerRef.current?.parentElement;
-    if (!fullscreenContainer || !isFullscreen) return;
+    if (!fullscreenContainer || !fullscreenState.isFullscreen) return;
 
     // Add non-passive wheel event listener to prevent default scrolling
     fullscreenContainer.addEventListener('wheel', handleWheel, { passive: false });
@@ -269,23 +469,32 @@ export function MermaidDiagram({
     return () => {
       fullscreenContainer.removeEventListener('wheel', handleWheel);
     };
-  }, [isFullscreen, handleWheel]);
+  }, [fullscreenState.isFullscreen, handleWheel]);
 
   // Handle modal cleanup
   useEffect(() => {
-    if (!isFullscreen && !isAnimating) {
-      setShouldShowModal(false);
+    if (!fullscreenState.isFullscreen && !fullscreenState.isAnimating) {
+      setFullscreenState(prev => ({ ...prev, shouldShowModal: false }));
     }
-  }, [isFullscreen, isAnimating]);
+  }, [fullscreenState.isFullscreen, fullscreenState.isAnimating]);
 
-  if (error) {
+  // Cleanup animation frame on unmount
+  useEffect(() => {
+    return () => {
+      if (animationFrameRef.current) {
+        cancelAnimationFrame(animationFrameRef.current);
+      }
+    };
+  }, []);
+
+  if (diagramState.error) {
     let errorData;
     try {
-      errorData = error ? JSON.parse(error) : null;
+      errorData = diagramState.error ? JSON.parse(diagramState.error) : null;
     } catch {
       errorData = { 
         userMessage: "Unable to render diagram", 
-        technicalMessage: error,
+        technicalMessage: diagramState.error,
         timestamp: new Date().toISOString()
       };
     }
@@ -313,15 +522,18 @@ export function MermaidDiagram({
               {/* Action button for details */}
               <div className="flex items-center gap-2 mt-3">
                 <button
-                  onClick={() => setShowErrorDetails(!showErrorDetails)}
+                  onClick={() => setDiagramState(prev => ({ 
+                    ...prev, 
+                    showErrorDetails: !prev.showErrorDetails 
+                  }))}
                   className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-200 transition-colors"
                 >
-                  {showErrorDetails ? 'Hide' : 'Show'} Details
+                  {diagramState.showErrorDetails ? 'Hide' : 'Show'} Details
                 </button>
               </div>
 
               {/* Technical details (collapsible) */}
-              {showErrorDetails && errorData && (
+              {diagramState.showErrorDetails && errorData && (
                 <div className="mt-3 p-3 bg-red-100 dark:bg-red-900/30 rounded border border-red-200 dark:border-red-800">
                   <h4 className="text-xs font-medium text-red-800 dark:text-red-200 mb-2">
                     Technical Details:
@@ -360,7 +572,7 @@ export function MermaidDiagram({
           }
         }}
       >
-        {isLoading && (
+        {diagramState.isLoading && (
           <div className="flex items-center justify-center p-8">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
           </div>
@@ -370,7 +582,7 @@ export function MermaidDiagram({
           ref={containerRef}
           className={cn(
             "mermaid-container transition-opacity duration-200 w-full overflow-visible flex items-center justify-center",
-            isLoading ? "opacity-0" : "opacity-100"
+            diagramState.isLoading ? "opacity-0" : "opacity-100"
           )}
         />
         
@@ -383,11 +595,11 @@ export function MermaidDiagram({
       </div>
 
       {/* Fullscreen modal */}
-      {shouldShowModal && (
+      {fullscreenState.shouldShowModal && (
         <div 
           className={cn(
             "fixed inset-0 z-50 flex items-center justify-center p-4 transition-all duration-200 ease-out",
-            !isFullscreen || isAnimating
+            !fullscreenState.isFullscreen || fullscreenState.isAnimating
               ? "bg-black/0 backdrop-blur-none" 
               : "bg-black/30 backdrop-blur-sm"
           )}
@@ -396,7 +608,7 @@ export function MermaidDiagram({
           <div 
             className={cn(
               "relative bg-white rounded-lg shadow-2xl w-full h-full max-w-[95vw] max-h-[95vh] overflow-hidden flex flex-col transition-all duration-200 ease-out",
-              !isFullscreen || isAnimating
+              !fullscreenState.isFullscreen || fullscreenState.isAnimating
                 ? "opacity-0 scale-90" 
                 : "opacity-100 scale-100"
             )}
@@ -415,20 +627,27 @@ export function MermaidDiagram({
             <div 
               className={cn(
                 "flex-1 overflow-hidden flex items-center justify-center relative transition-all duration-200",
-                isTextSelecting ? "cursor-text" : isDragging ? "cursor-grabbing" : "cursor-grab"
+                diagramState.isTextSelecting ? "cursor-text" : diagramState.isDragging ? "cursor-grabbing" : "cursor-grab"
               )}
               onMouseDown={handleMouseDown}
               onMouseMove={handleMouseMove}
               onMouseUp={handleMouseUp}
               onMouseLeave={handleMouseUp}
+              style={{
+                userSelect: 'none',
+                WebkitUserSelect: 'none',
+                MozUserSelect: 'none',
+                msUserSelect: 'none'
+              }}
             >
               <div 
-                ref={fullscreenContainerRef}
+                ref={setFullscreenContainerRef}
                 className="mermaid-fullscreen w-full h-full flex items-center justify-center"
                 style={{
-                  transform: `translate(${position.x}px, ${position.y}px) scale(${scale})`,
+                  transform: `translate(${diagramState.position.x}px, ${diagramState.position.y}px) scale(${diagramState.scale})`,
                   transformOrigin: 'center center',
-                  transition: isDragging ? 'none' : 'transform 0.1s ease-out'
+                  transition: diagramState.isDragging ? 'none' : 'transform 0.1s ease-out',
+                  willChange: 'transform'
                 }}
               />
             </div>
@@ -436,11 +655,14 @@ export function MermaidDiagram({
             {/* Zoom controls */}
             <div className="absolute bottom-4 left-4 bg-white/90 backdrop-blur-sm rounded-lg p-2 shadow-lg">
               <div className="flex items-center gap-2 text-sm text-gray-600">
-                <span>Zoom: {Math.round(scale * 100)}%</span>
+                <span>Zoom: {Math.round(diagramState.scale * 100)}%</span>
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
-                    setScale(Math.max(0.1, scale - 0.1));
+                    const newScale = Math.max(0.1, scaleRef.current - 0.1);
+                    scaleRef.current = newScale;
+                    updateTransform();
+                    syncStateWithRefs();
                   }}
                   className="px-2 py-1 bg-gray-100 hover:bg-gray-200 rounded text-xs"
                 >
@@ -449,8 +671,10 @@ export function MermaidDiagram({
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
-                    setScale(1);
-                    setPosition({ x: 0, y: 0 });
+                    scaleRef.current = 1;
+                    positionRef.current = { x: 0, y: 0 };
+                    updateTransform();
+                    syncStateWithRefs();
                   }}
                   className="px-2 py-1 bg-gray-100 hover:bg-gray-200 rounded text-xs"
                 >
@@ -459,7 +683,10 @@ export function MermaidDiagram({
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
-                    setScale(Math.min(5, scale + 0.1));
+                    const newScale = Math.min(5, scaleRef.current + 0.1);
+                    scaleRef.current = newScale;
+                    updateTransform();
+                    syncStateWithRefs();
                   }}
                   className="px-2 py-1 bg-gray-100 hover:bg-gray-200 rounded text-xs"
                 >
@@ -472,4 +699,7 @@ export function MermaidDiagram({
       )}
     </>
   );
-}
+};
+
+// Memoize component for better performance
+export const MermaidDiagram = memo(MermaidDiagramComponent);
