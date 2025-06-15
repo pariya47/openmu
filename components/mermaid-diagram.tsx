@@ -10,6 +10,7 @@ import {
   Dialog,
   DialogContent,
   DialogClose,
+  ModernDialogClose,
   DialogTitle,
 } from '@/components/ui/dialog';
 
@@ -535,14 +536,12 @@ const MermaidDiagramComponent = ({
           </div>
 
           <DialogClose asChild>
-            <Button
-              variant="ghost"
+            <ModernDialogClose 
+              variant="ghost" 
               size="icon"
-              aria-label="Close fullscreen view"
-              className="absolute top-3 right-3 z-10" // Moved here
-            >
-              <X className="h-5 w-5" />
-            </Button>
+              className="absolute top-4 right-4 z-10 bg-background/80 backdrop-blur-sm border border-border shadow-lg hover:bg-background/90 hover:scale-110 transition-all duration-200 ease-in-out"
+              iconClass="h-5 w-5"
+            />
           </DialogClose>
 
           {/* Zoom controls */}
@@ -589,6 +588,18 @@ const MermaidDiagramComponent = ({
                 +
               </Button>
             </div>
+          </div>
+
+          {/* Modern Close Button with text */}
+          <div className="absolute bottom-4 right-4">
+            <ModernDialogClose
+              variant="outline"
+              size="sm"
+              className="bg-background/80 backdrop-blur-sm border-border shadow-lg hover:bg-background/90 hover:border-primary/50 transition-all duration-200"
+            >
+              <X className="h-4 w-4 mr-2" />
+              Close Fullscreen
+            </ModernDialogClose>
           </div>
         </DialogContent>
       </Dialog>
