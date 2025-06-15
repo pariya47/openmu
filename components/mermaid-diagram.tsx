@@ -19,9 +19,16 @@ export function MermaidDiagram({
   config = {}
 }: MermaidDiagramProps) {
   const containerRef = useRef<HTMLDivElement>(null);
+  const fullscreenContainerRef = useRef<HTMLDivElement>(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  
+  // Fullscreen zoom and pan state
+  const [scale, setScale] = useState(1);
+  const [position, setPosition] = useState({ x: 0, y: 0 });
+  const [isDragging, setIsDragging] = useState(false);
+  const [lastMousePosition, setLastMousePosition] = useState({ x: 0, y: 0 });
 
   // Initialize Mermaid
   useEffect(() => {
@@ -34,15 +41,16 @@ export function MermaidDiagram({
   }, [config]);
 
   // Render diagram
-  const renderDiagram = useCallback(async () => {
-    if (!containerRef.current || !diagram) return;
+  const renderDiagram = useCallback(async (targetContainer?: HTMLDivElement) => {
+    const container = targetContainer || containerRef.current;
+    if (!container || !diagram) return;
 
     setIsLoading(true);
     setError(null);
 
     try {
       // Clear previous content
-      containerRef.current.innerHTML = '';
+      container.innerHTML = '';
       
       // Generate unique ID for this diagram
       const id = `mermaid-${Math.random().toString(36).substr(2, 9)}`;
@@ -51,15 +59,22 @@ export function MermaidDiagram({
       const { svg } = await mermaid.render(id, diagram);
       
       // Insert the SVG
-      containerRef.current.innerHTML = svg;
+      container.innerHTML = svg;
       
-      // Make SVG responsive
-      const svgElement = containerRef.current.querySelector('svg');
-      if (svgElement) {
-        svgElement.style.maxWidth = '100%';
+      // Make SVG responsive for normal view
+      const svgElement = container.querySelector('svg');
+      if (svgElement && !targetContainer) {
+        // For normal view - remove max height restrictions and ensure full visibility
+        svgElement.style.width = '100%';
         svgElement.style.height = 'auto';
         svgElement.style.display = 'block';
         svgElement.style.margin = '0 auto';
+      } else if (svgElement && targetContainer) {
+        // For fullscreen view - prepare for zoom/pan
+        svgElement.style.width = '100%';
+        svgElement.style.height = '100%';
+        svgElement.style.display = 'block';
+        svgElement.style.transformOrigin = 'center center';
       }
       
       setIsLoading(false);
@@ -79,7 +94,18 @@ export function MermaidDiagram({
   // Handle fullscreen toggle
   const toggleFullscreen = useCallback(() => {
     setIsFullscreen(!isFullscreen);
-  }, [isFullscreen]);
+    if (!isFullscreen) {
+      // Reset zoom and position when entering fullscreen
+      setScale(1);
+      setPosition({ x: 0, y: 0 });
+      // Re-render diagram for fullscreen
+      setTimeout(() => {
+        if (fullscreenContainerRef.current) {
+          renderDiagram(fullscreenContainerRef.current);
+        }
+      }, 100);
+    }
+  }, [isFullscreen, renderDiagram]);
 
   // Handle escape key
   useEffect(() => {
@@ -100,6 +126,49 @@ export function MermaidDiagram({
       document.removeEventListener('keydown', handleEscape);
       document.body.style.overflow = '';
     };
+  }, [isFullscreen]);
+
+  // Handle mouse events for drag and zoom in fullscreen
+  const handleMouseDown = useCallback((e: React.MouseEvent) => {
+    if (!isFullscreen) return;
+    setIsDragging(true);
+    setLastMousePosition({ x: e.clientX, y: e.clientY });
+  }, [isFullscreen]);
+
+  const handleMouseMove = useCallback((e: React.MouseEvent) => {
+    if (!isDragging || !isFullscreen) return;
+    
+    const deltaX = e.clientX - lastMousePosition.x;
+    const deltaY = e.clientY - lastMousePosition.y;
+    
+    setPosition(prev => ({
+      x: prev.x + deltaX,
+      y: prev.y + deltaY
+    }));
+    
+    setLastMousePosition({ x: e.clientX, y: e.clientY });
+  }, [isDragging, lastMousePosition, isFullscreen]);
+
+  const handleMouseUp = useCallback(() => {
+    setIsDragging(false);
+  }, []);
+
+  const handleWheel = useCallback((e: React.WheelEvent) => {
+    if (!isFullscreen) return;
+    e.preventDefault();
+    
+    const delta = e.deltaY * -0.001;
+    const newScale = Math.max(0.1, Math.min(5, scale + delta));
+    setScale(newScale);
+  }, [isFullscreen, scale]);
+
+  // Reset zoom and pan when leaving fullscreen
+  useEffect(() => {
+    if (!isFullscreen) {
+      setScale(1);
+      setPosition({ x: 0, y: 0 });
+      setIsDragging(false);
+    }
   }, [isFullscreen]);
 
   if (error) {
@@ -143,7 +212,7 @@ export function MermaidDiagram({
         <div 
           ref={containerRef}
           className={cn(
-            "mermaid-container transition-opacity duration-200 max-h-96 overflow-auto flex items-center justify-center",
+            "mermaid-container transition-opacity duration-200 w-full overflow-visible flex items-center justify-center",
             isLoading ? "opacity-0" : "opacity-100"
           )}
         />
@@ -175,14 +244,62 @@ export function MermaidDiagram({
               <X className="h-5 w-5 text-gray-700" />
             </button>
             
-            {/* Fullscreen diagram */}
-            <div className="flex-1 p-8 overflow-auto flex items-center justify-center">
+            {/* Fullscreen diagram with drag and zoom */}
+            <div 
+              className="flex-1 overflow-hidden flex items-center justify-center relative cursor-grab active:cursor-grabbing"
+              onMouseDown={handleMouseDown}
+              onMouseMove={handleMouseMove}
+              onMouseUp={handleMouseUp}
+              onMouseLeave={handleMouseUp}
+              onWheel={handleWheel}
+              style={{ 
+                cursor: isDragging ? 'grabbing' : 'grab'
+              }}
+            >
               <div 
-                dangerouslySetInnerHTML={{ 
-                  __html: containerRef.current?.innerHTML || '' 
-                }}
+                ref={fullscreenContainerRef}
                 className="mermaid-fullscreen w-full h-full flex items-center justify-center"
+                style={{
+                  transform: `translate(${position.x}px, ${position.y}px) scale(${scale})`,
+                  transformOrigin: 'center center',
+                  transition: isDragging ? 'none' : 'transform 0.1s ease-out'
+                }}
               />
+            </div>
+            
+            {/* Zoom controls */}
+            <div className="absolute bottom-4 left-4 bg-white/90 backdrop-blur-sm rounded-lg p-2 shadow-lg">
+              <div className="flex items-center gap-2 text-sm text-gray-600">
+                <span>Zoom: {Math.round(scale * 100)}%</span>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setScale(Math.max(0.1, scale - 0.1));
+                  }}
+                  className="px-2 py-1 bg-gray-100 hover:bg-gray-200 rounded text-xs"
+                >
+                  -
+                </button>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setScale(1);
+                    setPosition({ x: 0, y: 0 });
+                  }}
+                  className="px-2 py-1 bg-gray-100 hover:bg-gray-200 rounded text-xs"
+                >
+                  Reset
+                </button>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setScale(Math.min(5, scale + 0.1));
+                  }}
+                  className="px-2 py-1 bg-gray-100 hover:bg-gray-200 rounded text-xs"
+                >
+                  +
+                </button>
+              </div>
             </div>
           </div>
         </div>
