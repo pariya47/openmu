@@ -534,8 +534,13 @@ const MermaidDiagramComponent = ({
             />
           </div>
 
-          <DialogClose asChild className="absolute top-3 right-3 z-10">
-            <Button variant="ghost" size="icon" aria-label="Close fullscreen view">
+          <DialogClose asChild>
+            <Button
+              variant="ghost"
+              size="icon"
+              aria-label="Close fullscreen view"
+              className="absolute top-3 right-3 z-10" // Moved here
+            >
               <X className="h-5 w-5" />
             </Button>
           </DialogClose>
