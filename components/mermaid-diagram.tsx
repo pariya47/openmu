@@ -58,6 +58,8 @@ export function MermaidDiagram({
       if (svgElement) {
         svgElement.style.maxWidth = '100%';
         svgElement.style.height = 'auto';
+        svgElement.style.display = 'block';
+        svgElement.style.margin = '0 auto';
       }
       
       setIsLoading(false);
@@ -141,7 +143,7 @@ export function MermaidDiagram({
         <div 
           ref={containerRef}
           className={cn(
-            "mermaid-container transition-opacity duration-200",
+            "mermaid-container transition-opacity duration-200 max-h-96 overflow-auto flex items-center justify-center",
             isLoading ? "opacity-0" : "opacity-100"
           )}
         />
@@ -161,7 +163,7 @@ export function MermaidDiagram({
           onClick={toggleFullscreen}
         >
           <div 
-            className="relative bg-white rounded-lg shadow-2xl max-w-[95vw] max-h-[95vh] overflow-auto"
+            className="relative bg-white rounded-lg shadow-2xl w-full h-full max-w-[95vw] max-h-[95vh] overflow-hidden flex flex-col"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Close button */}
@@ -174,12 +176,12 @@ export function MermaidDiagram({
             </button>
             
             {/* Fullscreen diagram */}
-            <div className="p-8">
+            <div className="flex-1 p-8 overflow-auto flex items-center justify-center">
               <div 
                 dangerouslySetInnerHTML={{ 
                   __html: containerRef.current?.innerHTML || '' 
                 }}
-                className="mermaid-fullscreen"
+                className="mermaid-fullscreen w-full h-full flex items-center justify-center"
               />
             </div>
           </div>

@@ -73,6 +73,7 @@ export function TestMermaidClient() {
               diagram={flowchartDiagram}
               onError={handleError}
               className="w-full"
+              config={{ scale: 0.8 }}
             />
           </div>
         </div>
@@ -90,6 +91,7 @@ export function TestMermaidClient() {
               diagram={sequenceDiagram}
               onError={handleError}
               className="w-full"
+              config={{ scale: 1.5 }}
             />
           </div>
         </div>
@@ -107,6 +109,7 @@ export function TestMermaidClient() {
               diagram={ganttDiagram}
               onError={handleError}
               className="w-full"
+              config={{ scale: 1.2 }}
             />
           </div>
         </div>
