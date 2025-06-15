@@ -3,7 +3,7 @@
 import React, { useEffect, useRef, useState, useCallback, useMemo, memo } from 'react';
 import mermaid from 'mermaid';
 import { cn } from '@/lib/utils';
-import { AlertTriangle, RefreshCw, X, Maximize2 } from 'lucide-react';
+import { AlertTriangle, X, Maximize2 } from 'lucide-react';
 
 // Consolidated state interface for better performance
 interface DiagramState {
@@ -153,22 +153,21 @@ const MermaidDiagramComponent = ({
       // Insert the SVG
       container.innerHTML = svg;
       
-      // Make SVG responsive for normal view
+      // Make SVG responsive
       const svgElement = container.querySelector('svg');
       if (svgElement && !targetContainer) {
-        // For normal view - remove max height restrictions and ensure full visibility
+        // For normal view
         svgElement.style.width = '100%';
         svgElement.style.height = 'auto';
         svgElement.style.display = 'block';
         svgElement.style.margin = '0 auto';
       } else if (svgElement && targetContainer) {
-        // For fullscreen view - prepare for zoom/pan and enable text selection
+        // For fullscreen view
         svgElement.style.width = '100%';
         svgElement.style.height = '100%';
         svgElement.style.display = 'block';
         svgElement.style.transformOrigin = 'center center';
         
-        // Enable text selection on text elements
         const textElements = svgElement.querySelectorAll('text');
         textElements.forEach(textEl => {
           textEl.style.userSelect = 'text';
@@ -177,7 +176,6 @@ const MermaidDiagramComponent = ({
         });
       }
       
-      // Success! Update state
       setDiagramState(prev => ({
         ...prev,
         error: null,
@@ -186,26 +184,23 @@ const MermaidDiagramComponent = ({
       }));
     } catch (err) {
       const error = err as Error;
-      
-      // Check if this is still the current diagram
       if (currentDiagramIdRef.current === null) return;
       
-      // Create user-friendly error message
       let userFriendlyMessage = "Unable to render diagram";
-      
-      if (error.message.toLowerCase().includes("syntax")) {
+      const lowerErrorMessage = error.message.toLowerCase();
+      if (lowerErrorMessage.includes("syntax")) {
         userFriendlyMessage = "Invalid diagram syntax";
-      } else if (error.message.toLowerCase().includes("parse")) {
+      } else if (lowerErrorMessage.includes("parse")) {
         userFriendlyMessage = "Diagram format error";
-      } else if (error.message.toLowerCase().includes("lexical")) {
+      } else if (lowerErrorMessage.includes("lexical")) {
         userFriendlyMessage = "Invalid diagram structure";
-      } else if (error.message.toLowerCase().includes("unexpected")) {
+      } else if (lowerErrorMessage.includes("unexpected")) {
         userFriendlyMessage = "Unexpected diagram content";
-      } else if (error.message.toLowerCase().includes("expecting") && error.message.toLowerCase().includes("got")) {
+      } else if (lowerErrorMessage.includes("expecting") && lowerErrorMessage.includes("got")) {
         userFriendlyMessage = "Invalid diagram syntax - missing or incorrect symbols";
-      } else if (error.message.toLowerCase().includes("pipe")) {
+      } else if (lowerErrorMessage.includes("pipe")) {
         userFriendlyMessage = "Invalid character usage in diagram";
-      } else if (error.message.toLowerCase().includes("diamond_stop") || error.message.toLowerCase().includes("tagend")) {
+      } else if (lowerErrorMessage.includes("diamond_stop") || lowerErrorMessage.includes("tagend")) {
         userFriendlyMessage = "Missing closing brackets or incomplete syntax";
       }
       
@@ -219,15 +214,12 @@ const MermaidDiagramComponent = ({
         lastDiagramContent: diagram,
         isLoading: false
       }));
-      
-      // Call onError callback
       onError?.(error);
     }
   }, [diagram, onError]);
 
-  // Optimized effect for diagram changes with debouncing
+  // Effect for diagram changes and initial render
   useEffect(() => {
-    // If diagram content has changed, clear any existing error and re-render
     if (diagram !== diagramState.lastDiagramContent) {
       setDiagramState(prev => ({
         ...prev,
@@ -236,60 +228,33 @@ const MermaidDiagramComponent = ({
         showErrorDetails: false
       }));
       renderDiagram();
-    }
-    // Also render if no error and diagram exists but container is empty
-    else if (!diagramState.error && diagram && containerRef.current && !containerRef.current.innerHTML) {
+    } else if (!diagramState.error && diagram && containerRef.current && !containerRef.current.innerHTML) {
+      // Fallback to render if container is empty (e.g. after error was cleared but content didn't change)
       renderDiagram();
     }
   }, [diagram, diagramState.lastDiagramContent, diagramState.error, renderDiagram]);
-
-  // Initial render effect
-  useEffect(() => {
-    if (diagram && !diagramState.lastDiagramContent) {
-      renderDiagram();
-    }
-  }, [diagram, diagramState.lastDiagramContent, renderDiagram]);
 
   // Optimized fullscreen toggle with better state management
   const toggleFullscreen = useCallback(() => {
     if (!fullscreenState.isFullscreen) {
       // Entering fullscreen
-      setFullscreenState(prev => ({
-        ...prev,
-        shouldShowModal: true,
-        isAnimating: true
-      }));
+      setFullscreenState(prev => ({ ...prev, shouldShowModal: true, isAnimating: true }));
       
-      // Reset zoom and position refs
       scaleRef.current = 1;
       positionRef.current = { x: 0, y: 0 };
-      setDiagramState(prev => ({
-        ...prev,
-        scale: 1,
-        position: { x: 0, y: 0 }
-      }));
+      setDiagramState(prev => ({ ...prev, scale: 1, position: { x: 0, y: 0 } }));
       
-      // Set fullscreen state and trigger animation
       setTimeout(() => {
-        setFullscreenState(prev => ({
-          ...prev,
-          isFullscreen: true,
-          isAnimating: false
-        }));
-        
-        // Render diagram after animation starts
+        setFullscreenState(prev => ({ ...prev, isFullscreen: true, isAnimating: false }));
         setTimeout(() => {
           if (fullscreenContainerRef.current) {
             renderDiagram(fullscreenContainerRef.current);
           }
-        }, 50);
-      }, 16); // Single frame delay
+        }, 50); // Render after modal animation starts
+      }, 16); // Single frame delay for CSS transition
     } else {
-      // Exiting fullscreen - start exit animation
-      setFullscreenState(prev => ({
-        ...prev,
-        isAnimating: true
-      }));
+      // Exiting fullscreen
+      setFullscreenState(prev => ({ ...prev, isAnimating: true }));
       setTimeout(() => {
         setFullscreenState(prev => ({
           ...prev,
@@ -297,15 +262,18 @@ const MermaidDiagramComponent = ({
           shouldShowModal: false,
           isAnimating: false
         }));
-      }, 250);
+      }, 250); // Duration of exit animation
     }
   }, [fullscreenState.isFullscreen, renderDiagram]);
 
-  // Optimized escape key handler
+  // Escape key handler for fullscreen
   useEffect(() => {
     const handleEscape = (event: KeyboardEvent) => {
       if (event.key === 'Escape' && fullscreenState.isFullscreen) {
-        setFullscreenState(prev => ({ ...prev, isFullscreen: false }));
+        // Directly trigger the exit part of toggleFullscreen for consistent animation/state handling
+        // This was: setFullscreenState(prev => ({ ...prev, isFullscreen: false }));
+        // To ensure proper animation and state cleanup, call toggleFullscreen if currently fullscreen
+        toggleFullscreen();
       }
     };
 
@@ -320,13 +288,12 @@ const MermaidDiagramComponent = ({
       document.removeEventListener('keydown', handleEscape);
       document.body.style.overflow = '';
     };
-  }, [fullscreenState.isFullscreen]);
+  }, [fullscreenState.isFullscreen, toggleFullscreen]); // Added toggleFullscreen to dependencies
 
-  // Optimized mouse event handlers with refs for smooth performance
+  // Mouse event handlers for fullscreen drag/pan
   const handleMouseDown = useCallback((e: React.MouseEvent) => {
     if (!fullscreenState.isFullscreen) return;
     
-    // Check if user is trying to select text
     const target = e.target as HTMLElement;
     if (target.tagName === 'text' || target.closest('text')) {
       isTextSelectingRef.current = true;
@@ -337,37 +304,14 @@ const MermaidDiagramComponent = ({
     isDraggingRef.current = true;
     lastMousePositionRef.current = { x: e.clientX, y: e.clientY };
     
-    // Disable transitions during drag for smoother performance
     if (diagramTransformRef.current) {
       diagramTransformRef.current.style.transition = 'none';
     }
-    
-    // Sync state only when needed
     syncStateWithRefs();
-    
-    // Prevent default to avoid text selection
     e.preventDefault();
   }, [fullscreenState.isFullscreen, syncStateWithRefs]);
 
-  const handleMouseMove = useCallback((e: React.MouseEvent) => {
-    // This is just for local moves, global moves are handled by document listeners
-    e.preventDefault();
-  }, []);
-
-  const handleMouseUp = useCallback(() => {
-    // This is handled by global mouse up, but kept for completeness
-    if (isDraggingRef.current) {
-      isDraggingRef.current = false;
-      isTextSelectingRef.current = false;
-      syncStateWithRefs();
-      
-      // Re-enable transitions
-      if (diagramTransformRef.current) {
-        diagramTransformRef.current.style.transition = 'transform 0.1s ease-out';
-      }
-    }
-  }, [syncStateWithRefs]);
-
+  // Wheel event handler for fullscreen zoom
   const handleWheel = useCallback((e: WheelEvent) => {
     if (!fullscreenState.isFullscreen) return;
     e.preventDefault();
@@ -375,24 +319,19 @@ const MermaidDiagramComponent = ({
     const delta = e.deltaY * -0.001;
     const newScale = Math.max(0.1, Math.min(5, scaleRef.current + delta));
     
-    // Update ref immediately for smooth zooming
     scaleRef.current = newScale;
     updateTransform();
-    
-    // Throttle state updates for performance
     syncStateWithRefs();
   }, [fullscreenState.isFullscreen, updateTransform, syncStateWithRefs]);
 
-  // Reset zoom and pan when leaving fullscreen
+  // Reset zoom/pan state when leaving fullscreen
   useEffect(() => {
     if (!fullscreenState.isFullscreen) {
-      // Reset refs
       scaleRef.current = 1;
       positionRef.current = { x: 0, y: 0 };
       isDraggingRef.current = false;
       isTextSelectingRef.current = false;
       
-      // Update state
       setDiagramState(prev => ({
         ...prev,
         scale: 1,
@@ -400,10 +339,16 @@ const MermaidDiagramComponent = ({
         isDragging: false,
         isTextSelecting: false
       }));
+
+      // Ensure visual reset if the element is still mounted
+      if (diagramTransformRef.current) {
+        diagramTransformRef.current.style.transform = 'translate(0px, 0px) scale(1)';
+        diagramTransformRef.current.style.transition = 'none'; 
+      }
     }
   }, [fullscreenState.isFullscreen]);
 
-  // Add global mouse event listeners for smoother dragging
+  // Global mouse event listeners for smoother dragging in fullscreen
   useEffect(() => {
     if (!fullscreenState.isFullscreen) return;
 
@@ -413,65 +358,56 @@ const MermaidDiagramComponent = ({
       const deltaX = e.clientX - lastMousePositionRef.current.x;
       const deltaY = e.clientY - lastMousePositionRef.current.y;
       
-      // Update refs directly for immediate visual feedback
       positionRef.current = {
         x: positionRef.current.x + deltaX,
         y: positionRef.current.y + deltaY
       };
       lastMousePositionRef.current = { x: e.clientX, y: e.clientY };
       
-      // Apply transform immediately for smooth dragging
       updateTransform();
-      
-      // Prevent default to avoid any browser interference
       e.preventDefault();
     };
 
     const handleGlobalMouseUp = () => {
       if (isDraggingRef.current) {
         isDraggingRef.current = false;
-        isTextSelectingRef.current = false;
+        isTextSelectingRef.current = false; // Ensure text selection flag is also reset
         syncStateWithRefs();
         
-        // Re-enable transitions
         if (diagramTransformRef.current) {
           diagramTransformRef.current.style.transition = 'transform 0.1s ease-out';
         }
       }
     };
+    
+    // Named function for selectstart listener
+    const preventSelectStart = (e: Event) => {
+      if (isDraggingRef.current) e.preventDefault();
+    };
 
-    // Use passive: false for mousemove to allow preventDefault
     document.addEventListener('mousemove', handleGlobalMouseMove, { passive: false });
     document.addEventListener('mouseup', handleGlobalMouseUp);
-    
-    // Disable text selection during drag
-    document.addEventListener('selectstart', (e) => {
-      if (isDraggingRef.current) e.preventDefault();
-    });
+    document.addEventListener('selectstart', preventSelectStart);
 
     return () => {
       document.removeEventListener('mousemove', handleGlobalMouseMove);
       document.removeEventListener('mouseup', handleGlobalMouseUp);
-      document.removeEventListener('selectstart', (e) => {
-        if (isDraggingRef.current) e.preventDefault();
-      });
+      document.removeEventListener('selectstart', preventSelectStart);
     };
   }, [fullscreenState.isFullscreen, updateTransform, syncStateWithRefs]);
 
-  // Handle wheel events for zooming in fullscreen with non-passive listener
+  // Wheel events for zooming in fullscreen
   useEffect(() => {
-    const fullscreenContainer = fullscreenContainerRef.current?.parentElement;
-    if (!fullscreenContainer || !fullscreenState.isFullscreen) return;
+    const fullscreenElement = fullscreenContainerRef.current?.parentElement; // The scrollable area
+    if (!fullscreenElement || !fullscreenState.isFullscreen) return;
 
-    // Add non-passive wheel event listener to prevent default scrolling
-    fullscreenContainer.addEventListener('wheel', handleWheel, { passive: false });
-
+    fullscreenElement.addEventListener('wheel', handleWheel, { passive: false });
     return () => {
-      fullscreenContainer.removeEventListener('wheel', handleWheel);
+      fullscreenElement.removeEventListener('wheel', handleWheel);
     };
   }, [fullscreenState.isFullscreen, handleWheel]);
 
-  // Handle modal cleanup
+  // Modal visibility cleanup
   useEffect(() => {
     if (!fullscreenState.isFullscreen && !fullscreenState.isAnimating) {
       setFullscreenState(prev => ({ ...prev, shouldShowModal: false }));
@@ -487,6 +423,7 @@ const MermaidDiagramComponent = ({
     };
   }, []);
 
+  // Error display
   if (diagramState.error) {
     let errorData;
     try {
@@ -504,9 +441,7 @@ const MermaidDiagramComponent = ({
         "relative border rounded-lg border-red-200 bg-red-50 dark:bg-red-950/20 dark:border-red-800",
         className
       )}>
-        {/* Content */}
         <div className="p-6">
-          {/* Error state */}
           <div className="flex items-start gap-3">
             <div className="flex-shrink-0 mt-1">
               <AlertTriangle className="h-5 w-5 text-red-600 dark:text-red-400" />
@@ -518,8 +453,6 @@ const MermaidDiagramComponent = ({
               <p className="text-sm text-red-700 dark:text-red-300">
                 There was an issue rendering this diagram. The diagram will automatically retry when you fix the syntax.
               </p>
-              
-              {/* Action button for details */}
               <div className="flex items-center gap-2 mt-3">
                 <button
                   onClick={() => setDiagramState(prev => ({ 
@@ -531,8 +464,6 @@ const MermaidDiagramComponent = ({
                   {diagramState.showErrorDetails ? 'Hide' : 'Show'} Details
                 </button>
               </div>
-
-              {/* Technical details (collapsible) */}
               {diagramState.showErrorDetails && errorData && (
                 <div className="mt-3 p-3 bg-red-100 dark:bg-red-900/30 rounded border border-red-200 dark:border-red-800">
                   <h4 className="text-xs font-medium text-red-800 dark:text-red-200 mb-2">
@@ -553,6 +484,7 @@ const MermaidDiagramComponent = ({
     );
   }
 
+  // Main component render
   return (
     <>
       {/* Normal view */}
@@ -577,7 +509,6 @@ const MermaidDiagramComponent = ({
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
           </div>
         )}
-        
         <div 
           ref={containerRef}
           className={cn(
@@ -585,8 +516,6 @@ const MermaidDiagramComponent = ({
             diagramState.isLoading ? "opacity-0" : "opacity-100"
           )}
         />
-        
-        {/* Hover overlay */}
         <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-colors duration-200 flex items-center justify-center opacity-0 group-hover:opacity-100">
           <div className="bg-white/90 backdrop-blur-sm rounded-full p-2 shadow-lg">
             <Maximize2 className="h-5 w-5 text-gray-700" />
@@ -596,25 +525,24 @@ const MermaidDiagramComponent = ({
 
       {/* Fullscreen modal */}
       {fullscreenState.shouldShowModal && (
-        <div 
+        <div
           className={cn(
-            "fixed inset-0 z-50 flex items-center justify-center p-4 transition-all duration-200 ease-out",
+            "fixed inset-0 z-50 flex items-center justify-center !m-0 transition-all duration-200 ease-out", // Added !m-0
             !fullscreenState.isFullscreen || fullscreenState.isAnimating
-              ? "bg-black/0 backdrop-blur-none" 
+              ? "bg-black/0 backdrop-blur-none"
               : "bg-black/30 backdrop-blur-sm"
           )}
-          onClick={toggleFullscreen}
+          onClick={toggleFullscreen} // Click on backdrop closes fullscreen
         >
-          <div 
+          <div
             className={cn(
               "relative bg-white rounded-lg shadow-2xl w-full h-full max-w-[95vw] max-h-[95vh] overflow-hidden flex flex-col transition-all duration-200 ease-out",
               !fullscreenState.isFullscreen || fullscreenState.isAnimating
                 ? "opacity-0 scale-90" 
                 : "opacity-100 scale-100"
             )}
-            onClick={(e) => e.stopPropagation()}
+            onClick={(e) => e.stopPropagation()} // Prevent click inside modal from closing it
           >
-            {/* Close button */}
             <button
               onClick={toggleFullscreen}
               className="absolute top-4 right-4 z-10 bg-white/90 backdrop-blur-sm rounded-full p-2 shadow-lg hover:bg-white transition-colors"
@@ -623,18 +551,16 @@ const MermaidDiagramComponent = ({
               <X className="h-5 w-5 text-gray-700" />
             </button>
             
-            {/* Fullscreen diagram with drag and zoom */}
+            {/* Fullscreen diagram area */}
             <div 
               className={cn(
                 "flex-1 overflow-hidden flex items-center justify-center relative transition-all duration-200",
                 diagramState.isTextSelecting ? "cursor-text" : diagramState.isDragging ? "cursor-grabbing" : "cursor-grab"
               )}
               onMouseDown={handleMouseDown}
-              onMouseMove={handleMouseMove}
-              onMouseUp={handleMouseUp}
-              onMouseLeave={handleMouseUp}
+              // onMouseMove, onMouseUp, onMouseLeave are removed here, relying on global listeners and handleMouseDown
               style={{
-                userSelect: 'none',
+                userSelect: 'none', // Managed by CSS and text element styles
                 WebkitUserSelect: 'none',
                 MozUserSelect: 'none',
                 msUserSelect: 'none'
@@ -701,5 +627,4 @@ const MermaidDiagramComponent = ({
   );
 };
 
-// Memoize component for better performance
 export const MermaidDiagram = memo(MermaidDiagramComponent);
