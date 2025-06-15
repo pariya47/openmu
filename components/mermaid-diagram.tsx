@@ -4,6 +4,15 @@ import React, { useEffect, useRef, useState, useCallback, useMemo, memo } from '
 import mermaid from 'mermaid';
 import { cn } from '@/lib/utils';
 import { AlertTriangle, X, Maximize2 } from 'lucide-react';
+import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
+import { Button } from '@/components/ui/button';
+import {
+  Dialog,
+  DialogContent,
+  DialogClose,
+  ModernDialogClose,
+  DialogTitle,
+} from '@/components/ui/dialog';
 
 // Consolidated state interface for better performance
 interface DiagramState {
@@ -18,11 +27,10 @@ interface DiagramState {
   isTextSelecting: boolean;
 }
 
-// Consolidated fullscreen state
+// Fullscreen state
 interface FullscreenState {
   isFullscreen: boolean;
-  isAnimating: boolean;
-  shouldShowModal: boolean;
+  // isAnimating and shouldShowModal might be removed if Dialog handles them
 }
 
 export interface MermaidDiagramProps {
@@ -58,9 +66,8 @@ const MermaidDiagramComponent = ({
 
   const [fullscreenState, setFullscreenState] = useState<FullscreenState>({
     isFullscreen: false,
-    isAnimating: false,
-    shouldShowModal: false,
   });
+  const [fullscreenContainerReady, setFullscreenContainerReady] = useState(false);
 
   // Refs for smooth mouse interactions without re-renders
   const isDraggingRef = useRef(false);
@@ -101,8 +108,9 @@ const MermaidDiagramComponent = ({
   // Callback ref for fullscreen container
   const setFullscreenContainerRef = useCallback((el: HTMLDivElement | null) => {
     fullscreenContainerRef.current = el;
-    diagramTransformRef.current = el;
-  }, []);
+    diagramTransformRef.current = el; // This is for pan/zoom styling
+    setFullscreenContainerReady(!!el);
+  }, []); // Dependencies should be empty as it only uses refs and setState
 
   // Throttled state sync for position and scale
   const syncStateWithRefs = useCallback(() => {
@@ -234,61 +242,34 @@ const MermaidDiagramComponent = ({
     }
   }, [diagram, diagramState.lastDiagramContent, diagramState.error, renderDiagram]);
 
-  // Optimized fullscreen toggle with better state management
+  // Fullscreen toggle logic
   const toggleFullscreen = useCallback(() => {
-    if (!fullscreenState.isFullscreen) {
-      // Entering fullscreen
-      setFullscreenState(prev => ({ ...prev, shouldShowModal: true, isAnimating: true }));
-      
+    const enteringFullscreen = !fullscreenState.isFullscreen;
+    setFullscreenState(prev => ({ ...prev, isFullscreen: enteringFullscreen }));
+
+    if (enteringFullscreen) {
+      // Reset pan/zoom state when entering fullscreen
       scaleRef.current = 1;
       positionRef.current = { x: 0, y: 0 };
+      // Update diagram state immediately for transform, though actual rendering might be delayed
       setDiagramState(prev => ({ ...prev, scale: 1, position: { x: 0, y: 0 } }));
       
-      setTimeout(() => {
-        setFullscreenState(prev => ({ ...prev, isFullscreen: true, isAnimating: false }));
-        setTimeout(() => {
-          if (fullscreenContainerRef.current) {
-            renderDiagram(fullscreenContainerRef.current);
-          }
-        }, 50); // Render after modal animation starts
-      }, 16); // Single frame delay for CSS transition
-    } else {
-      // Exiting fullscreen
-      setFullscreenState(prev => ({ ...prev, isAnimating: true }));
-      setTimeout(() => {
-        setFullscreenState(prev => ({
-          ...prev,
-          isFullscreen: false,
-          shouldShowModal: false,
-          isAnimating: false
-        }));
-      }, 250); // Duration of exit animation
+      // Diagram rendering in fullscreen is handled by an effect watching isFullscreen
     }
-  }, [fullscreenState.isFullscreen, renderDiagram]);
+    // Cleanup (like resetting body overflow) is handled by Dialog's onOpenChange or unmount
+  }, [fullscreenState.isFullscreen]);
 
-  // Escape key handler for fullscreen
+  // Effect to render diagram when fullscreen is activated and container is ready
   useEffect(() => {
-    const handleEscape = (event: KeyboardEvent) => {
-      if (event.key === 'Escape' && fullscreenState.isFullscreen) {
-        // Directly trigger the exit part of toggleFullscreen for consistent animation/state handling
-        // This was: setFullscreenState(prev => ({ ...prev, isFullscreen: false }));
-        // To ensure proper animation and state cleanup, call toggleFullscreen if currently fullscreen
-        toggleFullscreen();
-      }
-    };
-
-    if (fullscreenState.isFullscreen) {
-      document.addEventListener('keydown', handleEscape);
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = '';
+    if (fullscreenState.isFullscreen && fullscreenContainerReady && fullscreenContainerRef.current) {
+      renderDiagram(fullscreenContainerRef.current);
     }
+    // Optional: consider if cleanup is needed if fullscreenContainerReady becomes false while in fullscreen
+    // For now, existing cleanup in renderDiagram (clearing innerHTML) should suffice on subsequent renders.
+  }, [fullscreenState.isFullscreen, fullscreenContainerReady, renderDiagram]);
 
-    return () => {
-      document.removeEventListener('keydown', handleEscape);
-      document.body.style.overflow = '';
-    };
-  }, [fullscreenState.isFullscreen, toggleFullscreen]); // Added toggleFullscreen to dependencies
+  // Escape key and body overflow are handled by Shadcn Dialog.
+  // We might need to ensure onOpenChange on Dialog correctly calls toggleFullscreen(false)
 
   // Mouse event handlers for fullscreen drag/pan
   const handleMouseDown = useCallback((e: React.MouseEvent) => {
@@ -398,21 +379,18 @@ const MermaidDiagramComponent = ({
 
   // Wheel events for zooming in fullscreen
   useEffect(() => {
-    const fullscreenElement = fullscreenContainerRef.current?.parentElement; // The scrollable area
-    if (!fullscreenElement || !fullscreenState.isFullscreen) return;
+    // Attaching to DialogContent or a specific scrollable area within it
+    const activeContainer = fullscreenState.isFullscreen && fullscreenContainerRef.current
+      ? fullscreenContainerRef.current.closest('[role="dialog"]') // Find DialogContent
+      : null;
 
-    fullscreenElement.addEventListener('wheel', handleWheel, { passive: false });
-    return () => {
-      fullscreenElement.removeEventListener('wheel', handleWheel);
-    };
-  }, [fullscreenState.isFullscreen, handleWheel]);
-
-  // Modal visibility cleanup
-  useEffect(() => {
-    if (!fullscreenState.isFullscreen && !fullscreenState.isAnimating) {
-      setFullscreenState(prev => ({ ...prev, shouldShowModal: false }));
+    if (activeContainer) {
+      activeContainer.addEventListener('wheel', handleWheel, { passive: false });
+      return () => {
+        activeContainer.removeEventListener('wheel', handleWheel);
+      };
     }
-  }, [fullscreenState.isFullscreen, fullscreenState.isAnimating]);
+  }, [fullscreenState.isFullscreen, handleWheel]); // Rerun if fullscreen state changes
 
   // Cleanup animation frame on unmount
   useEffect(() => {
@@ -437,50 +415,48 @@ const MermaidDiagramComponent = ({
     }
 
     return (
-      <div className={cn(
-        "relative border rounded-lg border-red-200 bg-red-50 dark:bg-red-950/20 dark:border-red-800",
-        className
-      )}>
-        <div className="p-6">
-          <div className="flex items-start gap-3">
-            <div className="flex-shrink-0 mt-1">
-              <AlertTriangle className="h-5 w-5 text-red-600 dark:text-red-400" />
-            </div>
-            <div className="flex-1 space-y-2">
-              <h3 className="text-sm font-medium text-red-800 dark:text-red-200">
-                {errorData?.userMessage || "Unable to render diagram"}
-              </h3>
-              <p className="text-sm text-red-700 dark:text-red-300">
-                There was an issue rendering this diagram. The diagram will automatically retry when you fix the syntax.
-              </p>
-              <div className="flex items-center gap-2 mt-3">
-                <button
-                  onClick={() => setDiagramState(prev => ({ 
-                    ...prev, 
-                    showErrorDetails: !prev.showErrorDetails 
+      <Alert variant="destructive" className={cn("relative", className)}>
+        <div className="flex items-start gap-3">
+          <div className="flex-shrink-0 mt-0.5"> {/* Adjusted margin for better alignment with AlertTriangle */}
+            <AlertTriangle className="h-5 w-5" /> {/* text color will be inherited */}
+          </div>
+          <div className="flex-1 space-y-1"> {/* Reduced space-y for tighter packing */}
+            <AlertTitle>
+              {errorData?.userMessage || "Unable to render diagram"}
+            </AlertTitle>
+            <AlertDescription>
+              There was an issue rendering this diagram. The diagram will automatically retry when you fix the syntax.
+              <div className="flex items-center gap-2 mt-2"> {/* Adjusted margin */}
+                <Button
+                  variant="link"
+                  size="sm"
+                  onClick={() => setDiagramState(prev => ({
+                    ...prev,
+                    showErrorDetails: !prev.showErrorDetails
                   }))}
-                  className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-200 transition-colors"
+                  // Adjusted text color for destructive variant, or rely on Button's default for link
+                  className="px-0 h-auto text-destructive-foreground/80 hover:text-destructive-foreground"
                 >
                   {diagramState.showErrorDetails ? 'Hide' : 'Show'} Details
-                </button>
+                </Button>
               </div>
               {diagramState.showErrorDetails && errorData && (
-                <div className="mt-3 p-3 bg-red-100 dark:bg-red-900/30 rounded border border-red-200 dark:border-red-800">
-                  <h4 className="text-xs font-medium text-red-800 dark:text-red-200 mb-2">
+                <div className="mt-2 p-2 bg-red-100 dark:bg-red-900/30 rounded border border-red-200 dark:border-red-800">
+                  <h4 className="text-xs font-medium text-red-800 dark:text-red-200 mb-1"> {/* Reduced margin */}
                     Technical Details:
                   </h4>
                   <code className="text-xs text-red-700 dark:text-red-300 font-mono break-all">
                     {errorData.technicalMessage}
                   </code>
-                  <div className="text-xs text-red-600 dark:text-red-400 mt-2">
+                  <div className="text-xs text-red-600 dark:text-red-400 mt-1"> {/* Reduced margin */}
                     Time: {new Date(errorData.timestamp).toLocaleString()}
                   </div>
                 </div>
               )}
-            </div>
+            </AlertDescription>
           </div>
         </div>
-      </div>
+      </Alert>
     );
   }
 
@@ -517,112 +493,116 @@ const MermaidDiagramComponent = ({
           )}
         />
         <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-colors duration-200 flex items-center justify-center opacity-0 group-hover:opacity-100">
-          <div className="bg-white/90 backdrop-blur-sm rounded-full p-2 shadow-lg">
-            <Maximize2 className="h-5 w-5 text-gray-700" />
+          <div className="bg-white/90 backdrop-blur-sm rounded-full p-2 shadow-lg dark:bg-slate-800/90">
+            <Maximize2 className="h-5 w-5 text-foreground/70 group-hover:text-foreground/90" />
           </div>
         </div>
       </div>
 
-      {/* Fullscreen modal */}
-      {fullscreenState.shouldShowModal && (
-        <div
-          className={cn(
-            "fixed inset-0 z-50 flex items-center justify-center !m-0 transition-all duration-200 ease-out", // Added !m-0
-            !fullscreenState.isFullscreen || fullscreenState.isAnimating
-              ? "bg-black/0 backdrop-blur-none"
-              : "bg-black/30 backdrop-blur-sm"
-          )}
-          onClick={toggleFullscreen} // Click on backdrop closes fullscreen
+      <Dialog open={fullscreenState.isFullscreen} onOpenChange={(isOpen) => {
+        if (!isOpen) {
+          // Ensure toggleFullscreen is called to correctly reset state if Dialog is closed via Esc or overlay click
+          if (fullscreenState.isFullscreen) toggleFullscreen();
+        }
+      }}>
+        <DialogContent
+          className="max-w-[95vw] max-h-[95vh] w-full h-full flex flex-col p-0 sm:rounded-lg overflow-hidden"
+          onOpenAutoFocus={(e) => e.preventDefault()} // Prevent focus stealing from diagram
+          onPointerDownOutside={(e) => e.preventDefault()} // Allow interaction with diagram elements like text
+          onInteractOutside={(e) => e.preventDefault()} // Allow interaction with diagram elements like text
         >
+          <DialogTitle className="sr-only">Fullscreen Diagram View</DialogTitle>
+          {/* Fullscreen diagram area */}
           <div
             className={cn(
-              "relative bg-white rounded-lg shadow-2xl w-full h-full max-w-[95vw] max-h-[95vh] overflow-hidden flex flex-col transition-all duration-200 ease-out",
-              !fullscreenState.isFullscreen || fullscreenState.isAnimating
-                ? "opacity-0 scale-90" 
-                : "opacity-100 scale-100"
+              "flex-1 overflow-hidden flex items-center justify-center relative", // Removed transition-all, Dialog handles it
+              diagramState.isTextSelecting ? "cursor-text" : diagramState.isDragging ? "cursor-grabbing" : "cursor-grab"
             )}
-            onClick={(e) => e.stopPropagation()} // Prevent click inside modal from closing it
+            onMouseDown={handleMouseDown}
+            style={{
+              userSelect: 'none', WebkitUserSelect: 'none', MozUserSelect: 'none', msUserSelect: 'none'
+            }}
           >
-            <button
-              onClick={toggleFullscreen}
-              className="absolute top-4 right-4 z-10 bg-white/90 backdrop-blur-sm rounded-full p-2 shadow-lg hover:bg-white transition-colors"
-              aria-label="Close fullscreen view"
-            >
-              <X className="h-5 w-5 text-gray-700" />
-            </button>
-            
-            {/* Fullscreen diagram area */}
             <div 
-              className={cn(
-                "flex-1 overflow-hidden flex items-center justify-center relative transition-all duration-200",
-                diagramState.isTextSelecting ? "cursor-text" : diagramState.isDragging ? "cursor-grabbing" : "cursor-grab"
-              )}
-              onMouseDown={handleMouseDown}
-              // onMouseMove, onMouseUp, onMouseLeave are removed here, relying on global listeners and handleMouseDown
+              ref={setFullscreenContainerRef}
+              className="mermaid-fullscreen w-full h-full flex items-center justify-center" // Ensure it fills the space
               style={{
-                userSelect: 'none', // Managed by CSS and text element styles
-                WebkitUserSelect: 'none',
-                MozUserSelect: 'none',
-                msUserSelect: 'none'
+                transform: `translate(${diagramState.position.x}px, ${diagramState.position.y}px) scale(${diagramState.scale})`,
+                transformOrigin: 'center center',
+                transition: diagramState.isDragging ? 'none' : 'transform 0.1s ease-out',
+                willChange: 'transform'
               }}
-            >
-              <div 
-                ref={setFullscreenContainerRef}
-                className="mermaid-fullscreen w-full h-full flex items-center justify-center"
-                style={{
-                  transform: `translate(${diagramState.position.x}px, ${diagramState.position.y}px) scale(${diagramState.scale})`,
-                  transformOrigin: 'center center',
-                  transition: diagramState.isDragging ? 'none' : 'transform 0.1s ease-out',
-                  willChange: 'transform'
+            />
+          </div>
+
+          <DialogClose asChild>
+            <ModernDialogClose 
+              variant="ghost" 
+              size="icon"
+              className="absolute top-4 right-4 z-10 bg-background/80 backdrop-blur-sm border border-border shadow-lg hover:bg-background/90 hover:scale-110 transition-all duration-200 ease-in-out"
+              iconClass="h-5 w-5"
+            />
+          </DialogClose>
+
+          {/* Zoom controls */}
+          <div className="absolute bottom-4 left-4 bg-background/80 backdrop-blur-sm rounded-lg p-2 shadow-lg">
+            <div className="flex items-center gap-1 text-sm ">
+              <span className="mr-1 text-muted-foreground">Zoom: {Math.round(diagramState.scale * 100)}%</span>
+              <Button
+                variant="outline"
+                size="sm" // Changed to sm for consistency
+                onClick={(e) => {
+                  e.stopPropagation();
+                  const newScale = Math.max(0.1, scaleRef.current - 0.1);
+                  scaleRef.current = newScale;
+                  updateTransform();
+                  syncStateWithRefs();
                 }}
-              />
-            </div>
-            
-            {/* Zoom controls */}
-            <div className="absolute bottom-4 left-4 bg-white/90 backdrop-blur-sm rounded-lg p-2 shadow-lg">
-              <div className="flex items-center gap-2 text-sm text-gray-600">
-                <span>Zoom: {Math.round(diagramState.scale * 100)}%</span>
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    const newScale = Math.max(0.1, scaleRef.current - 0.1);
-                    scaleRef.current = newScale;
-                    updateTransform();
-                    syncStateWithRefs();
-                  }}
-                  className="px-2 py-1 bg-gray-100 hover:bg-gray-200 rounded text-xs"
-                >
-                  -
-                </button>
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    scaleRef.current = 1;
-                    positionRef.current = { x: 0, y: 0 };
-                    updateTransform();
-                    syncStateWithRefs();
-                  }}
-                  className="px-2 py-1 bg-gray-100 hover:bg-gray-200 rounded text-xs"
-                >
-                  Reset
-                </button>
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    const newScale = Math.min(5, scaleRef.current + 0.1);
-                    scaleRef.current = newScale;
-                    updateTransform();
-                    syncStateWithRefs();
-                  }}
-                  className="px-2 py-1 bg-gray-100 hover:bg-gray-200 rounded text-xs"
-                >
-                  +
-                </button>
-              </div>
+              >
+                -
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  scaleRef.current = 1;
+                  positionRef.current = { x: 0, y: 0 };
+                  updateTransform();
+                  syncStateWithRefs();
+                }}
+              >
+                Reset
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  const newScale = Math.min(5, scaleRef.current + 0.1);
+                  scaleRef.current = newScale;
+                  updateTransform();
+                  syncStateWithRefs();
+                }}
+              >
+                +
+              </Button>
             </div>
           </div>
-        </div>
-      )}
+
+          {/* Modern Close Button with text */}
+          <div className="absolute bottom-4 right-4">
+            <ModernDialogClose
+              variant="outline"
+              size="sm"
+              className="bg-background/80 backdrop-blur-sm border-border shadow-lg hover:bg-background/90 hover:border-primary/50 transition-all duration-200"
+            >
+              <X className="h-4 w-4 mr-2" />
+              Close Fullscreen
+            </ModernDialogClose>
+          </div>
+        </DialogContent>
+      </Dialog>
     </>
   );
 };
