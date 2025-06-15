@@ -435,8 +435,7 @@ const MermaidDiagramComponent = ({
                     ...prev,
                     showErrorDetails: !prev.showErrorDetails
                   }))}
-                  // Removed custom text color, rely on button's variant styling
-                  className="text-destructive-foreground hover:bg-destructive/10" // Adjusted for destructive context
+                  className="border-destructive text-destructive hover:bg-destructive hover:text-destructive-foreground" // Better contrast with destructive colors
                   aria-expanded={diagramState.showErrorDetails} // For accessibility
                   aria-controls="error-details" // For accessibility
                 >
