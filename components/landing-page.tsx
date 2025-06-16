@@ -49,9 +49,9 @@ export function LandingPage() {
   }, []);
 
   const audienceData = [
-    { name: 'Students', value: 45, color: '#3b82f6' },
-    { name: 'Researchers', value: 35, color: '#8b5cf6' },
-    { name: 'Professionals', value: 20, color: '#06b6d4' }
+    { name: 'Students', value: 45, color: 'hsl(var(--primary))' },
+    { name: 'Researchers', value: 35, color: 'hsl(var(--secondary))' },
+    { name: 'Professionals', value: 20, color: 'hsl(var(--accent))' }
   ];
 
   const impactData = [
@@ -135,22 +135,22 @@ export function LandingPage() {
 
   const painPoints = [
     {
-      icon: <Clock className="h-6 w-6 text-red-500" />,
+      icon: <Clock className="h-6 w-6 text-destructive" />,
       title: "Time-Consuming Research",
       description: "Hours spent deciphering complex academic language"
     },
     {
-      icon: <AlertCircle className="h-6 w-6 text-orange-500" />,
+      icon: <AlertCircle className="h-6 w-6 text-muted-foreground" />,
       title: "Information Overload",
       description: "Overwhelming volume of research across multiple disciplines"
     },
     {
-      icon: <Target className="h-6 w-6 text-yellow-500" />,
+      icon: <Target className="h-6 w-6 text-primary" />,
       title: "Relevance Filtering",
       description: "Difficulty identifying the most impactful and relevant studies"
     },
     {
-      icon: <Globe className="h-6 w-6 text-blue-500" />,
+      icon: <Globe className="h-6 w-6 text-muted-foreground" />,
       title: "Knowledge Gaps",
       description: "Missing connections between related research areas"
     }
@@ -235,7 +235,7 @@ export function LandingPage() {
             Revolutionizing Academic Research
           </Badge>
           
-          <h1 className="text-4xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-primary via-purple-600 to-blue-600 bg-clip-text text-transparent">
+          <h1 className="text-4xl md:text-6xl font-bold mb-6">
             Make Research Accessible to Everyone
           </h1>
           
@@ -255,9 +255,9 @@ export function LandingPage() {
           </div>
 
           {/* Coming Soon Badge */}
-          <div className="inline-flex items-center gap-2 bg-gradient-to-r from-orange-100 to-red-100 dark:from-orange-900/20 dark:to-red-900/20 px-6 py-3 rounded-full border border-orange-200 dark:border-orange-800">
-            <Clock className="h-5 w-5 text-orange-600" />
-            <span className="text-orange-800 dark:text-orange-200 font-medium">Coming Soon - Early 2025</span>
+          <div className="inline-flex items-center gap-2 bg-secondary px-6 py-3 rounded-full border">
+            <Clock className="h-5 w-5 text-secondary-foreground" />
+            <span className="text-secondary-foreground font-medium">Coming Soon - Early 2025</span>
           </div>
         </div>
       </section>
@@ -339,7 +339,7 @@ export function LandingPage() {
                   {features[selectedFeature].details}
                 </p>
                 <div className="mt-6 flex items-center text-sm text-muted-foreground">
-                  <CheckCircle className="h-4 w-4 mr-2 text-green-500" />
+                  <CheckCircle className="h-4 w-4 mr-2 text-primary" />
                   Available in Early Access
                 </div>
               </CardContent>
@@ -363,7 +363,7 @@ export function LandingPage() {
               <Card className="hover:shadow-lg transition-shadow">
                 <CardHeader>
                   <div className="flex items-center space-x-4">
-                    <GraduationCap className="h-8 w-8 text-blue-500" />
+                    <GraduationCap className="h-8 w-8 text-primary" />
                     <div>
                       <CardTitle>Students</CardTitle>
                       <CardDescription>Undergraduate & Graduate</CardDescription>
@@ -380,7 +380,7 @@ export function LandingPage() {
               <Card className="hover:shadow-lg transition-shadow">
                 <CardHeader>
                   <div className="flex items-center space-x-4">
-                    <Microscope className="h-8 w-8 text-purple-500" />
+                    <Microscope className="h-8 w-8 text-primary" />
                     <div>
                       <CardTitle>Researchers</CardTitle>
                       <CardDescription>Academic & Industry</CardDescription>
@@ -397,7 +397,7 @@ export function LandingPage() {
               <Card className="hover:shadow-lg transition-shadow">
                 <CardHeader>
                   <div className="flex items-center space-x-4">
-                    <Briefcase className="h-8 w-8 text-cyan-500" />
+                    <Briefcase className="h-8 w-8 text-primary" />
                     <div>
                       <CardTitle>Professionals</CardTitle>
                       <CardDescription>Industry Leaders</CardDescription>
@@ -501,7 +501,7 @@ export function LandingPage() {
                           <div className="flex items-center space-x-2 mb-2">
                             <div className="flex">
                               {[...Array(testimonial.rating)].map((_, i) => (
-                                <Star key={i} className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                                <Star key={i} className="h-4 w-4 fill-primary text-primary" />
                               ))}
                             </div>
                           </div>
@@ -537,7 +537,7 @@ export function LandingPage() {
             <AccordionItem value="privacy" className="border rounded-lg px-6">
               <AccordionTrigger className="text-left">
                 <div className="flex items-center space-x-3">
-                  <Shield className="h-5 w-5 text-green-500" />
+                  <Shield className="h-5 w-5 text-primary" />
                   <span>Privacy Policy</span>
                 </div>
               </AccordionTrigger>
@@ -559,7 +559,7 @@ export function LandingPage() {
             <AccordionItem value="terms" className="border rounded-lg px-6">
               <AccordionTrigger className="text-left">
                 <div className="flex items-center space-x-3">
-                  <BookOpen className="h-5 w-5 text-blue-500" />
+                  <BookOpen className="h-5 w-5 text-primary" />
                   <span>Terms of Service</span>
                 </div>
               </AccordionTrigger>
@@ -581,7 +581,7 @@ export function LandingPage() {
             <AccordionItem value="refund" className="border rounded-lg px-6">
               <AccordionTrigger className="text-left">
                 <div className="flex items-center space-x-3">
-                  <Heart className="h-5 w-5 text-red-500" />
+                  <Heart className="h-5 w-5 text-destructive" />
                   <span>Cancellation & Refund Policy</span>
                 </div>
               </AccordionTrigger>
