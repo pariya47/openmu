@@ -234,21 +234,21 @@ export function LandingPage() {
 
           {/* Mobile Navigation */}
           {isMenuOpen && (
-            <nav className="md:hidden mt-4 pb-4 border-t pt-4 animate-in slide-in-from-top-2 duration-200">
-              <div className="flex flex-col space-y-4">
-                <button onClick={() => scrollToSection('features')} className="text-left text-muted-foreground hover:text-foreground transition-colors font-medium">
+            <nav className="md:hidden mt-4 pb-4 border-t pt-4 animate-in slide-in-from-top-2 duration-200 bg-background/95 backdrop-blur-md rounded-lg border shadow-lg">
+              <div className="flex flex-col space-y-4 px-4">
+                <button onClick={() => scrollToSection('features')} className="text-left text-muted-foreground hover:text-foreground transition-colors font-medium py-2">
                   Features
                 </button>
-                <button onClick={() => scrollToSection('audience')} className="text-left text-muted-foreground hover:text-foreground transition-colors font-medium">
+                <button onClick={() => scrollToSection('audience')} className="text-left text-muted-foreground hover:text-foreground transition-colors font-medium py-2">
                   For You
                 </button>
-                <button onClick={() => scrollToSection('impact')} className="text-left text-muted-foreground hover:text-foreground transition-colors font-medium">
+                <button onClick={() => scrollToSection('impact')} className="text-left text-muted-foreground hover:text-foreground transition-colors font-medium py-2">
                   Impact
                 </button>
-                <button onClick={() => scrollToSection('community')} className="text-left text-muted-foreground hover:text-foreground transition-colors font-medium">
+                <button onClick={() => scrollToSection('community')} className="text-left text-muted-foreground hover:text-foreground transition-colors font-medium py-2">
                   Community
                 </button>
-                <Button className="w-full">Join Waitlist</Button>
+                <Button className="w-full mt-4">Join Waitlist</Button>
               </div>
             </nav>
           )}
