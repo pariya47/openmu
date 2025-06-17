@@ -151,8 +151,8 @@ export function PaperDashboard() {
 
   return (
     <div className="min-h-screen bg-white">
-      {/* Top Navigation Header */}
-      <header className="bg-white border-b border-slate-200 sticky top-0 z-50">
+      {/* Top Navigation Header - Removed sticky behavior */}
+      <header className="bg-white border-b border-slate-200">
         <div className="container mx-auto px-6 py-4">
           <div className="flex items-center">
             <button
@@ -214,7 +214,7 @@ export function PaperDashboard() {
             </CardContent>
           </Card>
 
-          {/* Paper Cards */}
+          {/* Paper Cards - Removed close/delete buttons */}
           {filteredPapers.map((paper) => (
             <Card
               key={paper.id}
@@ -243,19 +243,12 @@ export function PaperDashboard() {
                   {truncateAbstract(paper.abstract)}
                 </p>
                 
-                {/* Bottom section with date and button */}
+                {/* Bottom section with date only */}
                 <div className="flex items-end justify-between mt-auto">
                   <div className="flex items-center gap-1 text-xs text-slate-400">
                     <Clock className="h-3 w-3" />
                     <span>Added {new Date(paper.dateAdded).toLocaleDateString()}</span>
                   </div>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="opacity-0 group-hover:opacity-100 transition-opacity duration-200 text-slate-600 hover:text-slate-700 hover:bg-slate-100 text-xs"
-                  >
-                    View Details
-                  </Button>
                 </div>
               </CardContent>
             </Card>
