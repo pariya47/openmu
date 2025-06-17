@@ -5,8 +5,8 @@ import { Inter } from 'next/font/google';
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
-  title: 'Hello World - Modern & Minimal',
-  description: 'A beautiful, modern Hello World page built with Next.js and Tailwind CSS',
+  title: 'SUMU - Make Research Accessible to Everyone',
+  description: 'SUMU transforms complex academic research into clear, actionable insights. Discover, understand, and apply knowledge faster than ever before.',
 };
 
 export default function RootLayout({

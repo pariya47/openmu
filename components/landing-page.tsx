@@ -60,7 +60,7 @@ export function LandingPage() {
               <div className="p-2 rounded-lg bg-black text-white">
                 <BookOpen className="h-5 w-5" />
               </div>
-              <span className="text-xl font-bold text-black">OpenMU</span>
+              <span className="text-xl font-bold text-black">SUMU</span>
             </div>
             
             <nav className="hidden md:flex items-center space-x-8">
@@ -73,7 +73,7 @@ export function LandingPage() {
               <button className="text-gray-600 hover:text-black transition-colors font-medium">
                 Donate
               </button>
-              <button className="text-gray-600 hover:text-black transition-colors font-medium">
+              <button className="bg-black text-white px-4 py-2 rounded-full hover:bg-gray-800 transition-colors font-medium">
                 JoinUs
               </button>
             </nav>
@@ -98,7 +98,7 @@ export function LandingPage() {
           </h1>
           
           <p className="text-xl text-gray-600 mb-12 leading-relaxed max-w-3xl mx-auto">
-            OpenMU transforms complex academic research into clear, actionable
+            SUMU transforms complex academic research into clear, actionable
             insights. Discover, understand, and apply knowledge faster than ever before.
           </p>
 
@@ -163,7 +163,7 @@ export function LandingPage() {
         <div className="container mx-auto max-w-4xl text-center">
           <h2 className="text-4xl md:text-5xl font-bold mb-6 text-black">Ready to Transform Your Research?</h2>
           <p className="text-xl text-gray-600 mb-12 max-w-3xl mx-auto leading-relaxed">
-            Join thousands of researchers, students, and professionals who are already using OpenMU to accelerate their work and unlock new insights.
+            Join thousands of researchers, students, and professionals who are already using SUMU to accelerate their work and unlock new insights.
           </p>
           
           <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
@@ -208,7 +208,7 @@ export function LandingPage() {
                 <div className="p-2 rounded-lg bg-black text-white">
                   <BookOpen className="h-5 w-5" />
                 </div>
-                <span className="text-xl font-bold text-black">OpenMU</span>
+                <span className="text-xl font-bold text-black">SUMU</span>
               </div>
               <p className="text-gray-600 leading-relaxed">
                 Making academic research accessible to everyone through AI-powered insights and intelligent search.
@@ -248,7 +248,7 @@ export function LandingPage() {
 
           <div className="border-t border-gray-200 mt-12 pt-8 flex flex-col md:flex-row justify-between items-center">
             <p className="text-gray-600">
-              © 2025 OpenMU. All rights reserved.
+              © 2025 SUMU. All rights reserved.
             </p>
             <div className="flex space-x-6 text-sm text-gray-600 mt-4 md:mt-0">
               <span className="hover:text-black transition-colors cursor-pointer">Privacy Policy</span>
