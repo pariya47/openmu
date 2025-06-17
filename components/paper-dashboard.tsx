@@ -144,64 +144,64 @@ export function PaperDashboard() {
     return `${authors[0]} et al.`;
   };
 
-  const truncateAbstract = (abstract: string, maxLength: number = 120) => {
+  const truncateAbstract = (abstract: string, maxLength: number = 100) => {
     if (abstract.length <= maxLength) return abstract;
     return abstract.substring(0, maxLength) + '...';
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-50">
-      <div className="container mx-auto px-4 py-8 max-w-7xl">
+    <div className="min-h-screen bg-white">
+      <div className="container mx-auto px-6 py-10 max-w-6xl">
         {/* Header */}
-        <div className="text-center mb-12">
-          <h1 className="text-4xl md:text-5xl font-bold text-slate-800 mb-4 leading-tight">
+        <div className="text-center mb-10">
+          <h1 className="text-3xl md:text-4xl font-bold text-slate-800 mb-3 leading-tight">
             Your summarized research library,{' '}
-            <span className="bg-gradient-to-r from-rose-500 to-pink-500 bg-clip-text text-transparent">
+            <span className="text-slate-600">
               all in one place
             </span>
           </h1>
-          <p className="text-slate-600 text-lg max-w-2xl mx-auto">
-            Discover, organize, and explore research papers with AI-powered insights
+          <p className="text-slate-500 text-base max-w-xl mx-auto">
+            Discover, organize, and explore research papers with intelligent insights
           </p>
         </div>
 
         {/* Search Bar */}
-        <div className="max-w-3xl mx-auto mb-12">
+        <div className="max-w-2xl mx-auto mb-10">
           <div className="flex gap-3 items-center">
             <div className="relative flex-1">
-              <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-slate-400 h-5 w-5" />
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 h-4 w-4" />
               <Input
                 type="text"
                 placeholder="Search by DOI, Name..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-12 pr-4 py-6 text-lg border-2 border-slate-200 rounded-2xl focus:border-rose-300 focus:ring-rose-200 shadow-sm hover:shadow-md transition-all duration-200 bg-white/80 backdrop-blur-sm"
+                className="pl-10 pr-4 py-4 text-base border-2 border-slate-300 rounded-xl focus:border-slate-400 focus:ring-slate-200 shadow-sm hover:shadow-md transition-all duration-200 bg-white"
               />
             </div>
             <Button
               onClick={handleAISearch}
-              size="lg"
-              className="px-8 py-6 text-lg rounded-2xl bg-gradient-to-r from-rose-500 to-pink-500 hover:from-rose-600 hover:to-pink-600 shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105"
+              size="default"
+              className="px-6 py-4 text-base rounded-xl bg-slate-600 hover:bg-slate-700 text-white shadow-md hover:shadow-lg transition-all duration-200 hover:scale-105"
             >
-              <Sparkles className="mr-2 h-5 w-5" />
+              <Sparkles className="mr-2 h-4 w-4" />
               AI Search
             </Button>
           </div>
         </div>
 
         {/* Papers Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 mb-8">
           {/* Add Paper Card */}
           <Card 
-            className="group cursor-pointer border-2 border-dashed border-rose-200 bg-gradient-to-br from-rose-50 to-pink-50 hover:border-rose-300 hover:shadow-xl transition-all duration-200 hover:scale-105 rounded-2xl min-h-[280px] flex items-center justify-center"
+            className="group cursor-pointer border-2 border-dashed border-slate-300 bg-slate-50 hover:border-slate-400 hover:shadow-lg transition-all duration-200 hover:scale-105 rounded-xl min-h-[240px] flex items-center justify-center"
             onClick={handleAddPaper}
           >
-            <CardContent className="text-center p-8">
-              <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-r from-rose-500 to-pink-500 flex items-center justify-center group-hover:scale-110 transition-transform duration-200">
-                <Plus className="h-8 w-8 text-white" />
+            <CardContent className="text-center p-6">
+              <div className="w-12 h-12 mx-auto mb-3 rounded-full bg-slate-600 flex items-center justify-center group-hover:scale-110 transition-transform duration-200">
+                <Plus className="h-6 w-6 text-white" />
               </div>
-              <h3 className="text-xl font-semibold text-slate-700 mb-2">Add Paper</h3>
-              <p className="text-slate-500">Import a new research paper to your library</p>
+              <h3 className="text-lg font-semibold text-slate-700 mb-2">Add Paper</h3>
+              <p className="text-slate-500 text-sm">Import a new research paper to your library</p>
             </CardContent>
           </Card>
 
@@ -209,19 +209,19 @@ export function PaperDashboard() {
           {filteredPapers.map((paper) => (
             <Card
               key={paper.id}
-              className="group cursor-pointer border border-slate-200 bg-white/80 backdrop-blur-sm hover:shadow-xl transition-all duration-200 hover:scale-105 rounded-2xl overflow-hidden"
+              className="group cursor-pointer border-2 border-slate-300 bg-slate-50 hover:shadow-lg transition-all duration-200 hover:scale-105 rounded-xl overflow-hidden"
               onClick={() => handlePaperClick(paper)}
             >
-              <CardHeader className="pb-3">
+              <CardHeader className="pb-2">
                 <div className="flex items-start justify-between mb-2">
-                  <Badge variant="secondary" className="text-xs font-medium bg-slate-100 text-slate-600">
+                  <Badge variant="secondary" className="text-xs font-medium bg-slate-200 text-slate-700 border border-slate-300">
                     {paper.year}
                   </Badge>
                   <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-200">
                     <ExternalLink className="h-4 w-4 text-slate-400" />
                   </div>
                 </div>
-                <CardTitle className="text-lg font-bold text-slate-800 leading-tight line-clamp-2 group-hover:text-rose-600 transition-colors duration-200">
+                <CardTitle className="text-base font-bold text-slate-800 leading-tight line-clamp-2 group-hover:text-slate-600 transition-colors duration-200">
                   {paper.title}
                 </CardTitle>
                 <CardDescription className="text-sm text-slate-600 flex items-center gap-1">
@@ -233,7 +233,7 @@ export function PaperDashboard() {
                 <p className="text-sm text-slate-600 leading-relaxed line-clamp-3">
                   {truncateAbstract(paper.abstract)}
                 </p>
-                <div className="mt-4 flex items-center justify-between">
+                <div className="mt-3 flex items-center justify-between">
                   <div className="flex items-center gap-1 text-xs text-slate-400">
                     <Clock className="h-3 w-3" />
                     Added {new Date(paper.dateAdded).toLocaleDateString()}
@@ -241,7 +241,7 @@ export function PaperDashboard() {
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="opacity-0 group-hover:opacity-100 transition-opacity duration-200 text-rose-600 hover:text-rose-700 hover:bg-rose-50"
+                    className="opacity-0 group-hover:opacity-100 transition-opacity duration-200 text-slate-600 hover:text-slate-700 hover:bg-slate-100 text-xs"
                   >
                     View Details
                   </Button>
@@ -253,12 +253,12 @@ export function PaperDashboard() {
 
         {/* Empty State */}
         {filteredPapers.length === 0 && searchQuery && (
-          <div className="text-center py-16">
-            <div className="w-24 h-24 mx-auto mb-6 rounded-full bg-slate-100 flex items-center justify-center">
-              <Search className="h-12 w-12 text-slate-400" />
+          <div className="text-center py-12">
+            <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-slate-100 flex items-center justify-center border-2 border-slate-200">
+              <Search className="h-10 w-10 text-slate-400" />
             </div>
-            <h3 className="text-2xl font-semibold text-slate-700 mb-2">No papers found</h3>
-            <p className="text-slate-500 max-w-md mx-auto">
+            <h3 className="text-xl font-semibold text-slate-700 mb-2">No papers found</h3>
+            <p className="text-slate-500 max-w-md mx-auto text-sm">
               Try adjusting your search terms or add new papers to your library
             </p>
           </div>
@@ -266,14 +266,14 @@ export function PaperDashboard() {
 
         {/* Paper Detail Modal */}
         <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-          <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto rounded-3xl border-0 shadow-2xl bg-white/95 backdrop-blur-md">
-            <DialogHeader className="pb-6">
+          <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto rounded-2xl border-2 border-slate-300 shadow-xl bg-white">
+            <DialogHeader className="pb-4">
               <div className="flex items-start justify-between">
                 <div className="flex-1 pr-4">
-                  <DialogTitle className="text-2xl font-bold text-slate-800 leading-tight mb-3">
+                  <DialogTitle className="text-xl font-bold text-slate-800 leading-tight mb-2">
                     {selectedPaper?.title}
                   </DialogTitle>
-                  <div className="flex flex-wrap items-center gap-4 text-sm text-slate-600">
+                  <div className="flex flex-wrap items-center gap-3 text-sm text-slate-600">
                     <div className="flex items-center gap-1">
                       <Calendar className="h-4 w-4" />
                       <span>{selectedPaper?.year}</span>
@@ -294,46 +294,46 @@ export function PaperDashboard() {
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="rounded-full hover:bg-slate-100 flex-shrink-0"
+                    className="rounded-full hover:bg-slate-100 flex-shrink-0 border border-slate-300"
                   >
-                    <X className="h-5 w-5" />
+                    <X className="h-4 w-4" />
                   </Button>
                 </DialogClose>
               </div>
             </DialogHeader>
 
-            <div className="space-y-6">
-              <Separator />
+            <div className="space-y-4">
+              <Separator className="bg-slate-300" />
               
               <div>
-                <h3 className="text-lg font-semibold text-slate-800 mb-3 flex items-center gap-2">
-                  <BookOpen className="h-5 w-5" />
+                <h3 className="text-base font-semibold text-slate-800 mb-2 flex items-center gap-2">
+                  <BookOpen className="h-4 w-4" />
                   Abstract
                 </h3>
-                <p className="text-slate-700 leading-relaxed text-base">
+                <p className="text-slate-700 leading-relaxed text-sm">
                   {selectedPaper?.abstract}
                 </p>
               </div>
 
-              <Separator />
+              <Separator className="bg-slate-300" />
 
               <div className="flex flex-col sm:flex-row gap-3">
                 <Button
-                  size="lg"
-                  className="flex-1 bg-gradient-to-r from-rose-500 to-pink-500 hover:from-rose-600 hover:to-pink-600 shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105 rounded-xl"
+                  size="default"
+                  className="flex-1 bg-slate-600 hover:bg-slate-700 text-white shadow-md hover:shadow-lg transition-all duration-200 hover:scale-105 rounded-lg"
                   onClick={() => {
                     if (selectedPaper?.fullPaperUrl) {
                       window.open(selectedPaper.fullPaperUrl, '_blank');
                     }
                   }}
                 >
-                  <ExternalLink className="mr-2 h-5 w-5" />
+                  <ExternalLink className="mr-2 h-4 w-4" />
                   View Full Paper
                 </Button>
                 <Button
                   variant="outline"
-                  size="lg"
-                  className="flex-1 border-2 border-slate-200 hover:border-rose-300 hover:bg-rose-50 rounded-xl transition-all duration-200"
+                  size="default"
+                  className="flex-1 border-2 border-slate-300 hover:border-slate-400 hover:bg-slate-50 rounded-lg transition-all duration-200"
                   onClick={() => {
                     // Copy DOI or title to clipboard
                     const textToCopy = selectedPaper?.doi || selectedPaper?.title || '';
@@ -341,7 +341,7 @@ export function PaperDashboard() {
                     // In a real app, you'd show a toast notification here
                   }}
                 >
-                  <FileText className="mr-2 h-5 w-5" />
+                  <FileText className="mr-2 h-4 w-4" />
                   Copy Reference
                 </Button>
               </div>
