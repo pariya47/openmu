@@ -14,7 +14,6 @@ import {
   User,
   FileText,
   ExternalLink,
-  X,
   BookOpen,
   Clock
 } from 'lucide-react';
@@ -23,7 +22,6 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogClose,
 } from '@/components/ui/dialog';
 
 interface Paper {
@@ -214,7 +212,7 @@ export function PaperDashboard() {
             </CardContent>
           </Card>
 
-          {/* Paper Cards - Reduced height by 25% */}
+          {/* Paper Cards - Clean top-right corner */}
           {filteredPapers.map((paper) => (
             <Card
               key={paper.id}
@@ -226,9 +224,7 @@ export function PaperDashboard() {
                   <Badge variant="secondary" className="text-xs font-medium bg-slate-200 text-slate-700 border border-slate-300">
                     {paper.year}
                   </Badge>
-                  <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                    <ExternalLink className="h-4 w-4 text-slate-400" />
-                  </div>
+                  {/* Removed the ExternalLink icon to clear the top-right corner */}
                 </div>
                 <CardTitle className="text-sm font-bold text-slate-800 leading-tight line-clamp-2 group-hover:text-slate-600 transition-colors duration-200">
                   {paper.title}
@@ -268,12 +264,12 @@ export function PaperDashboard() {
           </div>
         )}
 
-        {/* Paper Detail Modal */}
+        {/* Paper Detail Modal - Removed close button */}
         <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
           <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto rounded-2xl border-2 border-slate-300 shadow-xl bg-white">
             <DialogHeader className="pb-4">
               <div className="flex items-start justify-between">
-                <div className="flex-1 pr-4">
+                <div className="flex-1">
                   <DialogTitle className="text-xl font-bold text-slate-800 leading-tight mb-2">
                     {selectedPaper?.title}
                   </DialogTitle>
@@ -294,15 +290,7 @@ export function PaperDashboard() {
                     )}
                   </div>
                 </div>
-                <DialogClose asChild>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="rounded-full hover:bg-slate-100 flex-shrink-0 border border-slate-300"
-                  >
-                    <X className="h-4 w-4" />
-                  </Button>
-                </DialogClose>
+                {/* Removed DialogClose button */}
               </div>
             </DialogHeader>
 
