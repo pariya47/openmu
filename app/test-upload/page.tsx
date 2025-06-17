@@ -129,7 +129,7 @@ export default function TestUploadPage() {
     multiple: false
   });
 
-  const handleTurnstileVerify = (token: string) => {
+  const handleTurnstileSuccess = (token: string) => {
     setTurnstileToken(token);
     setIsTurnstileSolved(true);
     setError(null);
@@ -228,13 +228,9 @@ export default function TestUploadPage() {
                 <div className="flex justify-center">
                   <Turnstile
                     siteKey={siteKey}
-                    onVerify={handleTurnstileVerify}
+                    onSuccess={handleTurnstileSuccess}
                     onExpire={handleTurnstileExpire}
                     onError={handleTurnstileError}
-                    options={{
-                      theme: 'auto',
-                      size: 'normal'
-                    }}
                   />
                 </div>
               </div>
