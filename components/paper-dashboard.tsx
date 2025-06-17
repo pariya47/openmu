@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -14,7 +15,6 @@ import {
   FileText,
   ExternalLink,
   X,
-  Sparkles,
   BookOpen,
   Clock
 } from 'lucide-react';
@@ -91,6 +91,7 @@ const samplePapers: Paper[] = [
 ];
 
 export function PaperDashboard() {
+  const router = useRouter();
   const [papers, setPapers] = useState<Paper[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedPaper, setSelectedPaper] = useState<Paper | null>(null);
@@ -132,9 +133,8 @@ export function PaperDashboard() {
     alert('Add Paper functionality would be implemented here');
   };
 
-  const handleAISearch = () => {
-    // For now, just show an alert - in a real app this would trigger AI search
-    alert('AI Search functionality would be implemented here');
+  const handleHomeClick = () => {
+    router.push('/');
   };
 
   const formatAuthors = (authors: string[]) => {
@@ -151,9 +151,23 @@ export function PaperDashboard() {
 
   return (
     <div className="min-h-screen bg-white">
-      <div className="container mx-auto px-6 py-10 max-w-6xl">
-        {/* Header */}
-        <div className="text-center mb-10">
+      <div className="container mx-auto px-6 py-16 max-w-6xl">
+        {/* Header with Logo */}
+        <div className="text-center mb-12 mt-8">
+          <div className="flex items-center justify-center mb-6">
+            <button
+              onClick={handleHomeClick}
+              className="flex items-center space-x-3 group hover:scale-105 transition-all duration-200 p-2 rounded-xl hover:bg-slate-50"
+            >
+              <div className="p-2 rounded-xl bg-slate-100 group-hover:bg-slate-200 transition-colors duration-200">
+                <BookOpen className="h-8 w-8 text-slate-700" />
+              </div>
+              <span className="text-2xl font-bold text-slate-800 group-hover:text-slate-600 transition-colors duration-200">
+                OpenMU
+              </span>
+            </button>
+          </div>
+          
           <h1 className="text-3xl md:text-4xl font-bold text-slate-800 mb-3 leading-tight">
             Your summarized research library,{' '}
             <span className="text-slate-600">
@@ -167,25 +181,15 @@ export function PaperDashboard() {
 
         {/* Search Bar */}
         <div className="max-w-2xl mx-auto mb-10">
-          <div className="flex gap-3 items-center">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 h-4 w-4" />
-              <Input
-                type="text"
-                placeholder="Search by DOI, Name..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10 pr-4 py-4 text-base border-2 border-slate-300 rounded-xl focus:border-slate-400 focus:ring-slate-200 shadow-sm hover:shadow-md transition-all duration-200 bg-white"
-              />
-            </div>
-            <Button
-              onClick={handleAISearch}
-              size="default"
-              className="px-6 py-4 text-base rounded-xl bg-slate-600 hover:bg-slate-700 text-white shadow-md hover:shadow-lg transition-all duration-200 hover:scale-105"
-            >
-              <Sparkles className="mr-2 h-4 w-4" />
-              AI Search
-            </Button>
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 h-4 w-4" />
+            <Input
+              type="text"
+              placeholder="Search by DOI, Name..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-10 pr-4 py-4 text-base border-2 border-slate-300 rounded-xl focus:border-slate-400 focus:ring-slate-200 shadow-sm hover:shadow-md transition-all duration-200 bg-white"
+            />
           </div>
         </div>
 
