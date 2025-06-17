@@ -151,23 +151,28 @@ export function PaperDashboard() {
 
   return (
     <div className="min-h-screen bg-white">
-      <div className="container mx-auto px-6 py-16 max-w-6xl">
-        {/* Header with Logo */}
-        <div className="text-center mb-12 mt-8">
-          <div className="flex items-center justify-center mb-6">
+      {/* Top Navigation Header */}
+      <header className="bg-white border-b border-slate-200 sticky top-0 z-50">
+        <div className="container mx-auto px-6 py-4">
+          <div className="flex items-center">
             <button
               onClick={handleHomeClick}
               className="flex items-center space-x-3 group hover:scale-105 transition-all duration-200 p-2 rounded-xl hover:bg-slate-50"
             >
               <div className="p-2 rounded-xl bg-slate-100 group-hover:bg-slate-200 transition-colors duration-200">
-                <BookOpen className="h-8 w-8 text-slate-700" />
+                <BookOpen className="h-6 w-6 text-slate-700" />
               </div>
-              <span className="text-2xl font-bold text-slate-800 group-hover:text-slate-600 transition-colors duration-200">
+              <span className="text-xl font-bold text-slate-800 group-hover:text-slate-600 transition-colors duration-200">
                 OpenMU
               </span>
             </button>
           </div>
-          
+        </div>
+      </header>
+
+      <div className="container mx-auto px-6 py-16 max-w-6xl">
+        {/* Main Header */}
+        <div className="text-center mb-12 mt-8">
           <h1 className="text-3xl md:text-4xl font-bold text-slate-800 mb-3 leading-tight">
             Your summarized research library,{' '}
             <span className="text-slate-600">
@@ -197,7 +202,7 @@ export function PaperDashboard() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 mb-8">
           {/* Add Paper Card */}
           <Card 
-            className="group cursor-pointer border-2 border-dashed border-slate-300 bg-slate-50 hover:border-slate-400 hover:shadow-lg transition-all duration-200 hover:scale-105 rounded-xl min-h-[240px] flex items-center justify-center"
+            className="group cursor-pointer border-2 border-dashed border-slate-300 bg-slate-50 hover:border-slate-400 hover:shadow-lg transition-all duration-200 hover:scale-105 rounded-xl min-h-[280px] flex items-center justify-center"
             onClick={handleAddPaper}
           >
             <CardContent className="text-center p-6">
@@ -213,10 +218,10 @@ export function PaperDashboard() {
           {filteredPapers.map((paper) => (
             <Card
               key={paper.id}
-              className="group cursor-pointer border-2 border-slate-300 bg-slate-50 hover:shadow-lg transition-all duration-200 hover:scale-105 rounded-xl overflow-hidden"
+              className="group cursor-pointer border-2 border-slate-300 bg-slate-50 hover:shadow-lg transition-all duration-200 hover:scale-105 rounded-xl overflow-hidden min-h-[280px] flex flex-col"
               onClick={() => handlePaperClick(paper)}
             >
-              <CardHeader className="pb-2">
+              <CardHeader className="pb-2 flex-shrink-0">
                 <div className="flex items-start justify-between mb-2">
                   <Badge variant="secondary" className="text-xs font-medium bg-slate-200 text-slate-700 border border-slate-300">
                     {paper.year}
@@ -233,14 +238,16 @@ export function PaperDashboard() {
                   {formatAuthors(paper.authors)}
                 </CardDescription>
               </CardHeader>
-              <CardContent className="pt-0">
-                <p className="text-sm text-slate-600 leading-relaxed line-clamp-3">
+              <CardContent className="pt-0 flex-1 flex flex-col justify-between">
+                <p className="text-sm text-slate-600 leading-relaxed line-clamp-3 mb-4">
                   {truncateAbstract(paper.abstract)}
                 </p>
-                <div className="mt-3 flex items-center justify-between">
+                
+                {/* Bottom section with date and button */}
+                <div className="flex items-end justify-between mt-auto">
                   <div className="flex items-center gap-1 text-xs text-slate-400">
                     <Clock className="h-3 w-3" />
-                    Added {new Date(paper.dateAdded).toLocaleDateString()}
+                    <span>Added {new Date(paper.dateAdded).toLocaleDateString()}</span>
                   </div>
                   <Button
                     variant="ghost"
