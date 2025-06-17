@@ -560,3 +560,178 @@ export function LandingPage() {
                   </PieChart>
                 </ResponsiveContainer>
               </div>
+              <div className="grid grid-cols-3 gap-4 sm:gap-6 text-center">
+                {audienceData.map((item, index) => (
+                  <div key={index} className="space-y-2">
+                    <div className="w-4 h-4 rounded-full mx-auto" style={{ backgroundColor: item.color }}></div>
+                    <p className="text-sm font-medium">{item.name}</p>
+                    <p className="text-2xl font-bold text-primary">{item.value}%</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Impact Section */}
+      <section id="impact" className="py-12 sm:py-20 px-4 bg-muted/30">
+        <div className="container mx-auto max-w-7xl">
+          <div className="text-center mb-12 sm:mb-16">
+            <h2 className="text-2xl sm:text-4xl font-bold mb-4 sm:mb-6">Measurable Impact</h2>
+            <p className="text-muted-foreground text-lg sm:text-xl max-w-3xl mx-auto px-2">
+              See how OpenMU transforms research workflows and accelerates discovery across academic and professional settings.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8 mb-12 sm:mb-16">
+            {impactData.map((item, index) => (
+              <Card key={index} className="text-center hover:shadow-xl transition-all duration-300 hover:-translate-y-2 group border-0 shadow-lg">
+                <CardHeader className="pb-3 sm:pb-4">
+                  <div className="mx-auto mb-4 sm:mb-6 p-3 sm:p-4 rounded-2xl bg-primary/10 text-primary group-hover:bg-primary/20 transition-colors duration-300">
+                    {item.icon}
+                  </div>
+                  <CardTitle className="text-lg sm:text-xl mb-2">{item.category}</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="mb-4">
+                    <div className="text-3xl sm:text-4xl font-bold text-primary mb-2">
+                      {item.value}{item.unit}
+                    </div>
+                    <Progress value={item.value} className="h-2" />
+                  </div>
+                  <p className="text-xs sm:text-sm text-muted-foreground">Improvement over traditional methods</p>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+
+          {/* Testimonials */}
+          <div className="space-y-8 sm:space-y-12">
+            <div className="text-center">
+              <h3 className="text-xl sm:text-2xl font-semibold mb-4 sm:mb-6">What Our Users Say</h3>
+              <div className="flex justify-center gap-2 sm:gap-4 mb-6 sm:mb-8">
+                <Button
+                  variant={testimonialFilter === 'all' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setTestimonialFilter('all')}
+                  className="text-xs sm:text-sm"
+                >
+                  All
+                </Button>
+                <Button
+                  variant={testimonialFilter === 'students' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setTestimonialFilter('students')}
+                  className="text-xs sm:text-sm"
+                >
+                  Students
+                </Button>
+                <Button
+                  variant={testimonialFilter === 'researchers' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setTestimonialFilter('researchers')}
+                  className="text-xs sm:text-sm"
+                >
+                  Researchers
+                </Button>
+                <Button
+                  variant={testimonialFilter === 'professionals' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setTestimonialFilter('professionals')}
+                  className="text-xs sm:text-sm"
+                >
+                  Professionals
+                </Button>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
+              {filteredTestimonials.map((testimonial, index) => (
+                <Card key={index} className="hover:shadow-xl transition-all duration-300 hover:-translate-y-1 border-0 shadow-lg">
+                  <CardHeader className="pb-3 sm:pb-4">
+                    <div className="flex items-center space-x-3 sm:space-x-4">
+                      <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-primary/10 flex items-center justify-center text-primary font-semibold text-sm sm:text-base">
+                        {testimonial.avatar}
+                      </div>
+                      <div>
+                        <CardTitle className="text-base sm:text-lg">{testimonial.name}</CardTitle>
+                        <CardDescription className="text-xs sm:text-sm">{testimonial.role}</CardDescription>
+                      </div>
+                    </div>
+                    <div className="flex items-center mt-2">
+                      {[...Array(testimonial.rating)].map((_, i) => (
+                        <Star key={i} className="h-3 w-3 sm:h-4 sm:w-4 fill-primary text-primary" />
+                      ))}
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-muted-foreground leading-relaxed text-sm sm:text-base">
+                      "{testimonial.content}"
+                    </p>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* CTA Section */}
+      <section className="py-12 sm:py-20 px-4">
+        <div className="container mx-auto max-w-4xl text-center">
+          <Card className="border-0 shadow-2xl bg-gradient-to-br from-primary/5 to-secondary/5 overflow-hidden">
+            <CardContent className="p-8 sm:p-16">
+              <div className="flex items-center justify-center mb-6 sm:mb-8">
+                <div className="p-4 sm:p-6 rounded-2xl bg-primary/10">
+                  <BookOpen className="h-8 w-8 sm:h-12 sm:w-12 text-primary" />
+                </div>
+              </div>
+              
+              <h2 className="text-2xl sm:text-4xl font-bold mb-4 sm:mb-6">Ready to Transform Your Research?</h2>
+              <p className="text-muted-foreground text-base sm:text-lg mb-8 sm:mb-10 max-w-2xl mx-auto leading-relaxed">
+                Join thousands of researchers, students, and professionals who are already experiencing the future of academic research.
+              </p>
+              
+              <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 justify-center mb-8 sm:mb-10">
+                <Button size="lg" className="text-base sm:text-lg px-8 sm:px-10 py-6 sm:py-7 shadow-xl hover:shadow-2xl transition-all duration-200 hover:scale-105">
+                  <Mail className="mr-2 sm:mr-3 h-4 w-4 sm:h-5 sm:w-5" />
+                  Join Waitlist
+                </Button>
+                <Button variant="outline" size="lg" className="text-base sm:text-lg px-8 sm:px-10 py-6 sm:py-7 shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105">
+                  <MessageCircle className="mr-2 sm:mr-3 h-4 w-4 sm:h-5 sm:w-5" />
+                  Join Community
+                </Button>
+              </div>
+              
+              <div className="flex items-center justify-center text-sm text-muted-foreground">
+                <Shield className="h-4 w-4 mr-2" />
+                No spam, unsubscribe anytime
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </section>
+
+      {/* Footer */}
+      <footer className="py-8 sm:py-12 px-4 border-t bg-muted/30">
+        <div className="container mx-auto max-w-7xl">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-4 sm:gap-6">
+            <div className="flex items-center space-x-2 sm:space-x-3">
+              <div className="p-1.5 sm:p-2 rounded-xl bg-primary/10">
+                <BookOpen className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
+              </div>
+              <span className="text-lg sm:text-xl font-bold">OpenMU</span>
+            </div>
+            
+            <div className="flex items-center space-x-4 sm:space-x-6 text-sm text-muted-foreground">
+              <span>© 2025 OpenMU. All rights reserved.</span>
+              <button className="hover:text-foreground transition-colors">Privacy</button>
+              <button className="hover:text-foreground transition-colors">Terms</button>
+            </div>
+          </div>
+        </div>
+      </footer>
+    </div>
+  );
+}
