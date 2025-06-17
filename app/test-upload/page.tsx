@@ -2,7 +2,7 @@
 import { useCallback } from 'react';
 import { useDropzone } from 'react-dropzone';
 
-export default function Home() {
+export default function TestUploadPage() {
   const onDrop = useCallback(async (acceptedFiles: File[]) => {
     const file = acceptedFiles[0];
 
