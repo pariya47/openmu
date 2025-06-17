@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import Link from 'next/link';
 import { 
   BookOpen, 
   Search, 
@@ -64,15 +65,15 @@ export function LandingPage() {
             </div>
             
             <nav className="hidden md:flex items-center space-x-8">
-              <button className="text-gray-600 hover:text-black transition-colors font-medium">
+              <span className="text-black font-medium border-b-2 border-black pb-1">
                 HOME
-              </button>
-              <button className="text-gray-600 hover:text-black transition-colors font-medium">
+              </span>
+              <Link href="/plan" className="text-gray-600 hover:text-black transition-colors font-medium">
                 PLAN
-              </button>
-              <button className="text-gray-600 hover:text-black transition-colors font-medium">
+              </Link>
+              <Link href="/donate" className="text-gray-600 hover:text-black transition-colors font-medium">
                 Donate
-              </button>
+              </Link>
               <button className="bg-black text-white px-4 py-2 rounded-full hover:bg-gray-800 transition-colors font-medium">
                 JoinUs
               </button>
