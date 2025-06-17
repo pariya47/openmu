@@ -144,7 +144,7 @@ export function PaperDashboard() {
     return `${authors[0]} et al.`;
   };
 
-  const truncateAbstract = (abstract: string, maxLength: number = 100) => {
+  const truncateAbstract = (abstract: string, maxLength: number = 80) => {
     if (abstract.length <= maxLength) return abstract;
     return abstract.substring(0, maxLength) + '...';
   };
@@ -202,27 +202,27 @@ export function PaperDashboard() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 mb-8">
           {/* Add Paper Card */}
           <Card 
-            className="group cursor-pointer border-2 border-dashed border-slate-300 bg-slate-50 hover:border-slate-400 hover:shadow-lg transition-all duration-200 hover:scale-105 rounded-xl min-h-[280px] flex items-center justify-center"
+            className="group cursor-pointer border-2 border-dashed border-slate-300 bg-slate-50 hover:border-slate-400 hover:shadow-lg transition-all duration-200 hover:scale-105 rounded-xl min-h-[210px] flex items-center justify-center"
             onClick={handleAddPaper}
           >
-            <CardContent className="text-center p-6">
-              <div className="w-12 h-12 mx-auto mb-3 rounded-full bg-slate-600 flex items-center justify-center group-hover:scale-110 transition-transform duration-200">
-                <Plus className="h-6 w-6 text-white" />
+            <CardContent className="text-center p-4">
+              <div className="w-10 h-10 mx-auto mb-2 rounded-full bg-slate-600 flex items-center justify-center group-hover:scale-110 transition-transform duration-200">
+                <Plus className="h-5 w-5 text-white" />
               </div>
-              <h3 className="text-lg font-semibold text-slate-700 mb-2">Add Paper</h3>
+              <h3 className="text-base font-semibold text-slate-700 mb-1">Add Paper</h3>
               <p className="text-slate-500 text-sm">Import a new research paper to your library</p>
             </CardContent>
           </Card>
 
-          {/* Paper Cards - Removed close/delete buttons */}
+          {/* Paper Cards - Reduced height by 25% */}
           {filteredPapers.map((paper) => (
             <Card
               key={paper.id}
-              className="group cursor-pointer border-2 border-slate-300 bg-slate-50 hover:shadow-lg transition-all duration-200 hover:scale-105 rounded-xl overflow-hidden min-h-[280px] flex flex-col"
+              className="group cursor-pointer border-2 border-slate-300 bg-slate-50 hover:shadow-lg transition-all duration-200 hover:scale-105 rounded-xl overflow-hidden min-h-[210px] flex flex-col"
               onClick={() => handlePaperClick(paper)}
             >
-              <CardHeader className="pb-2 flex-shrink-0">
-                <div className="flex items-start justify-between mb-2">
+              <CardHeader className="pb-1 flex-shrink-0">
+                <div className="flex items-start justify-between mb-1">
                   <Badge variant="secondary" className="text-xs font-medium bg-slate-200 text-slate-700 border border-slate-300">
                     {paper.year}
                   </Badge>
@@ -230,16 +230,16 @@ export function PaperDashboard() {
                     <ExternalLink className="h-4 w-4 text-slate-400" />
                   </div>
                 </div>
-                <CardTitle className="text-base font-bold text-slate-800 leading-tight line-clamp-2 group-hover:text-slate-600 transition-colors duration-200">
+                <CardTitle className="text-sm font-bold text-slate-800 leading-tight line-clamp-2 group-hover:text-slate-600 transition-colors duration-200">
                   {paper.title}
                 </CardTitle>
-                <CardDescription className="text-sm text-slate-600 flex items-center gap-1">
+                <CardDescription className="text-xs text-slate-600 flex items-center gap-1">
                   <User className="h-3 w-3" />
                   {formatAuthors(paper.authors)}
                 </CardDescription>
               </CardHeader>
               <CardContent className="pt-0 flex-1 flex flex-col justify-between">
-                <p className="text-sm text-slate-600 leading-relaxed line-clamp-3 mb-4">
+                <p className="text-xs text-slate-600 leading-relaxed line-clamp-2 mb-3">
                   {truncateAbstract(paper.abstract)}
                 </p>
                 
