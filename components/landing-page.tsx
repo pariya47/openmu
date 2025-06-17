@@ -289,12 +289,6 @@ export function LandingPage() {
               Watch Demo
             </Button>
           </div>
-
-          {/* Coming Soon Badge */}
-          <div className="inline-flex items-center gap-2 sm:gap-3 bg-secondary/50 backdrop-blur-sm px-6 sm:px-8 py-3 sm:py-4 rounded-full border shadow-lg">
-            <Clock className="h-4 w-4 sm:h-5 sm:w-5 text-secondary-foreground" />
-            <span className="text-sm sm:text-base text-secondary-foreground font-medium">Coming Soon - Early 2025</span>
-          </div>
         </div>
       </section>
 
@@ -560,12 +554,16 @@ export function LandingPage() {
                   </PieChart>
                 </ResponsiveContainer>
               </div>
-              <div className="grid grid-cols-3 gap-4 sm:gap-6 text-center">
+              <div className="flex justify-center flex-wrap gap-3 sm:gap-6">
                 {audienceData.map((item, index) => (
-                  <div key={index} className="space-y-2">
-                    <div className="w-4 h-4 rounded-full mx-auto" style={{ backgroundColor: item.color }}></div>
-                    <p className="text-sm font-medium">{item.name}</p>
-                    <p className="text-2xl font-bold text-primary">{item.value}%</p>
+                  <div key={index} className="flex items-center space-x-2 sm:space-x-3 bg-background/50 px-3 sm:px-4 py-2 rounded-full border">
+                    <div 
+                      className="w-3 h-3 sm:w-4 sm:h-4 rounded-full" 
+                      style={{ backgroundColor: item.color }}
+                    />
+                    <span className="text-xs sm:text-sm font-medium">
+                      {item.name} ({item.value}%)
+                    </span>
                   </div>
                 ))}
               </div>
@@ -578,156 +576,334 @@ export function LandingPage() {
       <section id="impact" className="py-12 sm:py-20 px-4 bg-muted/30">
         <div className="container mx-auto max-w-7xl">
           <div className="text-center mb-12 sm:mb-16">
-            <h2 className="text-2xl sm:text-4xl font-bold mb-4 sm:mb-6">Measurable Impact</h2>
+            <h2 className="text-2xl sm:text-4xl font-bold mb-4 sm:mb-6">Real-World Impact</h2>
             <p className="text-muted-foreground text-lg sm:text-xl max-w-3xl mx-auto px-2">
-              See how OpenMU transforms research workflows and accelerates discovery across academic and professional settings.
+              See how OpenMU transforms research workflows and accelerates discovery across disciplines.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8 mb-12 sm:mb-16">
-            {impactData.map((item, index) => (
-              <Card key={index} className="text-center hover:shadow-xl transition-all duration-300 hover:-translate-y-2 group border-0 shadow-lg">
-                <CardHeader className="pb-3 sm:pb-4">
-                  <div className="mx-auto mb-4 sm:mb-6 p-3 sm:p-4 rounded-2xl bg-primary/10 text-primary group-hover:bg-primary/20 transition-colors duration-300">
-                    {item.icon}
-                  </div>
-                  <CardTitle className="text-lg sm:text-xl mb-2">{item.category}</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="mb-4">
-                    <div className="text-3xl sm:text-4xl font-bold text-primary mb-2">
-                      {item.value}{item.unit}
+          <div className="grid lg:grid-cols-2 gap-12 sm:gap-16">
+            <div>
+              <h3 className="text-xl sm:text-2xl font-semibold mb-6 sm:mb-8 flex items-center">
+                <TrendingUp className="h-5 w-5 sm:h-6 sm:w-6 mr-2 sm:mr-3 text-primary" />
+                Performance Improvements
+              </h3>
+              <div className="space-y-6 sm:space-y-8">
+                {impactData.map((item, index) => (
+                  <div key={index} className="space-y-3 sm:space-y-4 p-4 sm:p-6 rounded-xl bg-muted/50 hover:bg-muted/70 transition-colors">
+                    <div className="flex justify-between items-center">
+                      <div className="flex items-center space-x-2 sm:space-x-3">
+                        <div className="p-1.5 sm:p-2 rounded-lg bg-primary/10 text-primary">
+                          {item.icon}
+                        </div>
+                        <span className="font-semibold text-base sm:text-lg">{item.category}</span>
+                      </div>
+                      <div className="text-right">
+                        <span className="text-xl sm:text-2xl font-bold text-primary">
+                          +{item.value}{item.unit}
+                        </span>
+                        <p className="text-xs sm:text-sm text-muted-foreground">improvement</p>
+                      </div>
                     </div>
-                    <Progress value={item.value} className="h-2" />
+                    <Progress value={item.value} className="h-2 sm:h-3" />
                   </div>
-                  <p className="text-xs sm:text-sm text-muted-foreground">Improvement over traditional methods</p>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-
-          {/* Testimonials */}
-          <div className="space-y-8 sm:space-y-12">
-            <div className="text-center">
-              <h3 className="text-xl sm:text-2xl font-semibold mb-4 sm:mb-6">What Our Users Say</h3>
-              <div className="flex justify-center gap-2 sm:gap-4 mb-6 sm:mb-8">
-                <Button
-                  variant={testimonialFilter === 'all' ? 'default' : 'outline'}
-                  size="sm"
-                  onClick={() => setTestimonialFilter('all')}
-                  className="text-xs sm:text-sm"
-                >
-                  All
-                </Button>
-                <Button
-                  variant={testimonialFilter === 'students' ? 'default' : 'outline'}
-                  size="sm"
-                  onClick={() => setTestimonialFilter('students')}
-                  className="text-xs sm:text-sm"
-                >
-                  Students
-                </Button>
-                <Button
-                  variant={testimonialFilter === 'researchers' ? 'default' : 'outline'}
-                  size="sm"
-                  onClick={() => setTestimonialFilter('researchers')}
-                  className="text-xs sm:text-sm"
-                >
-                  Researchers
-                </Button>
-                <Button
-                  variant={testimonialFilter === 'professionals' ? 'default' : 'outline'}
-                  size="sm"
-                  onClick={() => setTestimonialFilter('professionals')}
-                  className="text-xs sm:text-sm"
-                >
-                  Professionals
-                </Button>
+                ))}
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
-              {filteredTestimonials.map((testimonial, index) => (
-                <Card key={index} className="hover:shadow-xl transition-all duration-300 hover:-translate-y-1 border-0 shadow-lg">
-                  <CardHeader className="pb-3 sm:pb-4">
-                    <div className="flex items-center space-x-3 sm:space-x-4">
-                      <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-primary/10 flex items-center justify-center text-primary font-semibold text-sm sm:text-base">
-                        {testimonial.avatar}
+            <div>
+              <h3 className="text-xl sm:text-2xl font-semibold mb-6 sm:mb-8 flex items-center">
+                <Star className="h-5 w-5 sm:h-6 sm:w-6 mr-2 sm:mr-3 text-primary" />
+                User Testimonials
+              </h3>
+              
+              <Tabs value={testimonialFilter} onValueChange={setTestimonialFilter} className="mb-6 sm:mb-8">
+                <TabsList className="grid w-full grid-cols-4 h-10 sm:h-12">
+                  <TabsTrigger value="all" className="text-xs sm:text-sm">All</TabsTrigger>
+                  <TabsTrigger value="students" className="text-xs sm:text-sm">Students</TabsTrigger>
+                  <TabsTrigger value="researchers" className="text-xs sm:text-sm">Researchers</TabsTrigger>
+                  <TabsTrigger value="professionals" className="text-xs sm:text-sm">Pros</TabsTrigger>
+                </TabsList>
+              </Tabs>
+
+              <div className="space-y-4 sm:space-y-6 max-h-[400px] sm:max-h-[500px] overflow-y-auto pr-2">
+                {filteredTestimonials.map((testimonial, index) => (
+                  <Card key={index} className="hover:shadow-lg transition-all duration-300 border-0 shadow-md">
+                    <CardContent className="pt-4 sm:pt-6">
+                      <div className="flex items-start space-x-3 sm:space-x-4">
+                        <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-primary/10 flex items-center justify-center text-primary font-semibold flex-shrink-0 text-sm sm:text-base">
+                          {testimonial.avatar}
+                        </div>
+                        <div className="flex-1">
+                          <div className="flex items-center space-x-2 mb-2 sm:mb-3">
+                            <div className="flex">
+                              {[...Array(testimonial.rating)].map((_, i) => (
+                                <Star key={i} className="h-3 w-3 sm:h-4 sm:w-4 fill-primary text-primary" />
+                              ))}
+                            </div>
+                          </div>
+                          <p className="text-muted-foreground mb-3 sm:mb-4 italic leading-relaxed text-sm sm:text-base">
+                            "{testimonial.content}"
+                          </p>
+                          <div>
+                            <p className="font-semibold text-sm sm:text-base">{testimonial.name}</p>
+                            <p className="text-xs sm:text-sm text-muted-foreground">{testimonial.role}</p>
+                          </div>
+                        </div>
                       </div>
-                      <div>
-                        <CardTitle className="text-base sm:text-lg">{testimonial.name}</CardTitle>
-                        <CardDescription className="text-xs sm:text-sm">{testimonial.role}</CardDescription>
-                      </div>
-                    </div>
-                    <div className="flex items-center mt-2">
-                      {[...Array(testimonial.rating)].map((_, i) => (
-                        <Star key={i} className="h-3 w-3 sm:h-4 sm:w-4 fill-primary text-primary" />
-                      ))}
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-muted-foreground leading-relaxed text-sm sm:text-base">
-                      "{testimonial.content}"
-                    </p>
-                  </CardContent>
-                </Card>
-              ))}
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
             </div>
           </div>
+        </div>
+      </section>
+
+      {/* Legal Section */}
+      <section id="legal" className="py-12 sm:py-20 px-4">
+        <div className="container mx-auto max-w-5xl">
+          <div className="text-center mb-12 sm:mb-16">
+            <h2 className="text-2xl sm:text-4xl font-bold mb-4 sm:mb-6">Trust & Transparency</h2>
+            <p className="text-muted-foreground text-lg sm:text-xl max-w-3xl mx-auto px-2">
+              Your privacy and security are our top priorities. We're committed to building a trustworthy platform.
+            </p>
+          </div>
+
+          <Accordion type="single" collapsible className="space-y-4 sm:space-y-6">
+            <AccordionItem value="privacy" className="border rounded-xl px-6 sm:px-8 py-2 shadow-lg hover:shadow-xl transition-shadow">
+              <AccordionTrigger className="text-left hover:no-underline py-4 sm:py-6">
+                <div className="flex items-center space-x-3 sm:space-x-4">
+                  <div className="p-2 sm:p-3 rounded-xl bg-primary/10">
+                    <Shield className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
+                  </div>
+                  <div>
+                    <span className="text-lg sm:text-xl font-semibold">Privacy Policy</span>
+                    <p className="text-xs sm:text-sm text-muted-foreground mt-1">How we protect and handle your data</p>
+                  </div>
+                </div>
+              </AccordionTrigger>
+              <AccordionContent className="text-muted-foreground pt-4 sm:pt-6 pb-6 sm:pb-8 px-3 sm:px-4">
+                <div className="space-y-4 sm:space-y-6">
+                  <p className="leading-relaxed text-sm sm:text-base">
+                    OpenMU is committed to protecting your privacy. We collect only the information necessary to provide our services and never sell your personal data to third parties.
+                  </p>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                    <div className="space-y-2 sm:space-y-3">
+                      <div className="flex items-center space-x-2 sm:space-x-3">
+                        <CheckCircle className="h-4 w-4 sm:h-5 sm:w-5 text-primary flex-shrink-0" />
+                        <span className="text-sm sm:text-base">Industry-standard encryption</span>
+                      </div>
+                      <div className="flex items-center space-x-2 sm:space-x-3">
+                        <CheckCircle className="h-4 w-4 sm:h-5 sm:w-5 text-primary flex-shrink-0" />
+                        <span className="text-sm sm:text-base">Private research activity</span>
+                      </div>
+                    </div>
+                    <div className="space-y-2 sm:space-y-3">
+                      <div className="flex items-center space-x-2 sm:space-x-3">
+                        <CheckCircle className="h-4 w-4 sm:h-5 sm:w-5 text-primary flex-shrink-0" />
+                        <span className="text-sm sm:text-base">Data deletion on request</span>
+                      </div>
+                      <div className="flex items-center space-x-2 sm:space-x-3">
+                        <CheckCircle className="h-4 w-4 sm:h-5 sm:w-5 text-primary flex-shrink-0" />
+                        <span className="text-sm sm:text-base">GDPR compliance</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </AccordionContent>
+            </AccordionItem>
+
+            <AccordionItem value="terms" className="border rounded-xl px-6 sm:px-8 py-2 shadow-lg hover:shadow-xl transition-shadow">
+              <AccordionTrigger className="text-left hover:no-underline py-4 sm:py-6">
+                <div className="flex items-center space-x-3 sm:space-x-4">
+                  <div className="p-2 sm:p-3 rounded-xl bg-primary/10">
+                    <BookOpen className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
+                  </div>
+                  <div>
+                    <span className="text-lg sm:text-xl font-semibold">Terms of Service</span>
+                    <p className="text-xs sm:text-sm text-muted-foreground mt-1">Fair use guidelines and platform rules</p>
+                  </div>
+                </div>
+              </AccordionTrigger>
+              <AccordionContent className="text-muted-foreground pt-4 sm:pt-6 pb-6 sm:pb-8 px-3 sm:px-4">
+                <div className="space-y-4 sm:space-y-6">
+                  <p className="leading-relaxed text-sm sm:text-base">
+                    By using OpenMU, you agree to our terms of service. These terms ensure fair use of our platform and protect both users and our service.
+                  </p>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                    <div className="space-y-2 sm:space-y-3">
+                      <div className="flex items-center space-x-2 sm:space-x-3">
+                        <CheckCircle className="h-4 w-4 sm:h-5 sm:w-5 text-primary flex-shrink-0" />
+                        <span className="text-sm sm:text-base">Academic and professional use encouraged</span>
+                      </div>
+                      <div className="flex items-center space-x-2 sm:space-x-3">
+                        <CheckCircle className="h-4 w-4 sm:h-5 sm:w-5 text-primary flex-shrink-0" />
+                        <span className="text-sm sm:text-base">Respect intellectual property rights</span>
+                      </div>
+                    </div>
+                    <div className="space-y-2 sm:space-y-3">
+                      <div className="flex items-center space-x-2 sm:space-x-3">
+                        <CheckCircle className="h-4 w-4 sm:h-5 sm:w-5 text-primary flex-shrink-0" />
+                        <span className="text-sm sm:text-base">No commercial redistribution</span>
+                      </div>
+                      <div className="flex items-center space-x-2 sm:space-x-3">
+                        <CheckCircle className="h-4 w-4 sm:h-5 sm:w-5 text-primary flex-shrink-0" />
+                        <span className="text-sm sm:text-base">Service availability transparency</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </AccordionContent>
+            </AccordionItem>
+
+            <AccordionItem value="refund" className="border rounded-xl px-6 sm:px-8 py-2 shadow-lg hover:shadow-xl transition-shadow">
+              <AccordionTrigger className="text-left hover:no-underline py-4 sm:py-6">
+                <div className="flex items-center space-x-3 sm:space-x-4">
+                  <div className="p-2 sm:p-3 rounded-xl bg-primary/10">
+                    <Heart className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
+                  </div>
+                  <div>
+                    <span className="text-lg sm:text-xl font-semibold">Cancellation & Refund Policy</span>
+                    <p className="text-xs sm:text-sm text-muted-foreground mt-1">Flexible cancellation and refund options</p>
+                  </div>
+                </div>
+              </AccordionTrigger>
+              <AccordionContent className="text-muted-foreground pt-4 sm:pt-6 pb-6 sm:pb-8 px-3 sm:px-4">
+                <div className="space-y-4 sm:space-y-6">
+                  <p className="leading-relaxed text-sm sm:text-base">
+                    We want you to be completely satisfied with OpenMU. Our flexible cancellation and refund policy ensures you're never locked into a service that doesn't meet your needs.
+                  </p>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                    <div className="space-y-2 sm:space-y-3">
+                      <div className="flex items-center space-x-2 sm:space-x-3">
+                        <CheckCircle className="h-4 w-4 sm:h-5 sm:w-5 text-primary flex-shrink-0" />
+                        <span className="text-sm sm:text-base">Cancel anytime</span>
+                      </div>
+                      <div className="flex items-center space-x-2 sm:space-x-3">
+                        <CheckCircle className="h-4 w-4 sm:h-5 sm:w-5 text-primary flex-shrink-0" />
+                        <span className="text-sm sm:text-base">30-day full refund</span>
+                      </div>
+                    </div>
+                    <div className="space-y-2 sm:space-y-3">
+                      <div className="flex items-center space-x-2 sm:space-x-3">
+                        <CheckCircle className="h-4 w-4 sm:h-5 sm:w-5 text-primary flex-shrink-0" />
+                        <span className="text-sm sm:text-base">Pro-rated annual refunds</span>
+                      </div>
+                      <div className="flex items-center space-x-2 sm:space-x-3">
+                        <CheckCircle className="h-4 w-4 sm:h-5 sm:w-5 text-primary flex-shrink-0" />
+                        <span className="text-sm sm:text-base">No hidden fees</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </AccordionContent>
+            </AccordionItem>
+          </Accordion>
         </div>
       </section>
 
       {/* CTA Section */}
-      <section className="py-12 sm:py-20 px-4">
-        <div className="container mx-auto max-w-4xl text-center">
-          <Card className="border-0 shadow-2xl bg-gradient-to-br from-primary/5 to-secondary/5 overflow-hidden">
-            <CardContent className="p-8 sm:p-16">
-              <div className="flex items-center justify-center mb-6 sm:mb-8">
-                <div className="p-4 sm:p-6 rounded-2xl bg-primary/10">
-                  <BookOpen className="h-8 w-8 sm:h-12 sm:w-12 text-primary" />
-                </div>
-              </div>
-              
-              <h2 className="text-2xl sm:text-4xl font-bold mb-4 sm:mb-6">Ready to Transform Your Research?</h2>
-              <p className="text-muted-foreground text-base sm:text-lg mb-8 sm:mb-10 max-w-2xl mx-auto leading-relaxed">
-                Join thousands of researchers, students, and professionals who are already experiencing the future of academic research.
-              </p>
-              
-              <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 justify-center mb-8 sm:mb-10">
-                <Button size="lg" className="text-base sm:text-lg px-8 sm:px-10 py-6 sm:py-7 shadow-xl hover:shadow-2xl transition-all duration-200 hover:scale-105">
-                  <Mail className="mr-2 sm:mr-3 h-4 w-4 sm:h-5 sm:w-5" />
-                  Join Waitlist
-                </Button>
-                <Button variant="outline" size="lg" className="text-base sm:text-lg px-8 sm:px-10 py-6 sm:py-7 shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105">
-                  <MessageCircle className="mr-2 sm:mr-3 h-4 w-4 sm:h-5 sm:w-5" />
-                  Join Community
-                </Button>
-              </div>
-              
-              <div className="flex items-center justify-center text-sm text-muted-foreground">
-                <Shield className="h-4 w-4 mr-2" />
-                No spam, unsubscribe anytime
-              </div>
-            </CardContent>
-          </Card>
+      <section className="py-12 sm:py-20 px-4 bg-gradient-to-br from-primary/5 via-transparent to-secondary/5">
+        <div className="container mx-auto max-w-5xl text-center">
+          <h2 className="text-2xl sm:text-4xl md:text-5xl font-bold mb-4 sm:mb-6">Ready to Transform Your Research?</h2>
+          <p className="text-lg sm:text-xl text-muted-foreground mb-8 sm:mb-12 max-w-3xl mx-auto leading-relaxed px-2">
+            Join thousands of researchers, students, and professionals who are already using OpenMU to accelerate their work and unlock new insights.
+          </p>
+          
+          <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 justify-center mb-8 sm:mb-12 px-4">
+            <Button size="lg" className="text-base sm:text-lg px-8 sm:px-10 py-6 sm:py-7 shadow-xl hover:shadow-2xl transition-all duration-200 hover:scale-105">
+              Join Waitlist
+              <ArrowRight className="ml-2 sm:ml-3 h-4 w-4 sm:h-5 sm:w-5" />
+            </Button>
+            <Button variant="outline" size="lg" className="text-base sm:text-lg px-8 sm:px-10 py-6 sm:py-7 shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105">
+              <MessageCircle className="mr-2 sm:mr-3 h-4 w-4 sm:h-5 sm:w-5" />
+              Schedule Demo
+            </Button>
+          </div>
+
+          <div className="flex flex-col sm:flex-row items-center justify-center space-y-2 sm:space-y-0 sm:space-x-8 text-xs sm:text-sm text-muted-foreground">
+            <div className="flex items-center space-x-2">
+              <CheckCircle className="h-3 w-3 sm:h-4 sm:w-4 text-primary" />
+              <span>Early access Q1 2025</span>
+            </div>
+            <div className="flex items-center space-x-2">
+              <CheckCircle className="h-3 w-3 sm:h-4 sm:w-4 text-primary" />
+              <span>No credit card required</span>
+            </div>
+            <div className="flex items-center space-x-2">
+              <CheckCircle className="h-3 w-3 sm:h-4 sm:w-4 text-primary" />
+              <span>Free trial included</span>
+            </div>
+          </div>
         </div>
       </section>
 
       {/* Footer */}
-      <footer className="py-8 sm:py-12 px-4 border-t bg-muted/30">
+      <footer className="border-t py-12 sm:py-16 px-4 bg-muted/30">
         <div className="container mx-auto max-w-7xl">
-          <div className="flex flex-col md:flex-row items-center justify-between gap-4 sm:gap-6">
-            <div className="flex items-center space-x-2 sm:space-x-3">
-              <div className="p-1.5 sm:p-2 rounded-xl bg-primary/10">
-                <BookOpen className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8 sm:gap-12">
+            <div className="space-y-4 sm:space-y-6 col-span-1 sm:col-span-2 md:col-span-1">
+              <div className="flex items-center space-x-2 sm:space-x-3">
+                <div className="p-1.5 sm:p-2 rounded-xl bg-primary/10">
+                  <BookOpen className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
+                </div>
+                <span className="text-xl sm:text-2xl font-bold">OpenMU</span>
               </div>
-              <span className="text-lg sm:text-xl font-bold">OpenMU</span>
+              <p className="text-muted-foreground leading-relaxed text-sm sm:text-base">
+                Making academic research accessible to everyone through AI-powered insights and intelligent search.
+              </p>
+              <div className="flex space-x-3 sm:space-x-4">
+                <Button variant="outline" size="icon" className="rounded-full h-8 w-8 sm:h-10 sm:w-10">
+                  <MessageCircle className="h-3 w-3 sm:h-4 sm:w-4" />
+                </Button>
+              </div>
             </div>
-            
-            <div className="flex items-center space-x-4 sm:space-x-6 text-sm text-muted-foreground">
-              <span>© 2025 OpenMU. All rights reserved.</span>
-              <button className="hover:text-foreground transition-colors">Privacy</button>
-              <button className="hover:text-foreground transition-colors">Terms</button>
+
+            <div>
+              <h3 className="font-semibold mb-4 sm:mb-6 text-base sm:text-lg">Product</h3>
+              <div className="space-y-3 sm:space-y-4 text-muted-foreground text-sm sm:text-base">
+                <p className="hover:text-foreground transition-colors cursor-pointer">Features</p>
+                <p className="hover:text-foreground transition-colors cursor-pointer">Pricing</p>
+                <p className="hover:text-foreground transition-colors cursor-pointer">API</p>
+                <p className="hover:text-foreground transition-colors cursor-pointer">Integrations</p>
+              </div>
+            </div>
+
+            <div>
+              <h3 className="font-semibold mb-4 sm:mb-6 text-base sm:text-lg">Company</h3>
+              <div className="space-y-3 sm:space-y-4 text-muted-foreground text-sm sm:text-base">
+                <p className="hover:text-foreground transition-colors cursor-pointer">About</p>
+                <p className="hover:text-foreground transition-colors cursor-pointer">Blog</p>
+                <p className="hover:text-foreground transition-colors cursor-pointer">Careers</p>
+                <p className="hover:text-foreground transition-colors cursor-pointer">Press</p>
+              </div>
+            </div>
+
+            <div>
+              <h3 className="font-semibold mb-4 sm:mb-6 text-base sm:text-lg">Support</h3>
+              <div className="space-y-3 sm:space-y-4 text-muted-foreground text-sm sm:text-base">
+                <div className="flex items-center space-x-2 sm:space-x-3 hover:text-foreground transition-colors cursor-pointer">
+                  <Mail className="h-3 w-3 sm:h-4 sm:w-4" />
+                  <span>support@openmu.org</span>
+                </div>
+                <p className="hover:text-foreground transition-colors cursor-pointer">Documentation</p>
+                <p className="hover:text-foreground transition-colors cursor-pointer">Community</p>
+                <p className="hover:text-foreground transition-colors cursor-pointer">Status</p>
+              </div>
+            </div>
+          </div>
+
+          <Separator className="my-8 sm:my-12" />
+
+          <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
+            <p className="text-muted-foreground text-sm sm:text-base">
+              © 2025 OpenMU. All rights reserved.
+            </p>
+            <div className="flex flex-wrap justify-center space-x-4 sm:space-x-8 text-xs sm:text-sm text-muted-foreground">
+              <span className="hover:text-foreground transition-colors cursor-pointer">Privacy Policy</span>
+              <span className="hover:text-foreground transition-colors cursor-pointer">Terms of Service</span>
+              <span className="hover:text-foreground transition-colors cursor-pointer">Cookie Policy</span>
             </div>
           </div>
         </div>
