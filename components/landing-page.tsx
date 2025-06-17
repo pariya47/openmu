@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -43,6 +44,7 @@ import {
 import { PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from 'recharts';
 
 export function LandingPage() {
+  const router = useRouter();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [selectedFeature, setSelectedFeature] = useState(0);
   const [testimonialFilter, setTestimonialFilter] = useState('all');
@@ -187,6 +189,11 @@ export function LandingPage() {
     setIsMenuOpen(false);
   };
 
+  // Navigation handler for Join Waitlist buttons
+  const handleJoinWaitlist = () => {
+    router.push('/papers');
+  };
+
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
@@ -218,7 +225,10 @@ export function LandingPage() {
               <button onClick={() => scrollToSection('impact')} className="text-muted-foreground hover:text-foreground transition-colors duration-200 font-medium">
                 Impact
               </button>
-              <Button className="shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105">
+              <Button 
+                className="shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105"
+                onClick={handleJoinWaitlist}
+              >
                 Join Waitlist
               </Button>
             </nav>
@@ -248,7 +258,9 @@ export function LandingPage() {
                 <button onClick={() => scrollToSection('impact')} className="text-left text-muted-foreground hover:text-foreground transition-colors font-medium py-2">
                   Impact
                 </button>
-                <Button className="w-full mt-4">Join Waitlist</Button>
+                <Button className="w-full mt-4" onClick={handleJoinWaitlist}>
+                  Join Waitlist
+                </Button>
               </div>
             </nav>
           )}
@@ -280,7 +292,11 @@ export function LandingPage() {
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 justify-center mb-12 sm:mb-16 px-4">
-            <Button size="lg" className="text-base sm:text-lg px-8 sm:px-10 py-6 sm:py-7 shadow-xl hover:shadow-2xl transition-all duration-200 hover:scale-105">
+            <Button 
+              size="lg" 
+              className="text-base sm:text-lg px-8 sm:px-10 py-6 sm:py-7 shadow-xl hover:shadow-2xl transition-all duration-200 hover:scale-105"
+              onClick={handleJoinWaitlist}
+            >
               Join Waitlist
               <ArrowRight className="ml-2 sm:ml-3 h-4 w-4 sm:h-5 sm:w-5" />
             </Button>
@@ -818,7 +834,11 @@ export function LandingPage() {
           </p>
           
           <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 justify-center mb-8 sm:mb-12 px-4">
-            <Button size="lg" className="text-base sm:text-lg px-8 sm:px-10 py-6 sm:py-7 shadow-xl hover:shadow-2xl transition-all duration-200 hover:scale-105">
+            <Button 
+              size="lg" 
+              className="text-base sm:text-lg px-8 sm:px-10 py-6 sm:py-7 shadow-xl hover:shadow-2xl transition-all duration-200 hover:scale-105"
+              onClick={handleJoinWaitlist}
+            >
               Join Waitlist
               <ArrowRight className="ml-2 sm:ml-3 h-4 w-4 sm:h-5 sm:w-5" />
             </Button>
