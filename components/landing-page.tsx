@@ -120,11 +120,6 @@ export function LandingPage() {
               Explore researches
             </Button>
           </div>
-
-          <div className="flex items-center justify-center text-sm text-gray-500">
-            <Clock className="h-4 w-4 mr-2" />
-            Coming Soon - Early 2025
-          </div>
         </div>
       </section>
 
