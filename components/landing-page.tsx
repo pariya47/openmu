@@ -72,7 +72,7 @@ export function LandingPage() {
                 PLAN
               </Link>
               <Link href="/donate" className="text-gray-600 hover:text-black transition-colors font-medium">
-                Donate
+                DONATE
               </Link>
               <button className="bg-black text-white px-4 py-2 rounded-full hover:bg-gray-800 transition-colors font-medium">
                 JoinUs
