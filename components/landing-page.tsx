@@ -289,12 +289,6 @@ export function LandingPage() {
               Watch Demo
             </Button>
           </div>
-
-          {/* Coming Soon Badge */}
-          <div className="inline-flex items-center gap-2 sm:gap-3 bg-secondary/50 backdrop-blur-sm px-6 sm:px-8 py-3 sm:py-4 rounded-full border shadow-lg">
-            <Clock className="h-4 w-4 sm:h-5 sm:w-5 text-secondary-foreground" />
-            <span className="text-sm sm:text-base text-secondary-foreground font-medium">Coming Soon - Early 2025</span>
-          </div>
         </div>
       </section>
 
