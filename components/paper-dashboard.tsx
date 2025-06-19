@@ -161,7 +161,7 @@ export function PaperDashboard() {
                 <BookOpen className="h-6 w-6 text-slate-700" />
               </div>
               <span className="text-xl font-bold text-slate-800 group-hover:text-slate-600 transition-colors duration-200">
-                OpenMu
+                SUMU
               </span>
             </button>
           </div>
