@@ -140,7 +140,7 @@ const useSupabaseUpload = (options: UseSupabaseUploadOptions) => {
       })
     )
 
-    const responseErrors = responses.filter((x): x is { name: string; message: string } => x.message !== undefined)
+    const responseErrors = responses.filter((x): x is { name: string; message: string } => x.message !== undefined) as { name: string; message: string }[]
     // if there were errors previously, this function tried to upload the files again so we should clear/overwrite the existing errors.
     setErrors(responseErrors)
 
