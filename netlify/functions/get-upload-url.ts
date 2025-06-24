@@ -2,10 +2,6 @@ import { Handler, HandlerEvent, HandlerContext } from '@netlify/functions';
 import { createClient } from '@supabase/supabase-js';
 import { randomUUID } from 'crypto';
 
-// Configuration
-const ALLOWED_EXTENSIONS = (process.env.ALLOWED_FILE_EXTENSIONS || 'png,jpg,jpeg,gif,pdf,doc,docx,txt').split(',');
-const MAX_FILE_SIZE = parseInt(process.env.MAX_FILE_SIZE_MB || '10') * 1024 * 1024; // Default 10MB
-
 // Consistent API Response Interface
 interface ApiResponse<T = any> {
   success: boolean;
@@ -22,14 +18,12 @@ interface UploadUrlData {
   signedUrl: string;
   path: string;
   filename: string;
-  maxFileSize: number;
   expiresAt?: string;
 }
 
 interface RequestBody {
   ext: string;
   turnstileToken: string;
-  fileSize?: number;
 }
 
 interface TurnstileVerificationResponse {
@@ -43,8 +37,6 @@ interface TurnstileVerificationResponse {
 const ERROR_CODES = {
   VALIDATION_ERROR: 'VALIDATION_ERROR',
   SECURITY_VERIFICATION_FAILED: 'SECURITY_VERIFICATION_FAILED',
-  FILE_TYPE_NOT_ALLOWED: 'FILE_TYPE_NOT_ALLOWED',
-  FILE_SIZE_EXCEEDED: 'FILE_SIZE_EXCEEDED',
   UPLOAD_URL_CREATION_FAILED: 'UPLOAD_URL_CREATION_FAILED',
   INTERNAL_SERVER_ERROR: 'INTERNAL_SERVER_ERROR',
   METHOD_NOT_ALLOWED: 'METHOD_NOT_ALLOWED',
@@ -80,12 +72,7 @@ function generateSecureUUID(): string {
 }
 
 function sanitizeFileExtension(ext: string): string {
-  return ext.toLowerCase().replace(/[^a-z0-9]/g, '').substring(0, 10);
-}
-
-function validateFileExtension(ext: string): boolean {
-  const sanitized = sanitizeFileExtension(ext);
-  return ALLOWED_EXTENSIONS.includes(sanitized) && sanitized.length > 0;
+  return ext.toLowerCase();
 }
 
 async function verifyTurnstile(token: string, ip?: string): Promise<boolean> {
@@ -117,7 +104,7 @@ async function verifyTurnstile(token: string, ip?: string): Promise<boolean> {
   }
 }
 
-// Helper function to create consistent API responses
+// Helper function to create consistent API responses with CORS headers
 function createResponse<T>(
   statusCode: number,
   success: boolean,
@@ -176,7 +163,7 @@ export const handler: Handler = async (event: HandlerEvent, context: HandlerCont
     );
   }
 
-  // Handle CORS preflight
+  // Handle CORS preflight with proper headers
   if (event.httpMethod === 'OPTIONS') {
     return {
       statusCode: 200,
@@ -226,7 +213,7 @@ export const handler: Handler = async (event: HandlerEvent, context: HandlerCont
       );
     }
 
-    const { ext, turnstileToken, fileSize } = requestData;
+    const { ext, turnstileToken } = requestData;
 
     // Validate required fields
     if (!ext || !turnstileToken) {
@@ -237,37 +224,6 @@ export const handler: Handler = async (event: HandlerEvent, context: HandlerCont
         ERROR_CODES.MISSING_REQUIRED_FIELDS,
         'File extension and Turnstile token are required',
         { requiredFields: ['ext', 'turnstileToken'] }
-      );
-    }
-
-    // Validate file extension
-    if (!validateFileExtension(ext)) {
-      return createResponse(
-        400,
-        false,
-        undefined,
-        ERROR_CODES.FILE_TYPE_NOT_ALLOWED,
-        'File type not allowed',
-        { 
-          allowedExtensions: ALLOWED_EXTENSIONS,
-          providedExtension: ext 
-        }
-      );
-    }
-
-    // Validate file size if provided
-    if (fileSize && fileSize > MAX_FILE_SIZE) {
-      return createResponse(
-        400,
-        false,
-        undefined,
-        ERROR_CODES.FILE_SIZE_EXCEEDED,
-        `File size exceeds maximum limit`,
-        { 
-          maxSizeBytes: MAX_FILE_SIZE,
-          maxSizeMB: MAX_FILE_SIZE / (1024 * 1024),
-          providedSize: fileSize 
-        }
       );
     }
 
@@ -318,7 +274,6 @@ export const handler: Handler = async (event: HandlerEvent, context: HandlerCont
       signedUrl: data.signedUrl,
       path: filePath,
       filename: filename,
-      maxFileSize: MAX_FILE_SIZE,
       expiresAt
     };
 

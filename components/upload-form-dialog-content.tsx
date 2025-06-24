@@ -118,7 +118,7 @@ export function UploadFormDialogContent({ onClose }: UploadFormDialogContentProp
 
   const { getRootProps, getInputProps, isDragActive, fileRejections } = useDropzone({
     onDrop,
-    maxSize: 25 * 1024 * 1024, // 25MB for academic papers
+    maxSize: 10 * 1024 * 1024, // 10MB for academic papers
     accept: {
       'application/pdf': ['.pdf'],
       'application/msword': ['.doc'],
@@ -149,7 +149,7 @@ export function UploadFormDialogContent({ onClose }: UploadFormDialogContentProp
     if (fileRejections.length > 0) {
       const rejection = fileRejections[0];
       if (rejection.errors.some(e => e.code === 'file-too-large')) {
-        setError('File is too large. Maximum size is 25MB for academic papers.');
+        setError('File is too large. Maximum size is 10MB for academic papers.');
       } else if (rejection.errors.some(e => e.code === 'file-invalid-type')) {
         setError('Only PDF, DOC, and DOCX files are supported for academic papers.');
       } else {
@@ -275,7 +275,7 @@ export function UploadFormDialogContent({ onClose }: UploadFormDialogContentProp
                 </p>
                 <div className="inline-flex items-center gap-2 bg-muted/50 px-4 py-2 rounded-lg">
                   <FileText className="h-4 w-4" />
-                  <span className="text-sm font-medium">PDF, DOC, DOCX (max 25MB)</span>
+                  <span className="text-sm font-medium">PDF, DOC, DOCX (max 10MB)</span>
                 </div>
               </div>
               {!canProceed && (
