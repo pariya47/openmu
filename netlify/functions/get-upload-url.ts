@@ -120,7 +120,7 @@ function createResponse<T>(
   const corsHeaders = {
     'Access-Control-Allow-Origin': process.env.ALLOWED_ORIGIN || '*',
     'Access-Control-Allow-Headers': 'Content-Type',
-    'Access-Control-Allow-Methods': 'POST, OPTIONS',
+    'Access-Control-Allow-Methods': 'POST, OPTIONS, PUT',
     'Content-Type': 'application/json',
   };
 
