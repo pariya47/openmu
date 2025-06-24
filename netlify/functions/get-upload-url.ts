@@ -31,15 +31,21 @@ interface TurnstileVerificationResponse {
   hostname?: string;
 }
 
+// Define consistent CORS headers
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'Content-Type',
+  'Access-Control-Allow-Methods': 'POST, OPTIONS',
+  'Content-Type': 'application/json',
+};
+
 export const handler: Handler = async (event: HandlerEvent, context: HandlerContext) => {
   // Handle CORS preflight requests
   if (event.httpMethod === 'OPTIONS') {
     return {
       statusCode: 200,
       headers: {
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Headers': 'Content-Type',
-        'Access-Control-Allow-Methods': 'POST, OPTIONS',
+        ...corsHeaders,
         'Content-Type': 'text/plain',
       },
       body: '',
@@ -50,10 +56,7 @@ export const handler: Handler = async (event: HandlerEvent, context: HandlerCont
   if (event.httpMethod !== 'POST') {
     return {
       statusCode: 405,
-      headers: {
-        'Access-Control-Allow-Origin': '*',
-        'Content-Type': 'application/json',
-      },
+      headers: corsHeaders,
       body: JSON.stringify({ error: 'Method not allowed' }),
     };
   }
@@ -63,10 +66,7 @@ export const handler: Handler = async (event: HandlerEvent, context: HandlerCont
     if (!event.body) {
       return {
         statusCode: 400,
-        headers: {
-          'Access-Control-Allow-Origin': '*',
-          'Content-Type': 'application/json',
-        },
+        headers: corsHeaders,
         body: JSON.stringify({ error: 'Request body is required' }),
       };
     }
@@ -76,10 +76,7 @@ export const handler: Handler = async (event: HandlerEvent, context: HandlerCont
     if (!ext || !turnstileToken) {
       return {
         statusCode: 400,
-        headers: {
-          'Access-Control-Allow-Origin': '*',
-          'Content-Type': 'application/json',
-        },
+        headers: corsHeaders,
         body: JSON.stringify({
           error: 'File extension and Turnstile token are required'
         }),
@@ -91,10 +88,7 @@ export const handler: Handler = async (event: HandlerEvent, context: HandlerCont
     if (!turnstileSecret) {
       return {
         statusCode: 500,
-        headers: {
-          'Access-Control-Allow-Origin': '*',
-          'Content-Type': 'application/json',
-        },
+        headers: corsHeaders,
         body: JSON.stringify({
           error: 'Turnstile secret key not configured'
         }),
@@ -117,10 +111,7 @@ export const handler: Handler = async (event: HandlerEvent, context: HandlerCont
     if (!turnstileResult.success) {
       return {
         statusCode: 403,
-        headers: {
-          'Access-Control-Allow-Origin': '*',
-          'Content-Type': 'application/json',
-        },
+        headers: corsHeaders,
         body: JSON.stringify({
           error: 'Turnstile verification failed',
           details: turnstileResult['error-codes']
@@ -133,10 +124,7 @@ export const handler: Handler = async (event: HandlerEvent, context: HandlerCont
     if (!allowedExtensions.includes(ext.toLowerCase())) {
       return {
         statusCode: 400,
-        headers: {
-          'Access-Control-Allow-Origin': '*',
-          'Content-Type': 'application/json',
-        },
+        headers: corsHeaders,
         body: JSON.stringify({
           error: 'File type not allowed'
         }),
@@ -159,10 +147,7 @@ export const handler: Handler = async (event: HandlerEvent, context: HandlerCont
       console.error('Supabase error:', error);
       return {
         statusCode: 500,
-        headers: {
-          'Access-Control-Allow-Origin': '*',
-          'Content-Type': 'application/json',
-        },
+        headers: corsHeaders,
         body: JSON.stringify({
           error: 'Failed to create upload URL'
         }),
@@ -171,10 +156,7 @@ export const handler: Handler = async (event: HandlerEvent, context: HandlerCont
 
     return {
       statusCode: 200,
-      headers: {
-        'Access-Control-Allow-Origin': '*',
-        'Content-Type': 'application/json',
-      },
+      headers: corsHeaders,
       body: JSON.stringify({
         signedUrl: data.signedUrl,
         path: filePath,
@@ -186,10 +168,7 @@ export const handler: Handler = async (event: HandlerEvent, context: HandlerCont
     console.error('Upload URL generation error:', error);
     return {
       statusCode: 500,
-      headers: {
-        'Access-Control-Allow-Origin': '*',
-        'Content-Type': 'application/json',
-      },
+      headers: corsHeaders,
       body: JSON.stringify({
         error: 'Internal server error'
       }),
