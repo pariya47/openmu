@@ -40,6 +40,7 @@ export const handler: Handler = async (event: HandlerEvent, context: HandlerCont
         'Access-Control-Allow-Origin': '*',
         'Access-Control-Allow-Headers': 'Content-Type',
         'Access-Control-Allow-Methods': 'POST, OPTIONS',
+        'Content-Type': 'text/plain',
       },
       body: '',
     };
