@@ -356,44 +356,6 @@ export default function TestUploadPage() {
             </CardContent>
           </Card>
         </div>
-
-        {/* Instructions */}
-        <Card className="mt-6 shadow-lg">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Shield className="h-5 w-5" />
-              Security Features
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid gap-4 md:grid-cols-2">
-              <div className="space-y-2">
-                <h4 className="font-medium">Cloudflare Turnstile Protection</h4>
-                <p className="text-sm text-muted-foreground">
-                  Every upload is protected by Cloudflare Turnstile to prevent automated abuse and ensure only legitimate users can upload files.
-                </p>
-              </div>
-              <div className="space-y-2">
-                <h4 className="font-medium">Server-Side Validation</h4>
-                <p className="text-sm text-muted-foreground">
-                  All uploads are validated on the server using service role authentication, ensuring secure file storage in private buckets.
-                </p>
-              </div>
-              <div className="space-y-2">
-                <h4 className="font-medium">File Type Restrictions</h4>
-                <p className="text-sm text-muted-foreground">
-                  Only approved file types are allowed: images (PNG, JPG, GIF), documents (PDF, DOC, DOCX), and text files.
-                </p>
-              </div>
-              <div className="space-y-2">
-                <h4 className="font-medium">Size Limitations</h4>
-                <p className="text-sm text-muted-foreground">
-                  Files are limited to 5MB to ensure optimal performance and prevent abuse of storage resources.
-                </p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
       </div>
     </div>
   );
