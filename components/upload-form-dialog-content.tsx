@@ -72,7 +72,7 @@ export function UploadFormDialogContent({ onClose }: UploadFormDialogContentProp
       setUploadProgress(10);
 
       // Get signed upload URL
-      const res = await fetch('/api/get-upload-url', {
+      const res = await fetch('/.netlify/functions/get-upload-url', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ ext, turnstileToken }),
