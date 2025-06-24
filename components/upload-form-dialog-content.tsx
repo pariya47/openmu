@@ -82,10 +82,22 @@ export function UploadFormDialogContent({ onClose }: UploadFormDialogContentProp
 
       if (!res.ok) {
         const errorData = await res.json();
-        throw new Error(errorData.error || 'Failed to get upload URL');
+        throw new Error(errorData.error?.message || errorData.error || 'Failed to get upload URL');
       }
 
-      const { signedUrl, path } = await res.json();
+      const response = await res.json();
+      
+      // Handle the structured API response
+      if (!response.success || !response.data) {
+        throw new Error(response.error?.message || 'Invalid response from server');
+      }
+      
+      const { signedUrl, path } = response.data;
+      
+      if (!signedUrl) {
+        throw new Error('No signed URL received from server');
+      }
+      
       setUploadProgress(50);
 
       // Upload file to Supabase
