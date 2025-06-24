@@ -1,7 +1,67 @@
 import { Handler, HandlerEvent, HandlerContext } from '@netlify/functions';
-
-// Inline Supabase admin client to avoid bundling issues
 import { createClient } from '@supabase/supabase-js';
+import { randomUUID } from 'crypto';
+
+// Configuration
+const ALLOWED_EXTENSIONS = (process.env.ALLOWED_FILE_EXTENSIONS || 'png,jpg,jpeg,gif,pdf,doc,docx,txt').split(',');
+const MAX_FILE_SIZE = parseInt(process.env.MAX_FILE_SIZE_MB || '10') * 1024 * 1024; // Default 10MB
+
+// Consistent API Response Interface
+interface ApiResponse<T = any> {
+  success: boolean;
+  data?: T;
+  error?: {
+    code: string;
+    message: string;
+    details?: any;
+  };
+  timestamp: string;
+}
+
+interface UploadUrlData {
+  signedUrl: string;
+  path: string;
+  filename: string;
+  maxFileSize: number;
+  expiresAt?: string;
+}
+
+interface RequestBody {
+  ext: string;
+  turnstileToken: string;
+  fileSize?: number;
+}
+
+interface TurnstileVerificationResponse {
+  success: boolean;
+  'error-codes'?: string[];
+  challenge_ts?: string;
+  hostname?: string;
+}
+
+// Error codes for consistent error handling
+const ERROR_CODES = {
+  VALIDATION_ERROR: 'VALIDATION_ERROR',
+  SECURITY_VERIFICATION_FAILED: 'SECURITY_VERIFICATION_FAILED',
+  FILE_TYPE_NOT_ALLOWED: 'FILE_TYPE_NOT_ALLOWED',
+  FILE_SIZE_EXCEEDED: 'FILE_SIZE_EXCEEDED',
+  UPLOAD_URL_CREATION_FAILED: 'UPLOAD_URL_CREATION_FAILED',
+  INTERNAL_SERVER_ERROR: 'INTERNAL_SERVER_ERROR',
+  METHOD_NOT_ALLOWED: 'METHOD_NOT_ALLOWED',
+  MISSING_REQUIRED_FIELDS: 'MISSING_REQUIRED_FIELDS',
+  INVALID_JSON: 'INVALID_JSON',
+  CONFIGURATION_ERROR: 'CONFIGURATION_ERROR'
+} as const;
+
+// Validate environment variables
+function validateEnvironment(): void {
+  const required = ['NEXT_PUBLIC_SUPABASE_URL', 'SUPABASE_SERVICE_ROLE_KEY', 'CLOUDFLARE_TURNSTILE_SECRET_KEY'];
+  const missing = required.filter(key => !process.env[key]);
+  
+  if (missing.length > 0) {
+    throw new Error(`Missing required environment variables: ${missing.join(', ')}`);
+  }
+}
 
 function createAdminClient() {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
@@ -15,37 +75,115 @@ function createAdminClient() {
   });
 }
 
-// UUID v4 generator (simple implementation to avoid dependencies)
-function generateUUID(): string {
-  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
-    const r = Math.random() * 16 | 0;
-    const v = c === 'x' ? r : (r & 0x3 | 0x8);
-    return v.toString(16);
+function generateSecureUUID(): string {
+  return randomUUID();
+}
+
+function sanitizeFileExtension(ext: string): string {
+  return ext.toLowerCase().replace(/[^a-z0-9]/g, '').substring(0, 10);
+}
+
+function validateFileExtension(ext: string): boolean {
+  const sanitized = sanitizeFileExtension(ext);
+  return ALLOWED_EXTENSIONS.includes(sanitized) && sanitized.length > 0;
+}
+
+async function verifyTurnstile(token: string, ip?: string): Promise<boolean> {
+  const turnstileSecret = process.env.CLOUDFLARE_TURNSTILE_SECRET_KEY!;
+  
+  const formData = new URLSearchParams({
+    secret: turnstileSecret,
+    response: token,
   });
+  
+  if (ip) {
+    formData.append('remoteip', ip);
+  }
+  
+  try {
+    const response = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body: formData,
+    });
+
+    const result: TurnstileVerificationResponse = await response.json();
+    return result.success;
+  } catch (error) {
+    console.error('Turnstile verification error:', error);
+    return false;
+  }
 }
 
-interface TurnstileVerificationResponse {
-  success: boolean;
-  'error-codes'?: string[];
-  challenge_ts?: string;
-  hostname?: string;
-}
+// Helper function to create consistent API responses
+function createResponse<T>(
+  statusCode: number,
+  success: boolean,
+  data?: T,
+  errorCode?: string,
+  errorMessage?: string,
+  errorDetails?: any
+): {
+  statusCode: number;
+  headers: Record<string, string>;
+  body: string;
+} {
+  const corsHeaders = {
+    'Access-Control-Allow-Origin': process.env.ALLOWED_ORIGIN || '*',
+    'Access-Control-Allow-Headers': 'Content-Type',
+    'Access-Control-Allow-Methods': 'POST, OPTIONS',
+    'Content-Type': 'application/json',
+  };
 
-// Define consistent CORS headers
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'Content-Type',
-  'Access-Control-Allow-Methods': 'POST, OPTIONS',
-  'Content-Type': 'application/json',
-};
+  const response: ApiResponse<T> = {
+    success,
+    timestamp: new Date().toISOString(),
+  };
+
+  if (success && data) {
+    response.data = data;
+  }
+
+  if (!success && errorCode && errorMessage) {
+    response.error = {
+      code: errorCode,
+      message: errorMessage,
+      ...(errorDetails && { details: errorDetails })
+    };
+  }
+
+  return {
+    statusCode,
+    headers: corsHeaders,
+    body: JSON.stringify(response, null, 2),
+  };
+}
 
 export const handler: Handler = async (event: HandlerEvent, context: HandlerContext) => {
-  // Handle CORS preflight requests
+  // Validate environment on cold start
+  try {
+    validateEnvironment();
+  } catch (error) {
+    console.error('Environment validation failed:', error);
+    return createResponse(
+      500,
+      false,
+      undefined,
+      ERROR_CODES.CONFIGURATION_ERROR,
+      'Server configuration error'
+    );
+  }
+
+  // Handle CORS preflight
   if (event.httpMethod === 'OPTIONS') {
     return {
       statusCode: 200,
       headers: {
-        ...corsHeaders,
+        'Access-Control-Allow-Origin': process.env.ALLOWED_ORIGIN || '*',
+        'Access-Control-Allow-Headers': 'Content-Type',
+        'Access-Control-Allow-Methods': 'POST, OPTIONS',
         'Content-Type': 'text/plain',
       },
       body: '',
@@ -54,88 +192,107 @@ export const handler: Handler = async (event: HandlerEvent, context: HandlerCont
 
   // Only allow POST requests
   if (event.httpMethod !== 'POST') {
-    return {
-      statusCode: 405,
-      headers: corsHeaders,
-      body: JSON.stringify({ error: 'Method not allowed' }),
-    };
+    return createResponse(
+      405,
+      false,
+      undefined,
+      ERROR_CODES.METHOD_NOT_ALLOWED,
+      'Only POST method is allowed'
+    );
   }
 
   try {
-    // Parse request body
+    // Parse and validate request body
     if (!event.body) {
-      return {
-        statusCode: 400,
-        headers: corsHeaders,
-        body: JSON.stringify({ error: 'Request body is required' }),
-      };
+      return createResponse(
+        400,
+        false,
+        undefined,
+        ERROR_CODES.VALIDATION_ERROR,
+        'Request body is required'
+      );
     }
 
-    const { ext, turnstileToken } = JSON.parse(event.body);
+    let requestData: RequestBody;
+    try {
+      requestData = JSON.parse(event.body);
+    } catch {
+      return createResponse(
+        400,
+        false,
+        undefined,
+        ERROR_CODES.INVALID_JSON,
+        'Invalid JSON in request body'
+      );
+    }
 
+    const { ext, turnstileToken, fileSize } = requestData;
+
+    // Validate required fields
     if (!ext || !turnstileToken) {
-      return {
-        statusCode: 400,
-        headers: corsHeaders,
-        body: JSON.stringify({
-          error: 'File extension and Turnstile token are required'
-        }),
-      };
-    }
-
-    // Verify Turnstile token
-    const turnstileSecret = process.env.CLOUDFLARE_TURNSTILE_SECRET_KEY;
-    if (!turnstileSecret) {
-      return {
-        statusCode: 500,
-        headers: corsHeaders,
-        body: JSON.stringify({
-          error: 'Turnstile secret key not configured'
-        }),
-      };
-    }
-
-    const turnstileResponse = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-      },
-      body: new URLSearchParams({
-        secret: turnstileSecret,
-        response: turnstileToken,
-      }),
-    });
-
-    const turnstileResult: TurnstileVerificationResponse = await turnstileResponse.json();
-
-    if (!turnstileResult.success) {
-      return {
-        statusCode: 403,
-        headers: corsHeaders,
-        body: JSON.stringify({
-          error: 'Turnstile verification failed',
-          details: turnstileResult['error-codes']
-        }),
-      };
+      return createResponse(
+        400,
+        false,
+        undefined,
+        ERROR_CODES.MISSING_REQUIRED_FIELDS,
+        'File extension and Turnstile token are required',
+        { requiredFields: ['ext', 'turnstileToken'] }
+      );
     }
 
     // Validate file extension
-    const allowedExtensions = ['png', 'jpg', 'jpeg', 'gif', 'pdf', 'doc', 'docx', 'txt'];
-    if (!allowedExtensions.includes(ext.toLowerCase())) {
-      return {
-        statusCode: 400,
-        headers: corsHeaders,
-        body: JSON.stringify({
-          error: 'File type not allowed'
-        }),
-      };
+    if (!validateFileExtension(ext)) {
+      return createResponse(
+        400,
+        false,
+        undefined,
+        ERROR_CODES.FILE_TYPE_NOT_ALLOWED,
+        'File type not allowed',
+        { 
+          allowedExtensions: ALLOWED_EXTENSIONS,
+          providedExtension: ext 
+        }
+      );
     }
 
-    // Generate unique filename
-    const filename = `${generateUUID()}.${ext}`;
+    // Validate file size if provided
+    if (fileSize && fileSize > MAX_FILE_SIZE) {
+      return createResponse(
+        400,
+        false,
+        undefined,
+        ERROR_CODES.FILE_SIZE_EXCEEDED,
+        `File size exceeds maximum limit`,
+        { 
+          maxSizeBytes: MAX_FILE_SIZE,
+          maxSizeMB: MAX_FILE_SIZE / (1024 * 1024),
+          providedSize: fileSize 
+        }
+      );
+    }
+
+    // Get client IP for Turnstile verification
+    const clientIP = event.headers['x-forwarded-for']?.split(',')[0] || 
+                     event.headers['x-real-ip'];
+
+    // Verify Turnstile token
+    const turnstileVerified = await verifyTurnstile(turnstileToken, clientIP);
+    if (!turnstileVerified) {
+      return createResponse(
+        403,
+        false,
+        undefined,
+        ERROR_CODES.SECURITY_VERIFICATION_FAILED,
+        'Security verification failed'
+      );
+    }
+
+    // Generate secure filename
+    const sanitizedExt = sanitizeFileExtension(ext);
+    const filename = `${generateSecureUUID()}.${sanitizedExt}`;
     const filePath = `uploads/${filename}`;
 
-    // Create signed upload URL using admin client
+    // Create signed upload URL
     const supabase = createAdminClient();
     const { data, error } = await supabase.storage
       .from('uploads')
@@ -145,33 +302,36 @@ export const handler: Handler = async (event: HandlerEvent, context: HandlerCont
 
     if (error) {
       console.error('Supabase error:', error);
-      return {
-        statusCode: 500,
-        headers: corsHeaders,
-        body: JSON.stringify({
-          error: 'Failed to create upload URL'
-        }),
-      };
+      return createResponse(
+        500,
+        false,
+        undefined,
+        ERROR_CODES.UPLOAD_URL_CREATION_FAILED,
+        'Failed to create upload URL'
+      );
     }
 
-    return {
-      statusCode: 200,
-      headers: corsHeaders,
-      body: JSON.stringify({
-        signedUrl: data.signedUrl,
-        path: filePath,
-        filename: filename
-      }),
+    // Calculate expiration time (Supabase signed URLs typically expire in 1 hour)
+    const expiresAt = new Date(Date.now() + 60 * 60 * 1000).toISOString();
+
+    const responseData: UploadUrlData = {
+      signedUrl: data.signedUrl,
+      path: filePath,
+      filename: filename,
+      maxFileSize: MAX_FILE_SIZE,
+      expiresAt
     };
+
+    return createResponse(200, true, responseData);
 
   } catch (error) {
     console.error('Upload URL generation error:', error);
-    return {
-      statusCode: 500,
-      headers: corsHeaders,
-      body: JSON.stringify({
-        error: 'Internal server error'
-      }),
-    };
+    return createResponse(
+      500,
+      false,
+      undefined,
+      ERROR_CODES.INTERNAL_SERVER_ERROR,
+      'Internal server error'
+    );
   }
 };
