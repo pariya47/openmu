@@ -1,5 +1,10 @@
 import { createClient } from '@supabase/supabase-js';
-import { ReadPageClient } from '@/components/read-page-client';
+import dynamic from 'next/dynamic';
+
+// Dynamically import the client component to keep this page as a Server Component
+const ReadPageClient = dynamic(() => import('@/components/read-page-client').then(mod => ({ default: mod.ReadPageClient })), {
+  ssr: false
+});
 
 interface Paper {
   id: number;
