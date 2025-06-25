@@ -1,11 +1,6 @@
 import { createClient } from '@supabase/supabase-js';
 import { ReadPageClient } from '@/components/read-page-client';
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
-
 interface Paper {
   id: number;
   created_at: string;
@@ -21,6 +16,11 @@ interface Paper {
 
 export async function generateStaticParams() {
   try {
+    const supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    );
+
     const { data: papers, error } = await supabase
       .from('papers')
       .select('id');
@@ -49,6 +49,11 @@ export default async function ReadPage({
   let initialError: string | null = null;
 
   try {
+    const supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    );
+
     const { data: paper, error } = await supabase
       .from('papers')
       .select('*')
