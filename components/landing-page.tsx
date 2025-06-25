@@ -104,13 +104,15 @@ export function LandingPage() {
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center mb-16">
-            <Button 
-              size="lg" 
-              className="text-lg px-8 py-6 bg-black text-white hover:bg-gray-800 rounded-full shadow-lg hover:shadow-xl transition-all duration-200"
-            >
-              <Upload className="mr-3 h-5 w-5" />
-              Upload a new one
-            </Button>
+            <Link href="/read">
+              <Button 
+                size="lg" 
+                className="text-lg px-8 py-6 bg-black text-white hover:bg-gray-800 rounded-full shadow-lg hover:shadow-xl transition-all duration-200"
+              >
+                <Upload className="mr-3 h-5 w-5" />
+                Upload a new one
+              </Button>
+            </Link>
             <Button 
               variant="outline" 
               size="lg" 
