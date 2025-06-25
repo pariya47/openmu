@@ -33,6 +33,30 @@ import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { supabase, type Paper, type Topic, type Subtopic } from '@/lib/supabase';
 
+export async function generateStaticParams() {
+  try {
+    // Fetch all paper IDs from Supabase to generate static routes
+    const { data: papers, error } = await supabase
+      .from('papers')
+      .select('id');
+    
+    if (error) {
+      console.error('Error fetching papers for static generation:', error);
+      // Return empty array to avoid build failure
+      return [];
+    }
+    
+    // Return array of paper_id objects for static generation
+    return papers?.map((paper) => ({
+      paper_id: paper.id.toString()
+    })) || [];
+  } catch (error) {
+    console.error('Error in generateStaticParams:', error);
+    // Return empty array to avoid build failure
+    return [];
+  }
+}
+
 interface TopicItem {
   id: string;
   title: string;
