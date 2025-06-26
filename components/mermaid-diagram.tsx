@@ -556,8 +556,9 @@ const MermaidDiagramComponent = ({
               variant="ghost" 
               size="icon"
               className="absolute top-4 right-4 z-10 bg-background/80 backdrop-blur-sm border border-border shadow-lg hover:bg-background/90 hover:scale-110 transition-all duration-200 ease-in-out"
-              iconClass="h-5 w-5"
-            />
+            >
+              <X className="h-5 w-5" />
+            </ModernDialogClose>
           </DialogClose>
 
           {/* Zoom controls */}
