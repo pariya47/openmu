@@ -15,11 +15,12 @@ export async function generateStaticParams() {
 }
 
 interface DocViewerPageProps {
-  params: {
+  params: Promise<{
     paperId: string;
-  };
+  }>;
 }
 
-export default function DocViewerPage({ params }: DocViewerPageProps) {
-  return <DocViewer paperId={params.paperId} />;
+export default async function DocViewerPage({ params }: DocViewerPageProps) {
+  const { paperId } = await params;
+  return <DocViewer paperId={paperId} />;
 }
