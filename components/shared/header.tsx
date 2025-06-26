@@ -1,7 +1,7 @@
 "use client";
 
 import Link from 'next/link';
-import { BookOpen, MessageCircle as DiscordIcon } from 'lucide-react'; // Using MessageCircle as a generic community icon
+import Image from 'next/image';
 import { usePathname } from 'next/navigation'; // To highlight active link
 
 export function Header() {
@@ -18,10 +18,7 @@ export function Header() {
       <div className="container mx-auto px-4 py-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-3">
-            <div className="p-2 rounded-lg bg-black text-white">
-              <BookOpen className="h-5 w-5" />
-            </div>
-            <Link href="/" className="text-xl font-bold text-black">
+            <Link href="/" className="text-2xl font-bold text-black font-lora">
               mdscholar
             </Link>
           </div>
@@ -47,7 +44,13 @@ export function Header() {
               aria-label="Join us on Discord"
               className="text-gray-600 hover:text-black transition-colors"
             >
-              <DiscordIcon className="h-6 w-6" />
+              <Image 
+                src="/assets/icons/Discord-Symbol-Black.svg" 
+                alt="Discord" 
+                width={24} 
+                height={24}
+                className="h-6 w-6"
+              />
             </a>
           </nav>
 

@@ -1,6 +1,12 @@
 import './globals.css';
 import type { Metadata } from 'next';
+import { Lora } from 'next/font/google';
 import { Header } from '@/components/shared/header'; // Import the new header
+
+const lora = Lora({
+  subsets: ['latin'],
+  variable: '--font-lora',
+});
 
 export const metadata: Metadata = {
   title: 'mdscholar - Make Research Accessible to Everyone',
@@ -14,7 +20,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className="font-sans">
+      <body className={`font-sans ${lora.variable}`}>
         <Header />
         {children}
       </body>
