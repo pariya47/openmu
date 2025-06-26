@@ -34,7 +34,7 @@ interface Author {
 interface Paper {
   id: number;
   paper_name: string | null;
-  authers: Author[] | null;
+  authers: any | null; // Changed to any since the structure varies
   abstract: string | null;
   public_date: string | null;
   url: string | null;
@@ -79,17 +79,29 @@ export function PaperDashboard() {
     fetchPapers();
   }, []);
 
-    // Helper function to normalize authors data
-    const normalizeAuthors = (authers: any): string[] => {
-      if (!authers || typeof authers !== 'object') return [];
-      const names = authers.name;
-      if (Array.isArray(names)) {
-        return names.filter((n) => typeof n === 'string');
-      }
+  // Helper function to normalize authors data
+  const normalizeAuthors = (authers: any): string[] => {
+    if (!authers || typeof authers !== 'object') return [];
     
-      return [];
-    };
-
+    // Handle the case where authers has a 'name' property that is an array
+    if (authers.name && Array.isArray(authers.name)) {
+      return authers.name.filter((n: any) => typeof n === 'string');
+    }
+    
+    // Handle the case where authers is directly an array
+    if (Array.isArray(authers)) {
+      return authers.filter((author: any) => {
+        if (typeof author === 'string') return true;
+        if (typeof author === 'object' && author.name) return true;
+        return false;
+      }).map((author: any) => {
+        if (typeof author === 'string') return author;
+        return author.name;
+      });
+    }
+    
+    return [];
+  };
 
   // Filter papers based on search query
   const filteredPapers = papers.filter(paper => {
@@ -99,12 +111,12 @@ export function PaperDashboard() {
     const abstract = paper.abstract?.toLowerCase() || '';
     
     const normalizedAuthors = normalizeAuthors(paper.authers);
-    const authors = normalizedAuthors.map(name => name.toLowerCase()).join(' ');
+    const authors = normalizedAuthors.join(' ').toLowerCase();
     
     return (
-          paperName.includes(searchLower) || 
-           abstract.includes(searchLower) || 
-           authors.includes(searchLower)
+      paperName.includes(searchLower) || 
+      abstract.includes(searchLower) || 
+      authors.includes(searchLower)
     );
   });
 
@@ -129,9 +141,9 @@ export function PaperDashboard() {
     const normalizedAuthors = normalizeAuthors(authers);
     if (normalizedAuthors.length === 0) return 'Unknown Author';
     if (normalizedAuthors.length <= 2) {
-      return normalizedAuthors.map(author => author.name).join(', ');
+      return normalizedAuthors.join(', ');
     }
-    return `${normalizedAuthors[0].name} et al.`;
+    return `${normalizedAuthors[0]} et al.`;
   };
 
   const truncateAbstract = (abstract: string | null, maxLength: number = 80) => {
