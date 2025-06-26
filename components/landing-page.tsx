@@ -49,12 +49,10 @@ export function LandingPage() {
   const [selectedFeature, setSelectedFeature] = useState(0);
   const [testimonialFilter, setTestimonialFilter] = useState('all');
   const [scrollY, setScrollY] = useState(0);
-  const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => setScrollY(window.scrollY);
     window.addEventListener('scroll', handleScroll);
-    setIsVisible(true);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
@@ -270,9 +268,7 @@ export function LandingPage() {
       {/* Hero Section */}
       <section className="pt-24 sm:pt-32 pb-12 sm:pb-20 px-4 relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-secondary/5" />
-        <div className={`container mx-auto text-center max-w-5xl relative transition-all duration-1000 ${
-          isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
-        }`}>
+        <div className="container mx-auto text-center max-w-5xl relative animate-hero-fade-in">
           <Badge variant="secondary" className="mb-6 sm:mb-8 text-xs sm:text-sm px-4 sm:px-6 py-2 sm:py-3 shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105">
             <Sparkles className="h-3 w-3 sm:h-4 sm:w-4 mr-2" />
             Revolutionizing Academic Research
