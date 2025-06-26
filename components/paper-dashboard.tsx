@@ -15,7 +15,9 @@ import {
   FileText,
   ExternalLink,
   BookOpen,
-  Clock
+  Clock,
+  Loader2,
+  AlertCircle
 } from 'lucide-react';
 import {
   Dialog,
@@ -23,103 +25,71 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import { createClient } from '@/lib/supabase/client';
 
-interface Paper {
-  id: string;
-  title: string;
-  year: number;
-  authors: string[];
-  abstract: string;
-  doi?: string;
-  fullPaperUrl?: string;
-  dateAdded: string;
+interface Author {
+  name: string;
 }
 
-export const samplePapers: Paper[] = [
-  {
-    id: '1',
-    title: 'Attention Is All You Need',
-    year: 2017,
-    authors: ['Ashish Vaswani', 'Noam Shazeer', 'Niki Parmar'],
-    abstract: 'We propose a new simple network architecture, the Transformer, based solely on attention mechanisms, dispensing with recurrence and convolutions entirely. Experiments on two machine translation tasks show these models to be superior in quality while being more parallelizable.',
-    doi: '10.48550/arXiv.1706.03762',
-    fullPaperUrl: '#',
-    dateAdded: '2024-01-15'
-  },
-  {
-    id: '2',
-    title: 'BERT: Pre-training of Deep Bidirectional Transformers for Language Understanding',
-    year: 2018,
-    authors: ['Jacob Devlin', 'Ming-Wei Chang', 'Kenton Lee'],
-    abstract: 'We introduce a new language representation model called BERT, which stands for Bidirectional Encoder Representations from Transformers. Unlike recent language representation models, BERT is designed to pre-train deep bidirectional representations.',
-    doi: '10.48550/arXiv.1810.04805',
-    fullPaperUrl: '#',
-    dateAdded: '2024-01-14'
-  },
-  {
-    id: '3',
-    title: 'Language Models are Few-Shot Learners',
-    year: 2020,
-    authors: ['Tom B. Brown', 'Benjamin Mann', 'Nick Ryder'],
-    abstract: 'Recent work has demonstrated substantial gains on many NLP tasks and benchmarks by pre-training on a large corpus of text followed by fine-tuning on a specific task. While typically task-agnostic in architecture, this method still requires task-specific fine-tuning datasets.',
-    doi: '10.48550/arXiv.2005.14165',
-    fullPaperUrl: '#',
-    dateAdded: '2024-01-13'
-  },
-  {
-    id: '4',
-    title: 'Deep Residual Learning for Image Recognition',
-    year: 2015,
-    authors: ['Kaiming He', 'Xiangyu Zhang', 'Shaoqing Ren'],
-    abstract: 'Deeper neural networks are more difficult to train. We present a residual learning framework to ease the training of networks that are substantially deeper than those used previously. We explicitly reformulate the layers as learning residual functions.',
-    doi: '10.1109/CVPR.2016.90',
-    fullPaperUrl: '#',
-    dateAdded: '2024-01-12'
-  },
-  {
-    id: '5',
-    title: 'Generative Adversarial Networks',
-    year: 2014,
-    authors: ['Ian J. Goodfellow', 'Jean Pouget-Abadie', 'Mehdi Mirza'],
-    abstract: 'We propose a new framework for estimating generative models via an adversarial process, in which we simultaneously train two models: a generative model G that captures the data distribution, and a discriminative model D that estimates the probability.',
-    doi: '10.48550/arXiv.1406.2661',
-    fullPaperUrl: '#',
-    dateAdded: '2024-01-11'
-  }
-];
+interface Paper {
+  id: number;
+  paper_name: string | null;
+  authers: Author[] | null;
+  abstract: string | null;
+  public_date: string | null;
+  url: string | null;
+  created_at: string;
+}
 
 export function PaperDashboard() {
   const router = useRouter();
   const [papers, setPapers] = useState<Paper[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedPaper, setSelectedPaper] = useState<Paper | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  // Load papers from localStorage on component mount
+  // Fetch papers from Supabase
   useEffect(() => {
-    const savedPapers = localStorage.getItem('research-papers');
-    if (savedPapers) {
-      setPapers(JSON.parse(savedPapers));
-    } else {
-      // Initialize with sample papers
-      setPapers(samplePapers);
-      localStorage.setItem('research-papers', JSON.stringify(samplePapers));
-    }
+    const fetchPapers = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        
+        const supabase = createClient();
+        const { data, error: fetchError } = await supabase
+          .from('papers')
+          .select('id, paper_name, authers, abstract, public_date, url, created_at')
+          .order('created_at', { ascending: false });
+
+        if (fetchError) {
+          throw fetchError;
+        }
+
+        setPapers(data || []);
+      } catch (err) {
+        console.error('Error fetching papers:', err);
+        setError(err instanceof Error ? err.message : 'Failed to fetch papers');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchPapers();
   }, []);
 
-  // Save papers to localStorage whenever papers change
-  useEffect(() => {
-    if (papers.length > 0) {
-      localStorage.setItem('research-papers', JSON.stringify(papers));
-    }
-  }, [papers]);
-
   // Filter papers based on search query
-  const filteredPapers = papers.filter(paper =>
-    paper.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    paper.authors.some(author => author.toLowerCase().includes(searchQuery.toLowerCase())) ||
-    paper.doi?.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const filteredPapers = papers.filter(paper => {
+    const searchLower = searchQuery.toLowerCase();
+    const paperName = paper.paper_name?.toLowerCase() || '';
+    const abstract = paper.abstract?.toLowerCase() || '';
+    const authors = paper.authers?.map(author => author.name.toLowerCase()).join(' ') || '';
+    
+    return paperName.includes(searchLower) || 
+           abstract.includes(searchLower) || 
+           authors.includes(searchLower);
+  });
 
   const handlePaperClick = (paper: Paper) => {
     setSelectedPaper(paper);
@@ -127,33 +97,43 @@ export function PaperDashboard() {
   };
 
   const handleAddPaper = () => {
-    // For now, just show an alert - in a real app this would open an add paper form
-    alert('Add Paper functionality would be implemented here');
+    router.push('/test-upload');
   };
 
   const handleHomeClick = () => {
     router.push('/');
   };
 
-  const handleViewFullPaper = (paperId: string) => {
-    router.push(`/doc-viewer/${paperId}`);
+  const handleViewFullPaper = (paperId: number) => {
+    router.push(`/read/${paperId}`);
   };
 
-  const formatAuthors = (authors: string[]) => {
+  const formatAuthors = (authors: Author[] | null) => {
+    if (!authors || authors.length === 0) return 'Unknown Author';
     if (authors.length <= 2) {
-      return authors.join(', ');
+      return authors.map(author => author.name).join(', ');
     }
-    return `${authors[0]} et al.`;
+    return `${authors[0].name} et al.`;
   };
 
-  const truncateAbstract = (abstract: string, maxLength: number = 80) => {
+  const truncateAbstract = (abstract: string | null, maxLength: number = 80) => {
+    if (!abstract) return 'No abstract available';
     if (abstract.length <= maxLength) return abstract;
     return abstract.substring(0, maxLength) + '...';
   };
 
+  const formatDate = (dateString: string | null) => {
+    if (!dateString) return 'Unknown date';
+    try {
+      return new Date(dateString).toLocaleDateString();
+    } catch {
+      return 'Invalid date';
+    }
+  };
+
   return (
     <div className="min-h-screen bg-white">
-      {/* Top Navigation Header - Removed sticky behavior */}
+      {/* Top Navigation Header */}
       <header className="bg-white border-b border-slate-200">
         <div className="container mx-auto px-6 py-4">
           <div className="flex items-center">
@@ -165,7 +145,7 @@ export function PaperDashboard() {
                 <BookOpen className="h-6 w-6 text-slate-700" />
               </div>
               <span className="text-xl font-bold text-slate-800 group-hover:text-slate-600 transition-colors duration-200">
-                SUMU
+                mdscholar
               </span>
             </button>
           </div>
@@ -176,7 +156,7 @@ export function PaperDashboard() {
         {/* Main Header */}
         <div className="text-center mb-12 mt-8">
           <h1 className="text-3xl md:text-4xl font-bold text-slate-800 mb-3 leading-tight">
-            Your summarized research library,{' '}
+            Your research library,{' '}
             <span className="text-slate-600">
               all in one place
             </span>
@@ -192,7 +172,7 @@ export function PaperDashboard() {
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 h-4 w-4" />
             <Input
               type="text"
-              placeholder="Search by DOI, Name..."
+              placeholder="Search by title, author, or abstract..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="pl-10 pr-4 py-4 text-base border-2 border-slate-300 rounded-xl focus:border-slate-400 focus:ring-slate-200 shadow-sm hover:shadow-md transition-all duration-200 bg-white"
@@ -200,63 +180,112 @@ export function PaperDashboard() {
           </div>
         </div>
 
-        {/* Papers Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 mb-8">
-          {/* Add Paper Card */}
-          <Card 
-            className="group cursor-pointer border-2 border-dashed border-slate-300 bg-slate-50 hover:border-slate-400 hover:shadow-lg transition-all duration-200 hover:scale-105 rounded-xl min-h-[210px] flex items-center justify-center"
-            onClick={handleAddPaper}
-          >
-            <CardContent className="text-center p-4">
-              <div className="w-10 h-10 mx-auto mb-2 rounded-full bg-slate-600 flex items-center justify-center group-hover:scale-110 transition-transform duration-200">
-                <Plus className="h-5 w-5 text-white" />
-              </div>
-              <h3 className="text-base font-semibold text-slate-700 mb-1">Add Paper</h3>
-              <p className="text-slate-500 text-sm">Import a new research paper to your library</p>
-            </CardContent>
-          </Card>
+        {/* Loading State */}
+        {loading && (
+          <div className="flex items-center justify-center py-12">
+            <div className="text-center">
+              <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4 text-slate-600" />
+              <p className="text-slate-600">Loading papers...</p>
+            </div>
+          </div>
+        )}
 
-          {/* Paper Cards - Clean top-right corner */}
-          {filteredPapers.map((paper) => (
-            <Card
-              key={paper.id}
-              className="group cursor-pointer border-2 border-slate-300 bg-slate-50 hover:shadow-lg transition-all duration-200 hover:scale-105 rounded-xl overflow-hidden min-h-[210px] flex flex-col"
-              onClick={() => handlePaperClick(paper)}
+        {/* Error State */}
+        {error && (
+          <div className="flex items-center justify-center py-12">
+            <div className="text-center max-w-md">
+              <AlertCircle className="h-8 w-8 mx-auto mb-4 text-red-500" />
+              <h3 className="text-lg font-semibold text-slate-800 mb-2">Error Loading Papers</h3>
+              <p className="text-slate-600 mb-4">{error}</p>
+              <Button 
+                onClick={() => window.location.reload()} 
+                variant="outline"
+                className="border-slate-300 hover:border-slate-400"
+              >
+                Try Again
+              </Button>
+            </div>
+          </div>
+        )}
+
+        {/* Papers Grid */}
+        {!loading && !error && (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 mb-8">
+            {/* Add Paper Card */}
+            <Card 
+              className="group cursor-pointer border-2 border-dashed border-slate-300 bg-slate-50 hover:border-slate-400 hover:shadow-lg transition-all duration-200 hover:scale-105 rounded-xl min-h-[210px] flex items-center justify-center"
+              onClick={handleAddPaper}
             >
-              <CardHeader className="pb-1 flex-shrink-0">
-                <div className="flex items-start justify-between mb-1">
-                  <Badge variant="secondary" className="text-xs font-medium bg-slate-200 text-slate-700 border border-slate-300">
-                    {paper.year}
-                  </Badge>
-                  {/* Removed the ExternalLink icon to clear the top-right corner */}
+              <CardContent className="text-center p-4">
+                <div className="w-10 h-10 mx-auto mb-2 rounded-full bg-slate-600 flex items-center justify-center group-hover:scale-110 transition-transform duration-200">
+                  <Plus className="h-5 w-5 text-white" />
                 </div>
-                <CardTitle className="text-sm font-bold text-slate-800 leading-tight line-clamp-2 group-hover:text-slate-600 transition-colors duration-200">
-                  {paper.title}
-                </CardTitle>
-                <CardDescription className="text-xs text-slate-600 flex items-center gap-1">
-                  <User className="h-3 w-3" />
-                  {formatAuthors(paper.authors)}
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="pt-0 flex-1 flex flex-col justify-between">
-                <p className="text-xs text-slate-600 leading-relaxed line-clamp-2 mb-3">
-                  {truncateAbstract(paper.abstract)}
-                </p>
-                
-                {/* Bottom section with date only */}
-                <div className="flex items-end justify-between mt-auto">
-                  <div className="flex items-center gap-1 text-xs text-slate-400">
-                    <Clock className="h-3 w-3" />
-                    <span>Added {new Date(paper.dateAdded).toLocaleDateString()}</span>
-                  </div>
-                </div>
+                <h3 className="text-base font-semibold text-slate-700 mb-1">Add Paper</h3>
+                <p className="text-slate-500 text-sm">Import a new research paper to your library</p>
               </CardContent>
             </Card>
-          ))}
-        </div>
+
+            {/* Paper Cards */}
+            {filteredPapers.map((paper) => (
+              <Card
+                key={paper.id}
+                className="group cursor-pointer border-2 border-slate-300 bg-slate-50 hover:shadow-lg transition-all duration-200 hover:scale-105 rounded-xl overflow-hidden min-h-[210px] flex flex-col"
+                onClick={() => handlePaperClick(paper)}
+              >
+                <CardHeader className="pb-1 flex-shrink-0">
+                  <div className="flex items-start justify-between mb-1">
+                    <Badge variant="secondary" className="text-xs font-medium bg-slate-200 text-slate-700 border border-slate-300">
+                      {paper.public_date ? formatDate(paper.public_date) : formatDate(paper.created_at)}
+                    </Badge>
+                  </div>
+                  <CardTitle className="text-sm font-bold text-slate-800 leading-tight line-clamp-2 group-hover:text-slate-600 transition-colors duration-200">
+                    {paper.paper_name || 'Untitled Paper'}
+                  </CardTitle>
+                  <CardDescription className="text-xs text-slate-600 flex items-center gap-1">
+                    <User className="h-3 w-3" />
+                    {formatAuthors(paper.authers)}
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="pt-0 flex-1 flex flex-col justify-between">
+                  <p className="text-xs text-slate-600 leading-relaxed line-clamp-2 mb-3">
+                    {truncateAbstract(paper.abstract)}
+                  </p>
+                  
+                  {/* Bottom section with date */}
+                  <div className="flex items-end justify-between mt-auto">
+                    <div className="flex items-center gap-1 text-xs text-slate-400">
+                      <Clock className="h-3 w-3" />
+                      <span>Added {formatDate(paper.created_at)}</span>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        )}
 
         {/* Empty State */}
-        {filteredPapers.length === 0 && searchQuery && (
+        {!loading && !error && filteredPapers.length === 0 && papers.length === 0 && (
+          <div className="text-center py-12">
+            <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-slate-100 flex items-center justify-center border-2 border-slate-200">
+              <BookOpen className="h-10 w-10 text-slate-400" />
+            </div>
+            <h3 className="text-xl font-semibold text-slate-700 mb-2">No papers yet</h3>
+            <p className="text-slate-500 max-w-md mx-auto text-sm mb-6">
+              Start building your research library by adding your first paper
+            </p>
+            <Button 
+              onClick={handleAddPaper}
+              className="bg-slate-600 hover:bg-slate-700 text-white"
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              Add Your First Paper
+            </Button>
+          </div>
+        )}
+
+        {/* Search Empty State */}
+        {!loading && !error && filteredPapers.length === 0 && papers.length > 0 && searchQuery && (
           <div className="text-center py-12">
             <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-slate-100 flex items-center justify-center border-2 border-slate-200">
               <Search className="h-10 w-10 text-slate-400" />
@@ -268,33 +297,39 @@ export function PaperDashboard() {
           </div>
         )}
 
-        {/* Paper Detail Modal - Removed close button */}
+        {/* Paper Detail Modal */}
         <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
           <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto rounded-2xl border-2 border-slate-300 shadow-xl bg-white">
             <DialogHeader className="pb-4">
               <div className="flex items-start justify-between">
                 <div className="flex-1">
                   <DialogTitle className="text-xl font-bold text-slate-800 leading-tight mb-2">
-                    {selectedPaper?.title}
+                    {selectedPaper?.paper_name || 'Untitled Paper'}
                   </DialogTitle>
                   <div className="flex flex-wrap items-center gap-3 text-sm text-slate-600">
                     <div className="flex items-center gap-1">
                       <Calendar className="h-4 w-4" />
-                      <span>{selectedPaper?.year}</span>
+                      <span>{selectedPaper?.public_date ? formatDate(selectedPaper.public_date) : formatDate(selectedPaper?.created_at || '')}</span>
                     </div>
                     <div className="flex items-center gap-1">
                       <User className="h-4 w-4" />
-                      <span>{selectedPaper?.authors.join(', ')}</span>
+                      <span>{formatAuthors(selectedPaper?.authers || null)}</span>
                     </div>
-                    {selectedPaper?.doi && (
+                    {selectedPaper?.url && (
                       <div className="flex items-center gap-1">
-                        <FileText className="h-4 w-4" />
-                        <span className="font-mono text-xs">{selectedPaper.doi}</span>
+                        <ExternalLink className="h-4 w-4" />
+                        <a 
+                          href={selectedPaper.url} 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          className="text-blue-600 hover:text-blue-800 underline"
+                        >
+                          Original Paper
+                        </a>
                       </div>
                     )}
                   </div>
                 </div>
-                {/* Removed DialogClose button */}
               </div>
             </DialogHeader>
 
@@ -307,7 +342,7 @@ export function PaperDashboard() {
                   Abstract
                 </h3>
                 <p className="text-slate-700 leading-relaxed text-sm">
-                  {selectedPaper?.abstract}
+                  {selectedPaper?.abstract || 'No abstract available for this paper.'}
                 </p>
               </div>
 
@@ -325,15 +360,15 @@ export function PaperDashboard() {
                   }}
                 >
                   <ExternalLink className="mr-2 h-4 w-4" />
-                  View Full Paper
+                  View Analysis
                 </Button>
                 <Button
                   variant="outline"
                   size="default"
                   className="flex-1 border-2 border-slate-300 hover:border-slate-400 hover:bg-slate-50 rounded-lg transition-all duration-200"
                   onClick={() => {
-                    // Copy DOI or title to clipboard
-                    const textToCopy = selectedPaper?.doi || selectedPaper?.title || '';
+                    // Copy paper title to clipboard
+                    const textToCopy = selectedPaper?.paper_name || selectedPaper?.url || '';
                     navigator.clipboard.writeText(textToCopy);
                     // In a real app, you'd show a toast notification here
                   }}
