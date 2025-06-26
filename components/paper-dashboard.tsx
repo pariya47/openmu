@@ -130,7 +130,7 @@ export function PaperDashboard() {
   };
 
   const handleViewFullPaper = (paperId: number) => {
-    router.push(`/read/${paperId}`);
+    router.push(`/doc-viewer/${paperId}`);
   };
 
   const formatAuthors = (authers: any) => {

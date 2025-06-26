@@ -3,29 +3,53 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { 
-  Search, 
-  Send,
+import { Skeleton } from '@/components/ui/skeleton';
+import {
   BookOpen,
-  Calendar,
-  ExternalLink,
+  ArrowLeft,
+  RefreshCw,
+  Mail,
+  ChevronRight,
+  ChevronDown,
+  Target,
+  Share,
+  AlertTriangle,
+  Layers,
   Menu,
   X,
-  ChevronRight,
+  Send,
   MessageCircle,
   Sparkles,
   Clock,
-  Share,
   Bookmark,
   Download,
   Settings
 } from 'lucide-react';
-import { mockDocSections, getDocSectionForPaper, samplePapers, type DocSection } from '@/lib/mock-data';
+import { createClient } from '@/lib/supabase/client';
+import { MermaidDiagram } from '@/components/mermaid-diagram';
+
+// Types for the real data structure
+interface Subtopic {
+  subtopic_title: string;
+  content: string;
+  mermaid: string;
+}
+
+interface Topic {
+  topic: string;
+  subtopics: Subtopic[];
+}
+
+interface TopicData {
+  id: number;
+  topics: Topic[];
+  created_at: string;
+}
 
 interface DocViewerProps {
   paperId: string;
@@ -33,28 +57,53 @@ interface DocViewerProps {
 
 export function DocViewer({ paperId }: DocViewerProps) {
   const router = useRouter();
-  const [activeSection, setActiveSection] = useState(paperId || 'overview');
+  const [topicData, setTopicData] = useState<TopicData | null>(null);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [aiQuery, setAiQuery] = useState('');
-  const [activeSubsection, setActiveSubsection] = useState<string>('');
+  const [activeTopicIndex, setActiveTopicIndex] = useState<number>(0);
   const [isAiLoading, setIsAiLoading] = useState(false);
   const [aiResponse, setAiResponse] = useState<string>('');
 
-  // Find current section - first try paper mapping, then direct section lookup
-  const currentSection = getDocSectionForPaper(paperId) || 
-                         mockDocSections.find(section => section.id === activeSection) || 
-                         mockDocSections[0];
+  // Fetch data from Supabase
+  useEffect(() => {
+    const fetchTopicData = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        
+        const supabase = createClient();
+        const { data, error: fetchError } = await supabase
+          .from('topic')
+          .select('id, topics, created_at')
+          .eq('id', paperId)
+          .single();
 
-  // Find paper info if this is a paper-based view
-  const currentPaper = samplePapers.find(paper => paper.id === paperId);
-  const isPaperView = !!currentPaper;
+        if (fetchError) {
+          throw fetchError;
+        }
 
-  // Handle section navigation
-  const handleSectionClick = (sectionId: string) => {
-    setActiveSection(sectionId);
-    setSidebarOpen(false);
-    router.push(`/doc-viewer/${sectionId}`);
-  };
+        if (data) {
+          setTopicData(data as TopicData);
+        } else {
+          setError('Topic not found.');
+        }
+      } catch (err) {
+        console.error('Error fetching topic data:', err);
+        setError(err instanceof Error ? err.message : 'Failed to fetch topic data');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (paperId) {
+      fetchTopicData();
+    } else {
+      setError('No topic ID provided.');
+      setLoading(false);
+    }
+  }, [paperId]);
 
   // Handle back to papers
   const handleBackToPapers = () => {
@@ -68,36 +117,13 @@ export function DocViewer({ paperId }: DocViewerProps) {
     setIsAiLoading(true);
     // Simulate AI response
     setTimeout(() => {
-      const contextInfo = isPaperView 
-        ? `the paper "${currentPaper?.title}" by ${currentPaper?.authors.join(', ')}`
-        : `the ${currentSection.title} section`;
+      const currentTopic = topicData?.topics[activeTopicIndex];
+      const contextInfo = currentTopic ? `the topic "${currentTopic.topic}"` : 'this content';
       
-      setAiResponse(`Based on ${contextInfo}, here's what I found about "${aiQuery}":\n\n• This is a simulated AI response that would normally come from vector search and LLM processing\n• The system would analyze the current ${isPaperView ? 'paper' : 'section'} content and provide contextual answers\n• Real implementation would use embeddings and retrieval-augmented generation\n• Context: ${isPaperView ? 'Academic paper analysis' : 'Documentation section'}`);
+      setAiResponse(`Based on ${contextInfo}, here's what I found about "${aiQuery}":\n\n• This is a simulated AI response that would normally come from vector search and LLM processing\n• The system would analyze the current topic content and provide contextual answers\n• Real implementation would use embeddings and retrieval-augmented generation\n• Context: Academic research analysis`);
       setIsAiLoading(false);
     }, 2000);
   };
-
-  // Scroll spy effect for table of contents
-  useEffect(() => {
-    const handleScroll = () => {
-      const headings = document.querySelectorAll('h2, h3');
-      let current = '';
-      
-      headings.forEach((heading) => {
-        const rect = heading.getBoundingClientRect();
-        if (rect.top <= 100) {
-          current = heading.id;
-        }
-      });
-      
-      if (current !== activeSubsection) {
-        setActiveSubsection(current);
-      }
-    };
-
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, [activeSubsection]);
 
   // Parse content and add IDs to headings
   const parseContent = (content: string) => {
@@ -117,22 +143,27 @@ export function DocViewer({ paperId }: DocViewerProps) {
       } else if (line.startsWith('# ')) {
         const title = line.replace('# ', '');
         return `<h1 class="text-3xl font-bold text-slate-900 mb-6">${title}</h1>`;
-      } else if (line.startsWith('```')) {
-        if (line.includes('python') || line.includes('bash') || line.includes('javascript')) {
-          return '<pre class="bg-slate-100 border border-slate-200 rounded-lg p-4 my-4 overflow-x-auto"><code class="text-sm text-slate-800">';
-        } else if (line === '```') {
-          return '</code></pre>';
-        }
-        return '';
-      } else if (line.startsWith('- **') && line.includes('**:')) {
-        const [term, description] = line.replace('- **', '').split('**:');
-        return `<li class="mb-2"><strong class="text-slate-800">${term}</strong>: ${description}</li>`;
+      } else if (line.includes('**') && line.includes('**')) {
+        return `<p class="mb-4 text-slate-700 leading-relaxed">${line.replace(/\*\*(.*?)\*\*/g, '<strong class="text-slate-800">$1</strong>')}</p>`;
+      } else if (line.startsWith('<KeyFinding>') && line.includes('</KeyFinding>')) {
+        const content = line.replace('<KeyFinding>', '').replace('</KeyFinding>', '');
+        return `<div class="my-4 p-4 bg-blue-50 border-l-4 border-blue-500 rounded-r-lg"><p class="text-blue-800 font-medium">${content}</p></div>`;
+      } else if (line.startsWith('<Methodology') && line.includes('>')) {
+        const titleMatch = line.match(/title="([^"]+)"/);
+        const title = titleMatch ? titleMatch[1] : 'Methodology';
+        return `<div class="my-4 p-4 bg-green-50 border border-green-200 rounded-lg"><h4 class="text-green-800 font-semibold mb-2">${title}</h4>`;
+      } else if (line.startsWith('</Methodology>')) {
+        return '</div>';
+      } else if (line.startsWith('<Important>') && line.includes('</Important>')) {
+        const content = line.replace('<Important>', '').replace('</Important>', '');
+        return `<div class="my-4 p-4 bg-amber-50 border-l-4 border-amber-500 rounded-r-lg"><p class="text-amber-800 font-medium">${content}</p></div>`;
+      } else if (line.startsWith('<Insight>') && line.includes('</Insight>')) {
+        const content = line.replace('<Insight>', '').replace('</Insight>', '');
+        return `<div class="my-4 p-4 bg-purple-50 border-l-4 border-purple-500 rounded-r-lg"><p class="text-purple-800 font-medium">${content}</p></div>`;
       } else if (line.startsWith('- ')) {
         return `<li class="mb-1 text-slate-700">${line.replace('- ', '')}</li>`;
       } else if (line.trim() === '') {
         return '<br>';
-      } else if (line.includes('`') && !line.startsWith('```')) {
-        return `<p class="mb-4 text-slate-700 leading-relaxed">${line.replace(/`([^`]+)`/g, '<code class="bg-slate-100 px-2 py-1 rounded text-sm">$1</code>')}</p>`;
       } else if (line.trim().length > 0 && !line.startsWith('<')) {
         return `<p class="mb-4 text-slate-700 leading-relaxed">${line}</p>`;
       }
@@ -141,200 +172,264 @@ export function DocViewer({ paperId }: DocViewerProps) {
   };
 
   return (
-    <div className="min-h-screen bg-white flex">
-      {/* Mobile Sidebar Overlay */}
-      {sidebarOpen && (
-        <div 
-          className="fixed inset-0 bg-black/50 z-40 lg:hidden"
-          onClick={() => setSidebarOpen(false)}
-        />
-      )}
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
+      <div className="container mx-auto px-4 py-6">
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
+          {/* Mobile Sidebar Overlay */}
+          {sidebarOpen && (
+            <div 
+              className="fixed inset-0 bg-black/50 z-40 lg:hidden"
+              onClick={() => setSidebarOpen(false)}
+            />
+          )}
 
-      {/* Left Sidebar - Global Navigation */}
-      <div className={`
-        fixed lg:static inset-y-0 left-0 z-50 w-80 bg-slate-50 border-r border-slate-200 transform transition-transform duration-300 ease-in-out
-        ${sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
-      `}>
-        <div className="flex flex-col h-full">
-          {/* Header */}
-          <div className="p-6 border-b border-slate-200">
-            <div className="flex items-center justify-between">
-              <button
-                onClick={handleBackToPapers}
-                className="flex items-center space-x-3 group hover:scale-105 transition-all duration-200 p-2 rounded-xl hover:bg-slate-100"
-              >
-                <div className="p-2 rounded-xl bg-slate-200 group-hover:bg-slate-300 transition-colors duration-200">
-                  <BookOpen className="h-5 w-5 text-slate-700" />
+          {/* Left Sidebar - Topics */}
+          <div className={`
+            fixed lg:static inset-y-0 left-0 z-50 w-80 bg-slate-50 border-r border-slate-200 transform transition-transform duration-300 ease-in-out
+            ${sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
+          `}>
+            <div className="flex flex-col h-full">
+              {/* Header */}
+              <div className="p-6 border-b border-slate-200">
+                <div className="flex items-center justify-between">
+                  <button
+                    onClick={handleBackToPapers}
+                    className="flex items-center space-x-3 group hover:scale-105 transition-all duration-200 p-2 rounded-xl hover:bg-slate-100"
+                  >
+                    <div className="p-2 rounded-xl bg-slate-200 group-hover:bg-slate-300 transition-colors duration-200">
+                      <BookOpen className="h-5 w-5 text-slate-700" />
+                    </div>
+                    <span className="text-lg font-bold text-slate-800 group-hover:text-slate-600 transition-colors duration-200">
+                      Doc Viewer
+                    </span>
+                  </button>
+                  <button
+                    onClick={() => setSidebarOpen(false)}
+                    className="lg:hidden p-2 rounded-lg hover:bg-slate-200 transition-colors"
+                  >
+                    <X className="h-5 w-5 text-slate-600" />
+                  </button>
                 </div>
-                <span className="text-lg font-bold text-slate-800 group-hover:text-slate-600 transition-colors duration-200">
-                  Doc Viewer
-                </span>
-              </button>
-              <button
-                onClick={() => setSidebarOpen(false)}
-                className="lg:hidden p-2 rounded-lg hover:bg-slate-200 transition-colors"
-              >
-                <X className="h-5 w-5 text-slate-600" />
-              </button>
-            </div>
-            
-            {/* Metadata */}
-            <div className="mt-4 space-y-2">
-              <div className="text-sm text-slate-600">
-                <span className="font-medium">
-                  {isPaperView ? currentPaper?.title : 'huggingface/transformers'}
-                </span>
-              </div>
-              {isPaperView && (
-                <div className="text-xs text-slate-500">
-                  {currentPaper?.authors.join(', ')} ({currentPaper?.year})
-                </div>
-              )}
-              <div className="flex items-center text-xs text-slate-500">
-                <Clock className="h-3 w-3 mr-1" />
-                Last Indexed: {isPaperView ? 'June 10, 2025 (1d)' : 'June 5, 2025 (4d/2h)'}
-              </div>
-            </div>
-          </div>
-
-          {/* Navigation */}
-          <ScrollArea className="flex-1 p-4">
-            <nav className="space-y-1">
-              {mockDocSections.map((section) => (
-                <button
-                  key={section.id}
-                  onClick={() => handleSectionClick(section.id)}
-                  className={`
-                    w-full text-left px-3 py-2 rounded-lg transition-all duration-200 flex items-center justify-between group text-sm
-                    ${activeSection === section.id || currentSection.id === section.id
-                      ? 'bg-slate-200 text-slate-900 shadow-sm' 
-                      : 'text-slate-700 hover:bg-slate-100 hover:text-slate-900'
-                    }
-                  `}
-                >
-                  <span className="font-medium">{section.title}</span>
-                  {(activeSection === section.id || currentSection.id === section.id) && (
-                    <ChevronRight className="h-4 w-4 text-slate-600" />
-                  )}
-                </button>
-              ))}
-            </nav>
-          </ScrollArea>
-
-          {/* Action Buttons */}
-          <div className="p-4 border-t border-slate-200 space-y-2">
-            <Button variant="outline" size="sm" className="w-full justify-start">
-              <Share className="h-4 w-4 mr-2" />
-              Share {isPaperView ? 'Paper' : 'Document'}
-            </Button>
-            <Button variant="outline" size="sm" className="w-full justify-start">
-              <Download className="h-4 w-4 mr-2" />
-              Export PDF
-            </Button>
-          </div>
-        </div>
-      </div>
-
-      {/* Main Content Area */}
-      <div className="flex-1 flex">
-        <div className="flex-1 max-w-4xl">
-          {/* Top Bar */}
-          <div className="sticky top-0 z-30 bg-white/95 backdrop-blur-sm border-b border-slate-200 px-6 py-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-4">
-                <button
-                  onClick={() => setSidebarOpen(true)}
-                  className="lg:hidden p-2 rounded-lg hover:bg-slate-100 transition-colors"
-                >
-                  <Menu className="h-5 w-5 text-slate-600" />
-                </button>
-                <div>
-                  <h1 className="text-xl font-bold text-slate-900">{currentSection.title}</h1>
-                  <p className="text-sm text-slate-600">
-                    {isPaperView 
-                      ? `${currentPaper?.authors[0]} et al. (${currentPaper?.year}) - AI-generated documentation`
-                      : 'huggingface/transformers documentation'
-                    }
-                  </p>
-                </div>
-              </div>
-              <div className="flex items-center space-x-2">
-                <Button variant="outline" size="sm">
-                  <Bookmark className="h-4 w-4 mr-2" />
-                  Bookmark
-                </Button>
-                <Button variant="outline" size="sm">
-                  <Settings className="h-4 w-4" />
-                </Button>
-              </div>
-            </div>
-          </div>
-
-          {/* Content */}
-          <div className="px-6 py-8">
-            {/* Paper Abstract (if paper view) */}
-            {isPaperView && currentPaper && (
-              <div className="mb-8 p-6 bg-slate-50 border border-slate-200 rounded-xl">
-                <h2 className="text-lg font-semibold text-slate-900 mb-3">Paper Abstract</h2>
-                <p className="text-slate-700 leading-relaxed mb-4">{currentPaper.abstract}</p>
-                <div className="flex items-center space-x-4 text-sm text-slate-600">
-                  <div className="flex items-center">
-                    <Calendar className="h-4 w-4 mr-1" />
-                    {currentPaper.year}
+                
+                {/* Metadata */}
+                <div className="mt-4 space-y-2">
+                  <div className="text-sm text-slate-600">
+                    <span className="font-medium">
+                      {topicData ? `Topic ID: ${topicData.id}` : 'Loading...'}
+                    </span>
                   </div>
-                  {currentPaper.doi && (
-                    <div className="flex items-center">
-                      <ExternalLink className="h-4 w-4 mr-1" />
-                      DOI: {currentPaper.doi}
+                  <div className="flex items-center text-xs text-slate-500">
+                    <Clock className="h-3 w-3 mr-1" />
+                    {topicData ? `Created: ${new Date(topicData.created_at).toLocaleDateString()}` : 'Loading...'}
+                  </div>
+                </div>
+              </div>
+
+              {/* Navigation */}
+              <ScrollArea className="flex-1 p-4">
+                <nav className="space-y-1">
+                  {loading && (
+                    <div className="space-y-2">
+                      <Skeleton className="h-8 w-full" />
+                      <Skeleton className="h-8 w-full" />
+                      <Skeleton className="h-8 w-full" />
                     </div>
                   )}
+                  {!loading && error && (
+                    <p className="text-red-500 p-2 text-sm">Error loading topics.</p>
+                  )}
+                  {!loading && !error && topicData && topicData.topics.map((topic, index) => (
+                    <button
+                      key={index}
+                      onClick={() => {
+                        setActiveTopicIndex(index);
+                        setSidebarOpen(false);
+                      }}
+                      className={`
+                        w-full text-left px-3 py-2 rounded-lg transition-all duration-200 flex items-center justify-between group text-sm
+                        ${activeTopicIndex === index
+                          ? 'bg-slate-200 text-slate-900 shadow-sm' 
+                          : 'text-slate-700 hover:bg-slate-100 hover:text-slate-900'
+                        }
+                      `}
+                    >
+                      <span className="font-medium">{topic.topic}</span>
+                      {activeTopicIndex === index && (
+                        <ChevronRight className="h-4 w-4 text-slate-600" />
+                      )}
+                    </button>
+                  ))}
+                  {!loading && !error && topicData && topicData.topics.length === 0 && (
+                    <p className="text-slate-500 p-2 text-sm">No topics found.</p>
+                  )}
+                </nav>
+              </ScrollArea>
+
+              {/* Action Buttons */}
+              <div className="p-4 border-t border-slate-200 space-y-2">
+                <Button variant="outline" size="sm" className="w-full justify-start">
+                  <Share className="h-4 w-4 mr-2" />
+                  Share Topic
+                </Button>
+                <Button variant="outline" size="sm" className="w-full justify-start">
+                  <Download className="h-4 w-4 mr-2" />
+                  Export PDF
+                </Button>
+              </div>
+            </div>
+          </div>
+
+          {/* Main Content Area */}
+          <div className="flex-1 flex">
+            <div className="flex-1 max-w-4xl">
+              {/* Top Bar */}
+              <div className="sticky top-0 z-30 bg-white/95 backdrop-blur-sm border-b border-slate-200 px-6 py-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-4">
+                    <button
+                      onClick={() => setSidebarOpen(true)}
+                      className="lg:hidden p-2 rounded-lg hover:bg-slate-100 transition-colors"
+                    >
+                      <Menu className="h-5 w-5 text-slate-600" />
+                    </button>
+                    <div>
+                      <h1 className="text-xl font-bold text-slate-900">
+                        {loading ? 'Loading...' : 
+                         error ? 'Error' :
+                         topicData && topicData.topics[activeTopicIndex] ? topicData.topics[activeTopicIndex].topic : 'No Topic'}
+                      </h1>
+                      <p className="text-sm text-slate-600">
+                        {topicData ? `Topic analysis from database` : 'Loading topic data...'}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <Button variant="outline" size="sm">
+                      <Bookmark className="h-4 w-4 mr-2" />
+                      Bookmark
+                    </Button>
+                    <Button variant="outline" size="sm">
+                      <Settings className="h-4 w-4" />
+                    </Button>
+                  </div>
                 </div>
               </div>
-            )}
 
-            <div 
-              className="prose prose-slate max-w-none"
-              dangerouslySetInnerHTML={{ __html: parseContent(currentSection.content) }}
-            />
-          </div>
-        </div>
+              {/* Content */}
+              <div className="px-6 py-8">
+                {loading && (
+                  <div className="space-y-6">
+                    <Skeleton className="h-8 w-3/4" />
+                    <Skeleton className="h-4 w-full" />
+                    <Skeleton className="h-4 w-full" />
+                    <Skeleton className="h-4 w-2/3" />
+                    <Skeleton className="h-32 w-full" />
+                  </div>
+                )}
 
-        {/* Right TOC Panel */}
-        <div className="hidden xl:block w-80 border-l border-slate-200 bg-slate-50">
-          <div className="sticky top-0 h-screen flex flex-col">
-            {/* TOC Header */}
-            <div className="p-6 border-b border-slate-200">
-              <h3 className="font-semibold text-slate-900 mb-2">On this page</h3>
+                {error && (
+                  <div className="text-center py-12">
+                    <AlertTriangle className="h-12 w-12 mx-auto mb-4 text-red-500" />
+                    <h3 className="text-lg font-semibold text-slate-800 mb-2">Error Loading Topic</h3>
+                    <p className="text-slate-600 mb-4">{error}</p>
+                    <Button onClick={() => window.location.reload()} variant="outline">
+                      Try Again
+                    </Button>
+                  </div>
+                )}
+
+                {!loading && !error && topicData && topicData.topics[activeTopicIndex] && (
+                  <div className="space-y-8">
+                    {/* Topic Content */}
+                    <Card className="shadow-sm bg-white dark:bg-gray-800">
+                      <CardHeader>
+                        <CardTitle className="text-2xl font-semibold flex items-center">
+                          <Target className="h-6 w-6 mr-3 text-blue-600 dark:text-blue-400" />
+                          {topicData.topics[activeTopicIndex].topic}
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent className="space-y-6">
+                        {topicData.topics[activeTopicIndex].subtopics.map((subtopic, subtopicIndex) => (
+                          <div key={subtopicIndex} className="pt-4 border-t border-gray-200 dark:border-gray-700 first:border-t-0 first:pt-0">
+                            <h4 className="text-xl font-medium mb-4 text-gray-800 dark:text-gray-200">
+                              {subtopic.subtopic_title}
+                            </h4>
+                            {subtopic.content && (
+                              <div
+                                className="prose prose-sm dark:prose-invert max-w-none text-gray-700 dark:text-gray-300 mb-4"
+                                dangerouslySetInnerHTML={{ __html: parseContent(subtopic.content) }}
+                              />
+                            )}
+                            {subtopic.mermaid && subtopic.mermaid.trim() !== "" && (
+                              <div className="mt-4 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg shadow-sm">
+                                <MermaidDiagram diagram={subtopic.mermaid} />
+                              </div>
+                            )}
+                          </div>
+                        ))}
+                        {topicData.topics[activeTopicIndex].subtopics.length === 0 && (
+                          <p className="text-gray-500 dark:text-gray-400">No subtopics available for this topic.</p>
+                        )}
+                      </CardContent>
+                    </Card>
+                  </div>
+                )}
+
+                {!loading && !error && topicData && topicData.topics.length === 0 && (
+                  <div className="text-center py-12">
+                    <BookOpen className="h-12 w-12 mx-auto mb-4 text-slate-400" />
+                    <h3 className="text-lg font-semibold text-slate-800 mb-2">No Topics Found</h3>
+                    <p className="text-slate-600">This topic entry doesn't contain any topics yet.</p>
+                  </div>
+                )}
+              </div>
             </div>
 
-            {/* Table of Contents */}
-            <ScrollArea className="flex-1 p-4">
-              <nav className="space-y-1">
-                {currentSection.subsections.map((subsection) => (
-                  <a
-                    key={subsection.id}
-                    href={`#${subsection.id}`}
-                    className={`
-                      block px-3 py-2 text-sm rounded-lg transition-colors duration-200
-                      ${subsection.level === 2 ? 'font-medium' : 'ml-4 text-slate-600'}
-                      ${activeSubsection === subsection.id 
-                        ? 'bg-slate-200 text-slate-900' 
-                        : 'text-slate-700 hover:bg-slate-100 hover:text-slate-900'
-                      }
-                    `}
-                  >
-                    {subsection.title}
-                  </a>
-                ))}
-              </nav>
-            </ScrollArea>
+            {/* Right TOC Panel */}
+            <div className="hidden xl:block w-80 border-l border-slate-200 bg-slate-50">
+              <div className="sticky top-0 h-screen flex flex-col">
+                {/* TOC Header */}
+                <div className="p-6 border-b border-slate-200">
+                  <h3 className="font-semibold text-slate-900 mb-2">On this page</h3>
+                </div>
 
-            {/* Ad Placement */}
-            <div className="p-4 border-t border-slate-200">
-              <div className="bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-200 rounded-lg p-4 text-center">
-                <div className="text-xs text-blue-600 mb-2">Sponsored</div>
-                <div className="text-sm font-medium text-blue-900 mb-1">AI-Powered Documentation</div>
-                <div className="text-xs text-blue-700">Enhance your docs with smart search</div>
+                {/* Table of Contents */}
+                <ScrollArea className="flex-1 p-4">
+                  <nav className="space-y-1">
+                    {!loading && !error && topicData && topicData.topics[activeTopicIndex] && 
+                     topicData.topics[activeTopicIndex].subtopics.map((subtopic, index) => (
+                      <a
+                        key={index}
+                        href={`#${subtopic.subtopic_title.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`}
+                        className="block px-3 py-2 text-sm rounded-lg transition-colors duration-200 text-slate-700 hover:bg-slate-100 hover:text-slate-900"
+                      >
+                        {subtopic.subtopic_title}
+                      </a>
+                    ))}
+                    {loading && (
+                      <div className="space-y-2">
+                        <Skeleton className="h-6 w-full" />
+                        <Skeleton className="h-6 w-3/4" />
+                        <Skeleton className="h-6 w-full" />
+                      </div>
+                    )}
+                  </nav>
+                </ScrollArea>
+
+                {/* Topic Details */}
+                <div className="p-4 border-t border-slate-200">
+                  <div className="bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-200 rounded-lg p-4 text-center">
+                    <div className="text-xs text-blue-600 mb-2">Topic Info</div>
+                    <div className="text-sm font-medium text-blue-900 mb-1">
+                      {topicData ? `${topicData.topics.length} Topics` : 'Loading...'}
+                    </div>
+                    <div className="text-xs text-blue-700">
+                      {topicData && topicData.topics[activeTopicIndex] ? 
+                       `${topicData.topics[activeTopicIndex].subtopics.length} Subtopics` : 
+                       'Loading...'}
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -351,7 +446,7 @@ export function DocViewer({ paperId }: DocViewerProps) {
               </div>
               <Input
                 type="text"
-                placeholder={`Ask about this ${isPaperView ? 'paper' : 'documentation'}... (e.g., 'What is the main contribution?')`}
+                placeholder="Ask about this topic... (e.g., 'What are the key findings?')"
                 value={aiQuery}
                 onChange={(e) => setAiQuery(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && handleAiQuery()}
