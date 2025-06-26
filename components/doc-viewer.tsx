@@ -266,22 +266,76 @@ export function DocViewer({ paperId }: DocViewerProps) {
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
-      <div className="flex">
+      {/* Top Search Bar - Fixed at top with highest z-index */}
+      <div className="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-sm border-b border-slate-200 px-6 py-4">
+        <div className="flex items-center space-x-4">
+          <div className="flex-1 relative">
+            <div className="absolute left-3 top-1/2 transform -translate-y-1/2">
+              <Sparkles className="h-4 w-4 text-slate-400" />
+            </div>
+            <Input
+              type="text"
+              placeholder="Ask about this paper... (e.g., 'What are the key findings?')"
+              value={aiQuery}
+              onChange={(e) => setAiQuery(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && handleAiQuery()}
+              className="pl-10 pr-4 py-3 border-2 border-slate-300 rounded-xl focus:border-slate-400 focus:ring-slate-200 bg-white"
+            />
+          </div>
+          <Button 
+            onClick={handleAiQuery}
+            disabled={isAiLoading || !aiQuery.trim()}
+            className="px-6 py-3 bg-slate-600 hover:bg-slate-700 text-white rounded-xl transition-all duration-200 hover:scale-105"
+          >
+            {isAiLoading ? (
+              <div className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full" />
+            ) : (
+              <Send className="h-4 w-4" />
+            )}
+          </Button>
+        </div>
+
+        {/* AI Response */}
+        {aiResponse && (
+          <div className="mt-4 p-4 bg-slate-50 border border-slate-200 rounded-xl">
+            <div className="flex items-start space-x-3">
+              <div className="p-2 bg-slate-200 rounded-lg">
+                <MessageCircle className="h-4 w-4 text-slate-600" />
+              </div>
+              <div className="flex-1">
+                <div className="text-sm font-medium text-slate-900 mb-2">AI Assistant</div>
+                <div className="text-sm text-slate-700 whitespace-pre-line">{aiResponse}</div>
+              </div>
+              <button
+                onClick={() => setAiResponse('')}
+                className="p-1 hover:bg-slate-200 rounded transition-colors"
+              >
+                <X className="h-4 w-4 text-slate-500" />
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Main Layout Container - with top padding for fixed search bar */}
+      <div className="pt-20 flex">
         {/* Mobile Sidebar Overlay */}
         {sidebarOpen && (
           <div 
-            className="fixed inset-0 bg-black/50 z-40 lg:hidden"
+            className="fixed inset-0 bg-black/50 z-30 lg:hidden"
             onClick={() => setSidebarOpen(false)}
           />
         )}
 
-        {/* Left Sidebar - Topics */}
+        {/* Left Sidebar - Fixed position with slide animation */}
         <div className={`
-          fixed lg:static inset-y-0 left-0 z-50 w-80 bg-white border-r border-slate-200 transform transition-transform duration-300 ease-in-out lg:transform-none
-          ${sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
+          fixed top-20 left-0 bottom-0 z-40 w-80 bg-white border-r border-slate-200 
+          transform transition-transform duration-300 ease-in-out
+          ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}
+          lg:translate-x-0
         `}>
-          <div className="flex flex-col h-screen">
-            {/* Header */}
+          <div className="flex flex-col h-full">
+            {/* Sidebar Header with Hamburger */}
             <div className="p-6 border-b border-slate-200 flex-shrink-0">
               <div className="flex items-center justify-between">
                 <button
@@ -289,17 +343,20 @@ export function DocViewer({ paperId }: DocViewerProps) {
                   className="flex items-center space-x-3 group hover:scale-105 transition-all duration-200 p-2 rounded-xl hover:bg-slate-100"
                 >
                   <div className="p-2 rounded-xl bg-slate-200 group-hover:bg-slate-300 transition-colors duration-200">
-                    <BookOpen className="h-5 w-5 text-slate-700" />
+                    <ArrowLeft className="h-5 w-5 text-slate-700" />
                   </div>
                   <span className="text-lg font-bold text-slate-800 group-hover:text-slate-600 transition-colors duration-200">
-                    Doc Viewer
+                    Back to Papers
                   </span>
                 </button>
+                
+                {/* Hamburger Menu Icon */}
                 <button
-                  onClick={() => setSidebarOpen(false)}
-                  className="lg:hidden p-2 rounded-lg hover:bg-slate-200 transition-colors"
+                  onClick={() => setSidebarOpen(!sidebarOpen)}
+                  className="p-2 rounded-lg hover:bg-slate-200 transition-colors"
+                  aria-label="Toggle sidebar"
                 >
-                  <X className="h-5 w-5 text-slate-600" />
+                  <Menu className="h-5 w-5 text-slate-600" />
                 </button>
               </div>
               
@@ -376,46 +433,46 @@ export function DocViewer({ paperId }: DocViewerProps) {
           </div>
         </div>
 
-        {/* Main Content Area */}
-        <div className="flex-1 flex min-h-screen">
-          {/* Center Content */}
-          <div className="flex-1 max-w-none">
-            {/* Top Bar */}
-            <div className="sticky top-0 z-30 bg-white/95 backdrop-blur-sm border-b border-slate-200 px-6 py-4 flex-shrink-0">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-4">
-                  <button
-                    onClick={() => setSidebarOpen(true)}
-                    className="lg:hidden p-2 rounded-lg hover:bg-slate-100 transition-colors"
-                  >
-                    <Menu className="h-5 w-5 text-slate-600" />
-                  </button>
-                  <div>
-                    <h1 className="text-xl font-bold text-slate-900">
-                      {loading ? 'Loading...' : 
-                       error ? 'Error' :
-                       paperData && paperData.topics && paperData.topics[activeTopicIndex] ? 
-                       paperData.topics[activeTopicIndex].topic : 'No Topic'}
-                    </h1>
-                    <p className="text-sm text-slate-600">
-                      {paperData?.paper_name || 'Loading paper data...'}
-                    </p>
-                  </div>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <Button variant="outline" size="sm">
-                    <Bookmark className="h-4 w-4 mr-2" />
-                    Bookmark
-                  </Button>
-                  <Button variant="outline" size="sm">
-                    <Settings className="h-4 w-4" />
-                  </Button>
+        {/* Main Content Area - with left margin for sidebar on desktop */}
+        <div className="flex-1 lg:ml-80 min-h-screen">
+          {/* Content Header */}
+          <div className="bg-white border-b border-slate-200 px-6 py-4 flex-shrink-0">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-4">
+                <button
+                  onClick={() => setSidebarOpen(true)}
+                  className="lg:hidden p-2 rounded-lg hover:bg-slate-100 transition-colors"
+                >
+                  <Menu className="h-5 w-5 text-slate-600" />
+                </button>
+                <div>
+                  <h1 className="text-xl font-bold text-slate-900">
+                    {loading ? 'Loading...' : 
+                     error ? 'Error' :
+                     paperData && paperData.topics && paperData.topics[activeTopicIndex] ? 
+                     paperData.topics[activeTopicIndex].topic : 'No Topic'}
+                  </h1>
+                  <p className="text-sm text-slate-600">
+                    {paperData?.paper_name || 'Loading paper data...'}
+                  </p>
                 </div>
               </div>
+              <div className="flex items-center space-x-2">
+                <Button variant="outline" size="sm">
+                  <Bookmark className="h-4 w-4 mr-2" />
+                  Bookmark
+                </Button>
+                <Button variant="outline" size="sm">
+                  <Settings className="h-4 w-4" />
+                </Button>
+              </div>
             </div>
+          </div>
 
-            {/* Main Content */}
-            <div className="px-6 py-8 pb-32">
+          {/* Main Content with Right TOC */}
+          <div className="flex">
+            {/* Center Content */}
+            <div className="flex-1 px-6 py-8">
               {loading && (
                 <div className="space-y-6">
                   <Skeleton className="h-8 w-3/4" />
@@ -528,126 +585,73 @@ export function DocViewer({ paperId }: DocViewerProps) {
                 </div>
               )}
             </div>
-          </div>
 
-          {/* Right TOC Panel */}
-          <div className="hidden xl:block w-80 border-l border-slate-200 bg-white">
-            <div className="sticky top-0 h-screen flex flex-col">
-              {/* TOC Header */}
-              <div className="p-6 border-b border-slate-200 flex-shrink-0">
-                <h3 className="font-semibold text-slate-900 mb-2">On this page</h3>
-              </div>
+            {/* Right TOC Panel */}
+            <div className="hidden xl:block w-80 border-l border-slate-200 bg-white">
+              <div className="sticky top-20 h-[calc(100vh-5rem)] flex flex-col">
+                {/* TOC Header */}
+                <div className="p-6 border-b border-slate-200 flex-shrink-0">
+                  <h3 className="font-semibold text-slate-900 mb-2">On this page</h3>
+                </div>
 
-              {/* Table of Contents */}
-              <ScrollArea className="flex-1 p-4">
-                <nav className="space-y-1">
-                  {!loading && !error && paperData && paperData.topics && paperData.topics[activeTopicIndex] && 
-                   paperData.topics[activeTopicIndex].subtopics.map((subtopic, index) => {
-                     const subtopicId = generateSubtopicId(subtopic.subtopic_title);
-                     return (
-                       <a
-                         key={index}
-                         href={`#${subtopicId}`}
-                         className={`
-                           block px-3 py-2 text-sm rounded-lg transition-colors duration-200
-                           ${activeSubsection === subtopicId 
-                             ? 'bg-slate-200 text-slate-900' 
-                             : 'text-slate-700 hover:bg-slate-100 hover:text-slate-900'
-                           }
-                         `}
-                         onClick={(e) => {
-                           e.preventDefault();
-                           const element = document.getElementById(subtopicId);
-                           element?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                         }}
-                       >
-                         {subtopic.subtopic_title}
-                       </a>
-                     );
-                   })}
-                  {loading && (
-                    <div className="space-y-2">
-                      <Skeleton className="h-6 w-full" />
-                      <Skeleton className="h-6 w-3/4" />
-                      <Skeleton className="h-6 w-full" />
+                {/* Table of Contents */}
+                <ScrollArea className="flex-1 p-4">
+                  <nav className="space-y-1">
+                    {!loading && !error && paperData && paperData.topics && paperData.topics[activeTopicIndex] && 
+                     paperData.topics[activeTopicIndex].subtopics.map((subtopic, index) => {
+                       const subtopicId = generateSubtopicId(subtopic.subtopic_title);
+                       return (
+                         <a
+                           key={index}
+                           href={`#${subtopicId}`}
+                           className={`
+                             block px-3 py-2 text-sm rounded-lg transition-colors duration-200
+                             ${activeSubsection === subtopicId 
+                               ? 'bg-slate-200 text-slate-900' 
+                               : 'text-slate-700 hover:bg-slate-100 hover:text-slate-900'
+                             }
+                           `}
+                           onClick={(e) => {
+                             e.preventDefault();
+                             const element = document.getElementById(subtopicId);
+                             element?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                           }}
+                         >
+                           {subtopic.subtopic_title}
+                         </a>
+                       );
+                     })}
+                    {loading && (
+                      <div className="space-y-2">
+                        <Skeleton className="h-6 w-full" />
+                        <Skeleton className="h-6 w-3/4" />
+                        <Skeleton className="h-6 w-full" />
+                      </div>
+                    )}
+                    {!loading && !error && paperData && paperData.topics && paperData.topics[activeTopicIndex] && 
+                     paperData.topics[activeTopicIndex].subtopics.length === 0 && (
+                      <p className="text-slate-500 text-sm px-3 py-2">No subtopics available</p>
+                    )}
+                  </nav>
+                </ScrollArea>
+
+                {/* Paper Details */}
+                <div className="p-4 border-t border-slate-200 flex-shrink-0">
+                  <div className="bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-200 rounded-lg p-4 text-center">
+                    <div className="text-xs text-blue-600 mb-2">Paper Info</div>
+                    <div className="text-sm font-medium text-blue-900 mb-1">
+                      {paperData && paperData.topics ? `${paperData.topics.length} Topics` : 'Loading...'}
                     </div>
-                  )}
-                  {!loading && !error && paperData && paperData.topics && paperData.topics[activeTopicIndex] && 
-                   paperData.topics[activeTopicIndex].subtopics.length === 0 && (
-                    <p className="text-slate-500 text-sm px-3 py-2">No subtopics available</p>
-                  )}
-                </nav>
-              </ScrollArea>
-
-              {/* Paper Details */}
-              <div className="p-4 border-t border-slate-200 flex-shrink-0">
-                <div className="bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-200 rounded-lg p-4 text-center">
-                  <div className="text-xs text-blue-600 mb-2">Paper Info</div>
-                  <div className="text-sm font-medium text-blue-900 mb-1">
-                    {paperData && paperData.topics ? `${paperData.topics.length} Topics` : 'Loading...'}
-                  </div>
-                  <div className="text-xs text-blue-700">
-                    {paperData && paperData.topics && paperData.topics[activeTopicIndex] ? 
-                     `${paperData.topics[activeTopicIndex].subtopics.length} Subtopics` : 
-                     'Loading...'}
+                    <div className="text-xs text-blue-700">
+                      {paperData && paperData.topics && paperData.topics[activeTopicIndex] ? 
+                       `${paperData.topics[activeTopicIndex].subtopics.length} Subtopics` : 
+                       'Loading...'}
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
           </div>
-        </div>
-      </div>
-
-      {/* Bottom AI Prompt Bar */}
-      <div className="fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-sm border-t border-slate-200 p-4">
-        <div className="max-w-4xl mx-auto">
-          <div className="flex items-center space-x-4">
-            <div className="flex-1 relative">
-              <div className="absolute left-3 top-1/2 transform -translate-y-1/2">
-                <Sparkles className="h-4 w-4 text-slate-400" />
-              </div>
-              <Input
-                type="text"
-                placeholder="Ask about this paper... (e.g., 'What are the key findings?')"
-                value={aiQuery}
-                onChange={(e) => setAiQuery(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && handleAiQuery()}
-                className="pl-10 pr-4 py-3 border-2 border-slate-300 rounded-xl focus:border-slate-400 focus:ring-slate-200 bg-white"
-              />
-            </div>
-            <Button 
-              onClick={handleAiQuery}
-              disabled={isAiLoading || !aiQuery.trim()}
-              className="px-6 py-3 bg-slate-600 hover:bg-slate-700 text-white rounded-xl transition-all duration-200 hover:scale-105"
-            >
-              {isAiLoading ? (
-                <div className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full" />
-              ) : (
-                <Send className="h-4 w-4" />
-              )}
-            </Button>
-          </div>
-
-          {/* AI Response */}
-          {aiResponse && (
-            <div className="mt-4 p-4 bg-slate-50 border border-slate-200 rounded-xl">
-              <div className="flex items-start space-x-3">
-                <div className="p-2 bg-slate-200 rounded-lg">
-                  <MessageCircle className="h-4 w-4 text-slate-600" />
-                </div>
-                <div className="flex-1">
-                  <div className="text-sm font-medium text-slate-900 mb-2">AI Assistant</div>
-                  <div className="text-sm text-slate-700 whitespace-pre-line">{aiResponse}</div>
-                </div>
-                <button
-                  onClick={() => setAiResponse('')}
-                  className="p-1 hover:bg-slate-200 rounded transition-colors"
-                >
-                  <X className="h-4 w-4 text-slate-500" />
-                </button>
-              </div>
-            </div>
-          )}
         </div>
       </div>
     </div>
