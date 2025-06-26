@@ -1,7 +1,7 @@
 "use client";
 
 import Link from 'next/link';
-import { BookOpen } from 'lucide-react';
+import { BookOpen, MessageCircle as DiscordIcon } from 'lucide-react'; // Using MessageCircle as a generic community icon
 import { usePathname } from 'next/navigation'; // To highlight active link
 
 export function Header() {
@@ -40,9 +40,15 @@ export function Header() {
                 {link.label}
               </Link>
             ))}
-            <button className="bg-black text-white px-4 py-2 rounded-full hover:bg-gray-800 transition-colors font-medium">
-              Join Us
-            </button>
+            <a
+              href="https://discord.gg/A5G9g8Bv9B"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Join us on Discord"
+              className="text-gray-600 hover:text-black transition-colors"
+            >
+              <DiscordIcon className="h-6 w-6" />
+            </a>
           </nav>
 
           {/* Basic mobile navigation placeholder - can be improved later if needed */}
