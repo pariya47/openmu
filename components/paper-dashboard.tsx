@@ -135,6 +135,10 @@ export function PaperDashboard() {
     router.push('/');
   };
 
+  const handleViewFullPaper = (paperId: string) => {
+    router.push(`/doc-viewer/${paperId}`);
+  };
+
   const formatAuthors = (authors: string[]) => {
     if (authors.length <= 2) {
       return authors.join(', ');
@@ -314,8 +318,9 @@ export function PaperDashboard() {
                   size="default"
                   className="flex-1 bg-slate-600 hover:bg-slate-700 text-white shadow-md hover:shadow-lg transition-all duration-200 hover:scale-105 rounded-lg"
                   onClick={() => {
-                    if (selectedPaper?.fullPaperUrl) {
-                      window.open(selectedPaper.fullPaperUrl, '_blank');
+                    if (selectedPaper) {
+                      handleViewFullPaper(selectedPaper.id);
+                      setIsModalOpen(false);
                     }
                   }}
                 >
