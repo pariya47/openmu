@@ -33,7 +33,7 @@ import {
 import { createClient } from '@/lib/supabase/client';
 import { MermaidDiagram } from '@/components/mermaid-diagram';
 
-// Types for the real data structure
+// Types for the real data structure from papers table
 interface Subtopic {
   subtopic_title: string;
   content: string;
@@ -45,8 +45,13 @@ interface Topic {
   subtopics: Subtopic[];
 }
 
-interface TopicData {
+interface PaperData {
   id: number;
+  paper_name: string | null;
+  authers: any | null;
+  abstract: string | null;
+  public_date: string | null;
+  url: string | null;
   topics: Topic[];
   created_at: string;
 }
@@ -57,7 +62,7 @@ interface DocViewerProps {
 
 export function DocViewer({ paperId }: DocViewerProps) {
   const router = useRouter();
-  const [topicData, setTopicData] = useState<TopicData | null>(null);
+  const [paperData, setPaperData] = useState<PaperData | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -66,17 +71,50 @@ export function DocViewer({ paperId }: DocViewerProps) {
   const [isAiLoading, setIsAiLoading] = useState(false);
   const [aiResponse, setAiResponse] = useState<string>('');
 
-  // Fetch data from Supabase
+  // Helper function to normalize authors data
+  const normalizeAuthors = (authers: any): string[] => {
+    if (!authers || typeof authers !== 'object') return [];
+    
+    // Handle the case where authers has a 'name' property that is an array
+    if (authers.name && Array.isArray(authers.name)) {
+      return authers.name.filter((n: any) => typeof n === 'string');
+    }
+    
+    // Handle the case where authers is directly an array
+    if (Array.isArray(authers)) {
+      return authers.filter((author: any) => {
+        if (typeof author === 'string') return true;
+        if (typeof author === 'object' && author.name) return true;
+        return false;
+      }).map((author: any) => {
+        if (typeof author === 'string') return author;
+        return author.name;
+      });
+    }
+    
+    return [];
+  };
+
+  const formatAuthors = (authers: any) => {
+    const normalizedAuthors = normalizeAuthors(authers);
+    if (normalizedAuthors.length === 0) return 'Unknown Author';
+    if (normalizedAuthors.length <= 2) {
+      return normalizedAuthors.join(', ');
+    }
+    return `${normalizedAuthors[0]} et al.`;
+  };
+
+  // Fetch data from Supabase papers table
   useEffect(() => {
-    const fetchTopicData = async () => {
+    const fetchPaperData = async () => {
       try {
         setLoading(true);
         setError(null);
         
         const supabase = createClient();
         const { data, error: fetchError } = await supabase
-          .from('topic')
-          .select('id, topics, created_at')
+          .from('papers')
+          .select('id, paper_name, authers, abstract, public_date, url, topics, created_at')
           .eq('id', paperId)
           .single();
 
@@ -85,22 +123,22 @@ export function DocViewer({ paperId }: DocViewerProps) {
         }
 
         if (data) {
-          setTopicData(data as TopicData);
+          setPaperData(data as PaperData);
         } else {
-          setError('Topic not found.');
+          setError('Paper not found.');
         }
       } catch (err) {
-        console.error('Error fetching topic data:', err);
-        setError(err instanceof Error ? err.message : 'Failed to fetch topic data');
+        console.error('Error fetching paper data:', err);
+        setError(err instanceof Error ? err.message : 'Failed to fetch paper data');
       } finally {
         setLoading(false);
       }
     };
 
     if (paperId) {
-      fetchTopicData();
+      fetchPaperData();
     } else {
-      setError('No topic ID provided.');
+      setError('No paper ID provided.');
       setLoading(false);
     }
   }, [paperId]);
@@ -117,10 +155,11 @@ export function DocViewer({ paperId }: DocViewerProps) {
     setIsAiLoading(true);
     // Simulate AI response
     setTimeout(() => {
-      const currentTopic = topicData?.topics[activeTopicIndex];
+      const currentTopic = paperData?.topics[activeTopicIndex];
       const contextInfo = currentTopic ? `the topic "${currentTopic.topic}"` : 'this content';
+      const paperTitle = paperData?.paper_name || 'this paper';
       
-      setAiResponse(`Based on ${contextInfo}, here's what I found about "${aiQuery}":\n\n• This is a simulated AI response that would normally come from vector search and LLM processing\n• The system would analyze the current topic content and provide contextual answers\n• Real implementation would use embeddings and retrieval-augmented generation\n• Context: Academic research analysis`);
+      setAiResponse(`Based on ${contextInfo} from "${paperTitle}", here's what I found about "${aiQuery}":\n\n• This is a simulated AI response that would normally come from vector search and LLM processing\n• The system would analyze the current paper content and provide contextual answers\n• Real implementation would use embeddings and retrieval-augmented generation\n• Context: Academic paper analysis`);
       setIsAiLoading(false);
     }, 2000);
   };
@@ -211,16 +250,21 @@ export function DocViewer({ paperId }: DocViewerProps) {
                   </button>
                 </div>
                 
-                {/* Metadata */}
+                {/* Paper Metadata */}
                 <div className="mt-4 space-y-2">
                   <div className="text-sm text-slate-600">
                     <span className="font-medium">
-                      {topicData ? `Topic ID: ${topicData.id}` : 'Loading...'}
+                      {paperData?.paper_name || 'Loading paper...'}
                     </span>
                   </div>
+                  {paperData?.authers && (
+                    <div className="text-xs text-slate-500">
+                      {formatAuthors(paperData.authers)}
+                    </div>
+                  )}
                   <div className="flex items-center text-xs text-slate-500">
                     <Clock className="h-3 w-3 mr-1" />
-                    {topicData ? `Created: ${new Date(topicData.created_at).toLocaleDateString()}` : 'Loading...'}
+                    {paperData ? `Added: ${new Date(paperData.created_at).toLocaleDateString()}` : 'Loading...'}
                   </div>
                 </div>
               </div>
@@ -238,7 +282,7 @@ export function DocViewer({ paperId }: DocViewerProps) {
                   {!loading && error && (
                     <p className="text-red-500 p-2 text-sm">Error loading topics.</p>
                   )}
-                  {!loading && !error && topicData && topicData.topics.map((topic, index) => (
+                  {!loading && !error && paperData && paperData.topics && paperData.topics.map((topic, index) => (
                     <button
                       key={index}
                       onClick={() => {
@@ -259,8 +303,8 @@ export function DocViewer({ paperId }: DocViewerProps) {
                       )}
                     </button>
                   ))}
-                  {!loading && !error && topicData && topicData.topics.length === 0 && (
-                    <p className="text-slate-500 p-2 text-sm">No topics found.</p>
+                  {!loading && !error && paperData && (!paperData.topics || paperData.topics.length === 0) && (
+                    <p className="text-slate-500 p-2 text-sm">No topics found for this paper.</p>
                   )}
                 </nav>
               </ScrollArea>
@@ -269,7 +313,7 @@ export function DocViewer({ paperId }: DocViewerProps) {
               <div className="p-4 border-t border-slate-200 space-y-2">
                 <Button variant="outline" size="sm" className="w-full justify-start">
                   <Share className="h-4 w-4 mr-2" />
-                  Share Topic
+                  Share Paper
                 </Button>
                 <Button variant="outline" size="sm" className="w-full justify-start">
                   <Download className="h-4 w-4 mr-2" />
@@ -296,10 +340,11 @@ export function DocViewer({ paperId }: DocViewerProps) {
                       <h1 className="text-xl font-bold text-slate-900">
                         {loading ? 'Loading...' : 
                          error ? 'Error' :
-                         topicData && topicData.topics[activeTopicIndex] ? topicData.topics[activeTopicIndex].topic : 'No Topic'}
+                         paperData && paperData.topics && paperData.topics[activeTopicIndex] ? 
+                         paperData.topics[activeTopicIndex].topic : 'No Topic'}
                       </h1>
                       <p className="text-sm text-slate-600">
-                        {topicData ? `Topic analysis from database` : 'Loading topic data...'}
+                        {paperData?.paper_name || 'Loading paper data...'}
                       </p>
                     </div>
                   </div>
@@ -330,7 +375,7 @@ export function DocViewer({ paperId }: DocViewerProps) {
                 {error && (
                   <div className="text-center py-12">
                     <AlertTriangle className="h-12 w-12 mx-auto mb-4 text-red-500" />
-                    <h3 className="text-lg font-semibold text-slate-800 mb-2">Error Loading Topic</h3>
+                    <h3 className="text-lg font-semibold text-slate-800 mb-2">Error Loading Paper</h3>
                     <p className="text-slate-600 mb-4">{error}</p>
                     <Button onClick={() => window.location.reload()} variant="outline">
                       Try Again
@@ -338,48 +383,74 @@ export function DocViewer({ paperId }: DocViewerProps) {
                   </div>
                 )}
 
-                {!loading && !error && topicData && topicData.topics[activeTopicIndex] && (
+                {!loading && !error && paperData && (
                   <div className="space-y-8">
+                    {/* Paper Abstract (if available) */}
+                    {paperData.abstract && (
+                      <div className="mb-8 p-6 bg-slate-50 border border-slate-200 rounded-xl">
+                        <h2 className="text-lg font-semibold text-slate-900 mb-3">Paper Abstract</h2>
+                        <p className="text-slate-700 leading-relaxed mb-4">{paperData.abstract}</p>
+                        <div className="flex items-center space-x-4 text-sm text-slate-600">
+                          {paperData.public_date && (
+                            <div className="flex items-center">
+                              <Clock className="h-4 w-4 mr-1" />
+                              {new Date(paperData.public_date).toLocaleDateString()}
+                            </div>
+                          )}
+                          {paperData.url && (
+                            <div className="flex items-center">
+                              <BookOpen className="h-4 w-4 mr-1" />
+                              <a href={paperData.url} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
+                                Original Paper
+                              </a>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    )}
+
                     {/* Topic Content */}
-                    <Card className="shadow-sm bg-white dark:bg-gray-800">
-                      <CardHeader>
-                        <CardTitle className="text-2xl font-semibold flex items-center">
-                          <Target className="h-6 w-6 mr-3 text-blue-600 dark:text-blue-400" />
-                          {topicData.topics[activeTopicIndex].topic}
-                        </CardTitle>
-                      </CardHeader>
-                      <CardContent className="space-y-6">
-                        {topicData.topics[activeTopicIndex].subtopics.map((subtopic, subtopicIndex) => (
-                          <div key={subtopicIndex} className="pt-4 border-t border-gray-200 dark:border-gray-700 first:border-t-0 first:pt-0">
-                            <h4 className="text-xl font-medium mb-4 text-gray-800 dark:text-gray-200">
-                              {subtopic.subtopic_title}
-                            </h4>
-                            {subtopic.content && (
-                              <div
-                                className="prose prose-sm dark:prose-invert max-w-none text-gray-700 dark:text-gray-300 mb-4"
-                                dangerouslySetInnerHTML={{ __html: parseContent(subtopic.content) }}
-                              />
-                            )}
-                            {subtopic.mermaid && subtopic.mermaid.trim() !== "" && (
-                              <div className="mt-4 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg shadow-sm">
-                                <MermaidDiagram diagram={subtopic.mermaid} />
-                              </div>
-                            )}
-                          </div>
-                        ))}
-                        {topicData.topics[activeTopicIndex].subtopics.length === 0 && (
-                          <p className="text-gray-500 dark:text-gray-400">No subtopics available for this topic.</p>
-                        )}
-                      </CardContent>
-                    </Card>
+                    {paperData.topics && paperData.topics[activeTopicIndex] && (
+                      <Card className="shadow-sm bg-white dark:bg-gray-800">
+                        <CardHeader>
+                          <CardTitle className="text-2xl font-semibold flex items-center">
+                            <Target className="h-6 w-6 mr-3 text-blue-600 dark:text-blue-400" />
+                            {paperData.topics[activeTopicIndex].topic}
+                          </CardTitle>
+                        </CardHeader>
+                        <CardContent className="space-y-6">
+                          {paperData.topics[activeTopicIndex].subtopics.map((subtopic, subtopicIndex) => (
+                            <div key={subtopicIndex} className="pt-4 border-t border-gray-200 dark:border-gray-700 first:border-t-0 first:pt-0">
+                              <h4 className="text-xl font-medium mb-4 text-gray-800 dark:text-gray-200">
+                                {subtopic.subtopic_title}
+                              </h4>
+                              {subtopic.content && (
+                                <div
+                                  className="prose prose-sm dark:prose-invert max-w-none text-gray-700 dark:text-gray-300 mb-4"
+                                  dangerouslySetInnerHTML={{ __html: parseContent(subtopic.content) }}
+                                />
+                              )}
+                              {subtopic.mermaid && subtopic.mermaid.trim() !== "" && (
+                                <div className="mt-4 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg shadow-sm">
+                                  <MermaidDiagram diagram={subtopic.mermaid} />
+                                </div>
+                              )}
+                            </div>
+                          ))}
+                          {paperData.topics[activeTopicIndex].subtopics.length === 0 && (
+                            <p className="text-gray-500 dark:text-gray-400">No subtopics available for this topic.</p>
+                          )}
+                        </CardContent>
+                      </Card>
+                    )}
                   </div>
                 )}
 
-                {!loading && !error && topicData && topicData.topics.length === 0 && (
+                {!loading && !error && paperData && (!paperData.topics || paperData.topics.length === 0) && (
                   <div className="text-center py-12">
                     <BookOpen className="h-12 w-12 mx-auto mb-4 text-slate-400" />
                     <h3 className="text-lg font-semibold text-slate-800 mb-2">No Topics Found</h3>
-                    <p className="text-slate-600">This topic entry doesn't contain any topics yet.</p>
+                    <p className="text-slate-600">This paper doesn't contain any analyzed topics yet.</p>
                   </div>
                 )}
               </div>
@@ -396,8 +467,8 @@ export function DocViewer({ paperId }: DocViewerProps) {
                 {/* Table of Contents */}
                 <ScrollArea className="flex-1 p-4">
                   <nav className="space-y-1">
-                    {!loading && !error && topicData && topicData.topics[activeTopicIndex] && 
-                     topicData.topics[activeTopicIndex].subtopics.map((subtopic, index) => (
+                    {!loading && !error && paperData && paperData.topics && paperData.topics[activeTopicIndex] && 
+                     paperData.topics[activeTopicIndex].subtopics.map((subtopic, index) => (
                       <a
                         key={index}
                         href={`#${subtopic.subtopic_title.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`}
@@ -416,16 +487,16 @@ export function DocViewer({ paperId }: DocViewerProps) {
                   </nav>
                 </ScrollArea>
 
-                {/* Topic Details */}
+                {/* Paper Details */}
                 <div className="p-4 border-t border-slate-200">
                   <div className="bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-200 rounded-lg p-4 text-center">
-                    <div className="text-xs text-blue-600 mb-2">Topic Info</div>
+                    <div className="text-xs text-blue-600 mb-2">Paper Info</div>
                     <div className="text-sm font-medium text-blue-900 mb-1">
-                      {topicData ? `${topicData.topics.length} Topics` : 'Loading...'}
+                      {paperData && paperData.topics ? `${paperData.topics.length} Topics` : 'Loading...'}
                     </div>
                     <div className="text-xs text-blue-700">
-                      {topicData && topicData.topics[activeTopicIndex] ? 
-                       `${topicData.topics[activeTopicIndex].subtopics.length} Subtopics` : 
+                      {paperData && paperData.topics && paperData.topics[activeTopicIndex] ? 
+                       `${paperData.topics[activeTopicIndex].subtopics.length} Subtopics` : 
                        'Loading...'}
                     </div>
                   </div>
@@ -446,7 +517,7 @@ export function DocViewer({ paperId }: DocViewerProps) {
               </div>
               <Input
                 type="text"
-                placeholder="Ask about this topic... (e.g., 'What are the key findings?')"
+                placeholder="Ask about this paper... (e.g., 'What are the key findings?')"
                 value={aiQuery}
                 onChange={(e) => setAiQuery(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && handleAiQuery()}
