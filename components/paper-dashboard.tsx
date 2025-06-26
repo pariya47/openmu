@@ -104,8 +104,8 @@ export function PaperDashboard() {
     return (
           paperName.includes(searchLower) || 
            abstract.includes(searchLower) || 
-           authors.includes(searchLower);
-    )
+           authors.includes(searchLower)
+    );
   });
 
   const handlePaperClick = (paper: Paper) => {
