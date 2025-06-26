@@ -266,59 +266,8 @@ export function DocViewer({ paperId }: DocViewerProps) {
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
-      {/* Top Search Bar - Fixed at top with highest z-index */}
-      <div className="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-sm border-b border-slate-200 px-6 py-4">
-        <div className="flex items-center space-x-4">
-          <div className="flex-1 relative">
-            <div className="absolute left-3 top-1/2 transform -translate-y-1/2">
-              <Sparkles className="h-4 w-4 text-slate-400" />
-            </div>
-            <Input
-              type="text"
-              placeholder="Ask about this paper... (e.g., 'What are the key findings?')"
-              value={aiQuery}
-              onChange={(e) => setAiQuery(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && handleAiQuery()}
-              className="pl-10 pr-4 py-3 border-2 border-slate-300 rounded-xl focus:border-slate-400 focus:ring-slate-200 bg-white"
-            />
-          </div>
-          <Button 
-            onClick={handleAiQuery}
-            disabled={isAiLoading || !aiQuery.trim()}
-            className="px-6 py-3 bg-slate-600 hover:bg-slate-700 text-white rounded-xl transition-all duration-200 hover:scale-105"
-          >
-            {isAiLoading ? (
-              <div className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full" />
-            ) : (
-              <Send className="h-4 w-4" />
-            )}
-          </Button>
-        </div>
-
-        {/* AI Response */}
-        {aiResponse && (
-          <div className="mt-4 p-4 bg-slate-50 border border-slate-200 rounded-xl">
-            <div className="flex items-start space-x-3">
-              <div className="p-2 bg-slate-200 rounded-lg">
-                <MessageCircle className="h-4 w-4 text-slate-600" />
-              </div>
-              <div className="flex-1">
-                <div className="text-sm font-medium text-slate-900 mb-2">AI Assistant</div>
-                <div className="text-sm text-slate-700 whitespace-pre-line">{aiResponse}</div>
-              </div>
-              <button
-                onClick={() => setAiResponse('')}
-                className="p-1 hover:bg-slate-200 rounded transition-colors"
-              >
-                <X className="h-4 w-4 text-slate-500" />
-              </button>
-            </div>
-          </div>
-        )}
-      </div>
-
-      {/* Main Layout Container - with top padding for fixed search bar */}
-      <div className="pt-20 flex">
+      {/* Main Layout Container */}
+      <div className="flex">
         {/* Mobile Sidebar Overlay */}
         {sidebarOpen && (
           <div 
@@ -329,36 +278,25 @@ export function DocViewer({ paperId }: DocViewerProps) {
 
         {/* Left Sidebar - Fixed position with slide animation */}
         <div className={`
-          fixed top-20 left-0 bottom-0 z-40 w-80 bg-white border-r border-slate-200 
+          fixed top-0 left-0 bottom-0 z-40 w-80 bg-white border-r border-slate-200 
           transform transition-transform duration-300 ease-in-out
           ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}
           lg:translate-x-0
         `}>
           <div className="flex flex-col h-full">
-            {/* Sidebar Header with Hamburger */}
+            {/* Sidebar Header - Clean without hamburger */}
             <div className="p-6 border-b border-slate-200 flex-shrink-0">
-              <div className="flex items-center justify-between">
-                <button
-                  onClick={handleBackToPapers}
-                  className="flex items-center space-x-3 group hover:scale-105 transition-all duration-200 p-2 rounded-xl hover:bg-slate-100"
-                >
-                  <div className="p-2 rounded-xl bg-slate-200 group-hover:bg-slate-300 transition-colors duration-200">
-                    <ArrowLeft className="h-5 w-5 text-slate-700" />
-                  </div>
-                  <span className="text-lg font-bold text-slate-800 group-hover:text-slate-600 transition-colors duration-200">
-                    Back to Papers
-                  </span>
-                </button>
-                
-                {/* Hamburger Menu Icon */}
-                <button
-                  onClick={() => setSidebarOpen(!sidebarOpen)}
-                  className="p-2 rounded-lg hover:bg-slate-200 transition-colors"
-                  aria-label="Toggle sidebar"
-                >
-                  <Menu className="h-5 w-5 text-slate-600" />
-                </button>
-              </div>
+              <button
+                onClick={handleBackToPapers}
+                className="flex items-center space-x-3 group hover:scale-105 transition-all duration-200 p-2 rounded-xl hover:bg-slate-100 w-full"
+              >
+                <div className="p-2 rounded-xl bg-slate-200 group-hover:bg-slate-300 transition-colors duration-200">
+                  <ArrowLeft className="h-5 w-5 text-slate-700" />
+                </div>
+                <span className="text-lg font-bold text-slate-800 group-hover:text-slate-600 transition-colors duration-200">
+                  Back to Papers
+                </span>
+              </button>
               
               {/* Paper Metadata */}
               <div className="mt-4 space-y-2">
@@ -434,7 +372,7 @@ export function DocViewer({ paperId }: DocViewerProps) {
         </div>
 
         {/* Main Content Area - with left margin for sidebar on desktop */}
-        <div className="flex-1 lg:ml-80 min-h-screen">
+        <div className="flex-1 lg:ml-80 min-h-screen pb-32">
           {/* Content Header */}
           <div className="bg-white border-b border-slate-200 px-6 py-4 flex-shrink-0">
             <div className="flex items-center justify-between">
@@ -588,7 +526,7 @@ export function DocViewer({ paperId }: DocViewerProps) {
 
             {/* Right TOC Panel */}
             <div className="hidden xl:block w-80 border-l border-slate-200 bg-white">
-              <div className="sticky top-20 h-[calc(100vh-5rem)] flex flex-col">
+              <div className="sticky top-0 h-screen flex flex-col">
                 {/* TOC Header */}
                 <div className="p-6 border-b border-slate-200 flex-shrink-0">
                   <h3 className="font-semibold text-slate-900 mb-2">On this page</h3>
@@ -651,6 +589,62 @@ export function DocViewer({ paperId }: DocViewerProps) {
                 </div>
               </div>
             </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Bottom Search Bar - Fixed at bottom center like ChatGPT/Claude */}
+      <div className="fixed bottom-0 left-0 right-0 z-50 p-4 bg-gradient-to-t from-white via-white to-transparent">
+        <div className="max-w-4xl mx-auto lg:ml-40">
+          <div className="bg-white border border-slate-300 rounded-2xl shadow-2xl p-4">
+            <div className="flex items-center space-x-4">
+              <div className="flex-1 relative">
+                <div className="absolute left-4 top-1/2 transform -translate-y-1/2">
+                  <Sparkles className="h-5 w-5 text-slate-400" />
+                </div>
+                <Input
+                  type="text"
+                  placeholder="Ask about this paper... (e.g., 'What are the key findings?')"
+                  value={aiQuery}
+                  onChange={(e) => setAiQuery(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && handleAiQuery()}
+                  className="pl-12 pr-4 py-4 text-base border-0 focus:ring-0 focus:border-0 bg-transparent placeholder:text-slate-500"
+                />
+              </div>
+              <Button 
+                onClick={handleAiQuery}
+                disabled={isAiLoading || !aiQuery.trim()}
+                size="lg"
+                className="px-6 py-4 bg-slate-900 hover:bg-slate-800 text-white rounded-xl transition-all duration-200 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {isAiLoading ? (
+                  <div className="animate-spin h-5 w-5 border-2 border-white border-t-transparent rounded-full" />
+                ) : (
+                  <Send className="h-5 w-5" />
+                )}
+              </Button>
+            </div>
+
+            {/* AI Response in bottom search area */}
+            {aiResponse && (
+              <div className="mt-4 p-4 bg-slate-50 border border-slate-200 rounded-xl">
+                <div className="flex items-start space-x-3">
+                  <div className="p-2 bg-slate-200 rounded-lg flex-shrink-0">
+                    <MessageCircle className="h-4 w-4 text-slate-600" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="text-sm font-medium text-slate-900 mb-2">AI Assistant</div>
+                    <div className="text-sm text-slate-700 whitespace-pre-line">{aiResponse}</div>
+                  </div>
+                  <button
+                    onClick={() => setAiResponse('')}
+                    className="p-1 hover:bg-slate-200 rounded transition-colors flex-shrink-0"
+                  >
+                    <X className="h-4 w-4 text-slate-500" />
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>
