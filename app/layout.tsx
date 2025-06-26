@@ -1,12 +1,16 @@
 import './globals.css';
 import type { Metadata } from 'next';
-import { Inter } from 'next/font/google';
+import { Lora } from 'next/font/google';
+import { Header } from '@/components/shared/header'; // Import the new header
 
-const inter = Inter({ subsets: ['latin'] });
+const lora = Lora({
+  subsets: ['latin'],
+  variable: '--font-lora',
+});
 
 export const metadata: Metadata = {
-  title: 'Hello World - Modern & Minimal',
-  description: 'A beautiful, modern Hello World page built with Next.js and Tailwind CSS',
+  title: 'mdscholar - Make Research Accessible to Everyone',
+  description: 'mdscholar transforms complex academic research into clear, actionable insights. Discover, understand, and apply knowledge faster than ever before.',
 };
 
 export default function RootLayout({
@@ -16,7 +20,10 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className={inter.className}>{children}</body>
+      <body className={`font-sans ${lora.variable}`}>
+        <Header />
+        {children}
+      </body>
     </html>
   );
 }
