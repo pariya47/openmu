@@ -79,25 +79,33 @@ export function PaperDashboard() {
     fetchPapers();
   }, []);
 
-  // Helper function to normalize authors data
-  const normalizeAuthors = (authers: any): Author[] => {
-    if (!authers) return [];
-    if (Array.isArray(authers)) return authers;
-    if (typeof authers === 'object' && authers.name) return [authers];
-    return [];
-  };
+    // Helper function to normalize authors data
+    const normalizeAuthors = (authers: any): string[] => {
+      if (!authers || typeof authers !== 'object') return [];
+      const names = authers.name;
+      if (Array.isArray(names)) {
+        return names.filter((n) => typeof n === 'string');
+      }
+    
+      return [];
+    };
+
 
   // Filter papers based on search query
   const filteredPapers = papers.filter(paper => {
     const searchLower = searchQuery.toLowerCase();
+    
     const paperName = paper.paper_name?.toLowerCase() || '';
     const abstract = paper.abstract?.toLowerCase() || '';
-    const normalizedAuthors = normalizeAuthors(paper.authers);
-    const authors = normalizedAuthors.map(author => author.name.toLowerCase()).join(' ');
     
-    return paperName.includes(searchLower) || 
+    const normalizedAuthors = normalizeAuthors(paper.authers);
+    const authors = normalizedAuthors.map(name => name.toLowerCase()).join(' ');
+    
+    return (
+          paperName.includes(searchLower) || 
            abstract.includes(searchLower) || 
            authors.includes(searchLower);
+    )
   });
 
   const handlePaperClick = (paper: Paper) => {
