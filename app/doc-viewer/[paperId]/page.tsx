@@ -1,6 +1,5 @@
 import { DocViewer } from '@/components/doc-viewer';
-import { mockDocSections } from '@/lib/mock-data';
-import { samplePapers } from '@/components/paper-dashboard';
+import { mockDocSections, samplePapers } from '@/lib/mock-data';
 
 export async function generateStaticParams() {
   // Combine IDs from both mockDocSections and samplePapers

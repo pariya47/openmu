@@ -23,9 +23,10 @@ import {
   Share,
   Bookmark,
   Download,
-  Settings
+  Settings,
+  ArrowLeft
 } from 'lucide-react';
-import { mockDocSections, type DocSection } from '@/lib/mock-data';
+import { mockDocSections, getDocSectionForPaper, samplePapers, type DocSection } from '@/lib/mock-data';
 
 interface DocViewerProps {
   paperId: string;
@@ -40,14 +41,25 @@ export function DocViewer({ paperId }: DocViewerProps) {
   const [isAiLoading, setIsAiLoading] = useState(false);
   const [aiResponse, setAiResponse] = useState<string>('');
 
-  // Find current section
-  const currentSection = mockDocSections.find(section => section.id === activeSection) || mockDocSections[0];
+  // Find current section - first try paper mapping, then direct section lookup
+  const currentSection = getDocSectionForPaper(paperId) || 
+                         mockDocSections.find(section => section.id === activeSection) || 
+                         mockDocSections[0];
+
+  // Find paper info if this is a paper-based view
+  const currentPaper = samplePapers.find(paper => paper.id === paperId);
+  const isPaperView = !!currentPaper;
 
   // Handle section navigation
   const handleSectionClick = (sectionId: string) => {
     setActiveSection(sectionId);
     setSidebarOpen(false);
     router.push(`/doc-viewer/${sectionId}`);
+  };
+
+  // Handle back to papers
+  const handleBackToPapers = () => {
+    router.push('/papers');
   };
 
   // Handle AI query
@@ -57,7 +69,11 @@ export function DocViewer({ paperId }: DocViewerProps) {
     setIsAiLoading(true);
     // Simulate AI response
     setTimeout(() => {
-      setAiResponse(`Based on the ${currentSection.title} section, here's what I found about "${aiQuery}":\n\n• This is a simulated AI response that would normally come from vector search and LLM processing\n• The system would analyze the current section content and provide contextual answers\n• Real implementation would use embeddings and retrieval-augmented generation`);
+      const contextInfo = isPaperView 
+        ? `the paper "${currentPaper?.title}" by ${currentPaper?.authors.join(', ')}`
+        : `the ${currentSection.title} section`;
+      
+      setAiResponse(`Based on ${contextInfo}, here's what I found about "${aiQuery}":\n\n• This is a simulated AI response that would normally come from vector search and LLM processing\n• The system would analyze the current ${isPaperView ? 'paper' : 'section'} content and provide contextual answers\n• Real implementation would use embeddings and retrieval-augmented generation\n• Context: ${isPaperView ? 'Academic paper analysis' : 'Documentation section'}`);
       setIsAiLoading(false);
     }, 2000);
   };
@@ -103,7 +119,7 @@ export function DocViewer({ paperId }: DocViewerProps) {
         const title = line.replace('# ', '');
         return `<h1 class="text-3xl font-bold text-slate-900 mb-6">${title}</h1>`;
       } else if (line.startsWith('```')) {
-        if (line.includes('python')) {
+        if (line.includes('python') || line.includes('bash') || line.includes('javascript')) {
           return '<pre class="bg-slate-100 border border-slate-200 rounded-lg p-4 my-4 overflow-x-auto"><code class="text-sm text-slate-800">';
         } else if (line === '```') {
           return '</code></pre>';
@@ -145,7 +161,7 @@ export function DocViewer({ paperId }: DocViewerProps) {
           <div className="p-6 border-b border-slate-200">
             <div className="flex items-center justify-between">
               <button
-                onClick={() => router.push('/papers')}
+                onClick={handleBackToPapers}
                 className="flex items-center space-x-3 group hover:scale-105 transition-all duration-200 p-2 rounded-xl hover:bg-slate-100"
               >
                 <div className="p-2 rounded-xl bg-slate-200 group-hover:bg-slate-300 transition-colors duration-200">
@@ -166,13 +182,33 @@ export function DocViewer({ paperId }: DocViewerProps) {
             {/* Metadata */}
             <div className="mt-4 space-y-2">
               <div className="text-sm text-slate-600">
-                <span className="font-medium">huggingface/transformers</span>
+                <span className="font-medium">
+                  {isPaperView ? currentPaper?.title : 'huggingface/transformers'}
+                </span>
               </div>
+              {isPaperView && (
+                <div className="text-xs text-slate-500">
+                  {currentPaper?.authors.join(', ')} ({currentPaper?.year})
+                </div>
+              )}
               <div className="flex items-center text-xs text-slate-500">
                 <Clock className="h-3 w-3 mr-1" />
-                Last Indexed: June 5, 2025 (4d/2h)
+                Last Indexed: {isPaperView ? 'June 10, 2025 (1d)' : 'June 5, 2025 (4d/2h)'}
               </div>
             </div>
+          </div>
+
+          {/* Back to Papers Button */}
+          <div className="p-4 border-b border-slate-200">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleBackToPapers}
+              className="w-full justify-start"
+            >
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Back to Papers
+            </Button>
           </div>
 
           {/* Navigation */}
@@ -184,14 +220,14 @@ export function DocViewer({ paperId }: DocViewerProps) {
                   onClick={() => handleSectionClick(section.id)}
                   className={`
                     w-full text-left px-4 py-3 rounded-lg transition-all duration-200 flex items-center justify-between group
-                    ${activeSection === section.id 
+                    ${activeSection === section.id || currentSection.id === section.id
                       ? 'bg-slate-200 text-slate-900 shadow-sm' 
                       : 'text-slate-700 hover:bg-slate-100 hover:text-slate-900'
                     }
                   `}
                 >
                   <span className="font-medium">{section.title}</span>
-                  {activeSection === section.id && (
+                  {(activeSection === section.id || currentSection.id === section.id) && (
                     <ChevronRight className="h-4 w-4 text-slate-600" />
                   )}
                 </button>
@@ -203,7 +239,7 @@ export function DocViewer({ paperId }: DocViewerProps) {
           <div className="p-4 border-t border-slate-200 space-y-2">
             <Button variant="outline" size="sm" className="w-full justify-start">
               <Share className="h-4 w-4 mr-2" />
-              Share Document
+              Share {isPaperView ? 'Paper' : 'Document'}
             </Button>
             <Button variant="outline" size="sm" className="w-full justify-start">
               <Download className="h-4 w-4 mr-2" />
@@ -228,7 +264,12 @@ export function DocViewer({ paperId }: DocViewerProps) {
                 </button>
                 <div>
                   <h1 className="text-xl font-bold text-slate-900">{currentSection.title}</h1>
-                  <p className="text-sm text-slate-600">huggingface/transformers documentation</p>
+                  <p className="text-sm text-slate-600">
+                    {isPaperView 
+                      ? `${currentPaper?.authors[0]} et al. (${currentPaper?.year}) - AI-generated documentation`
+                      : 'huggingface/transformers documentation'
+                    }
+                  </p>
                 </div>
               </div>
               <div className="flex items-center space-x-2">
@@ -245,6 +286,26 @@ export function DocViewer({ paperId }: DocViewerProps) {
 
           {/* Content */}
           <div className="px-6 py-8">
+            {/* Paper Abstract (if paper view) */}
+            {isPaperView && currentPaper && (
+              <div className="mb-8 p-6 bg-slate-50 border border-slate-200 rounded-xl">
+                <h2 className="text-lg font-semibold text-slate-900 mb-3">Paper Abstract</h2>
+                <p className="text-slate-700 leading-relaxed mb-4">{currentPaper.abstract}</p>
+                <div className="flex items-center space-x-4 text-sm text-slate-600">
+                  <div className="flex items-center">
+                    <Calendar className="h-4 w-4 mr-1" />
+                    {currentPaper.year}
+                  </div>
+                  {currentPaper.doi && (
+                    <div className="flex items-center">
+                      <ExternalLink className="h-4 w-4 mr-1" />
+                      DOI: {currentPaper.doi}
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
             <div 
               className="prose prose-slate max-w-none"
               dangerouslySetInnerHTML={{ __html: parseContent(currentSection.content) }}
@@ -304,7 +365,7 @@ export function DocViewer({ paperId }: DocViewerProps) {
               </div>
               <Input
                 type="text"
-                placeholder="Ask about this documentation... (e.g., 'What is lazy loading in this library?')"
+                placeholder={`Ask about this ${isPaperView ? 'paper' : 'documentation'}... (e.g., 'What is the main contribution?')`}
                 value={aiQuery}
                 onChange={(e) => setAiQuery(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && handleAiQuery()}
