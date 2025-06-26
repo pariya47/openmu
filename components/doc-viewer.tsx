@@ -594,57 +594,61 @@ export function DocViewer({ paperId }: DocViewerProps) {
       </div>
 
       {/* Bottom Search Bar - Fixed at bottom center like ChatGPT/Claude */}
-      <div className="fixed bottom-0 left-0 right-0 z-50 p-4 bg-gradient-to-t from-white via-white to-transparent pointer-events-none">
-        <div className="max-w-4xl mx-auto lg:ml-40 pointer-events-auto">
-          <div className="bg-white border border-slate-300 rounded-2xl shadow-2xl p-4">
-            <div className="flex items-center space-x-4">
-              <div className="flex-1 relative">
-                <div className="absolute left-4 top-1/2 transform -translate-y-1/2">
-                  <Sparkles className="h-5 w-5 text-slate-400" />
-                </div>
-                <Input
-                  type="text"
-                  placeholder="Ask about this paper... (e.g., 'What are the key findings?')"
-                  value={aiQuery}
-                  onChange={(e) => setAiQuery(e.target.value)}
-                  onKeyDown={(e) => e.key === 'Enter' && handleAiQuery()}
-                  className="pl-12 pr-4 py-4 text-base border-0 focus:ring-0 focus:border-0 bg-transparent placeholder:text-slate-500"
-                />
-              </div>
-              <Button 
-                onClick={handleAiQuery}
-                disabled={isAiLoading || !aiQuery.trim()}
-                size="lg"
-                className="px-6 py-4 bg-slate-900 hover:bg-slate-800 text-white rounded-xl transition-all duration-200 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {isAiLoading ? (
-                  <div className="animate-spin h-5 w-5 border-2 border-white border-t-transparent rounded-full" />
-                ) : (
-                  <Send className="h-5 w-5" />
-                )}
-              </Button>
-            </div>
-
-            {/* AI Response in bottom search area */}
-            {aiResponse && (
-              <div className="mt-4 p-4 bg-slate-50 border border-slate-200 rounded-xl">
-                <div className="flex items-start space-x-3">
-                  <div className="p-2 bg-slate-200 rounded-lg flex-shrink-0">
-                    <MessageCircle className="h-4 w-4 text-slate-600" />
+      <div className="fixed bottom-0 left-0 right-0 z-50 bg-gradient-to-t from-white via-white/95 to-transparent pointer-events-none">
+        <div className="p-6 pointer-events-auto">
+          <div className="max-w-4xl mx-auto lg:ml-40">
+            <div className="bg-white border border-slate-300 rounded-2xl shadow-2xl backdrop-blur-sm">
+              <div className="p-4">
+                <div className="flex items-center space-x-4">
+                  <div className="flex-1 relative">
+                    <div className="absolute left-4 top-1/2 transform -translate-y-1/2">
+                      <Sparkles className="h-5 w-5 text-slate-400" />
+                    </div>
+                    <Input
+                      type="text"
+                      placeholder="Ask about this paper... (e.g., 'What are the key findings?')"
+                      value={aiQuery}
+                      onChange={(e) => setAiQuery(e.target.value)}
+                      onKeyDown={(e) => e.key === 'Enter' && handleAiQuery()}
+                      className="pl-12 pr-4 py-4 text-base border-0 focus:ring-0 focus:border-0 bg-transparent placeholder:text-slate-500"
+                    />
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="text-sm font-medium text-slate-900 mb-2">AI Assistant</div>
-                    <div className="text-sm text-slate-700 whitespace-pre-line">{aiResponse}</div>
-                  </div>
-                  <button
-                    onClick={() => setAiResponse('')}
-                    className="p-1 hover:bg-slate-200 rounded transition-colors flex-shrink-0"
+                  <Button 
+                    onClick={handleAiQuery}
+                    disabled={isAiLoading || !aiQuery.trim()}
+                    size="lg"
+                    className="px-6 py-4 bg-slate-900 hover:bg-slate-800 text-white rounded-xl transition-all duration-200 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    <X className="h-4 w-4 text-slate-500" />
-                  </button>
+                    {isAiLoading ? (
+                      <div className="animate-spin h-5 w-5 border-2 border-white border-t-transparent rounded-full" />
+                    ) : (
+                      <Send className="h-5 w-5" />
+                    )}
+                  </Button>
                 </div>
+
+                {/* AI Response in bottom search area */}
+                {aiResponse && (
+                  <div className="mt-4 p-4 bg-slate-50 border border-slate-200 rounded-xl">
+                    <div className="flex items-start space-x-3">
+                      <div className="p-2 bg-slate-200 rounded-lg flex-shrink-0">
+                        <MessageCircle className="h-4 w-4 text-slate-600" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="text-sm font-medium text-slate-900 mb-2">AI Assistant</div>
+                        <div className="text-sm text-slate-700 whitespace-pre-line">{aiResponse}</div>
+                      </div>
+                      <button
+                        onClick={() => setAiResponse('')}
+                        className="p-1 hover:bg-slate-200 rounded transition-colors flex-shrink-0"
+                      >
+                        <X className="h-4 w-4 text-slate-500" />
+                      </button>
+                    </div>
+                  </div>
+                )}
               </div>
-            )}
+            </div>
           </div>
         </div>
       </div>
