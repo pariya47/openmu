@@ -80,3 +80,19 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* Hero Section Animation */
+@keyframes heroFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(2rem);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-hero-fade-in {
+  animation: heroFadeIn 1s ease-out forwards;
+}

@@ -35,7 +35,7 @@ interface Paper {
   dateAdded: string;
 }
 
-const samplePapers: Paper[] = [
+export const samplePapers: Paper[] = [
   {
     id: '1',
     title: 'Attention Is All You Need',
@@ -133,6 +133,10 @@ export function PaperDashboard() {
 
   const handleHomeClick = () => {
     router.push('/');
+  };
+
+  const handleViewFullPaper = (paperId: string) => {
+    router.push(`/doc-viewer/${paperId}`);
   };
 
   const formatAuthors = (authors: string[]) => {
@@ -314,8 +318,9 @@ export function PaperDashboard() {
                   size="default"
                   className="flex-1 bg-slate-600 hover:bg-slate-700 text-white shadow-md hover:shadow-lg transition-all duration-200 hover:scale-105 rounded-lg"
                   onClick={() => {
-                    if (selectedPaper?.fullPaperUrl) {
-                      window.open(selectedPaper.fullPaperUrl, '_blank');
+                    if (selectedPaper) {
+                      handleViewFullPaper(selectedPaper.id);
+                      setIsModalOpen(false);
                     }
                   }}
                 >
