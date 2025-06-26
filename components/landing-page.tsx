@@ -15,8 +15,49 @@ import {
   Globe,
   Sparkles,
   Upload,
-  ExternalLink
+  ExternalLink,
+  ArrowRight,
+  Rocket
 } from 'lucide-react';
+
+const testimonials = [
+  {
+    category: 'researcher',
+    name: 'Dr. Sarah Chen',
+    quote: 'SUMU has revolutionized how I approach literature reviews. What used to take weeks now takes days.',
+    role: 'Research Scientist, MIT'
+  },
+  {
+    category: 'student',
+    name: 'Marcus Johnson',
+    quote: 'As a PhD student, SUMU helps me stay on top of the latest research in my field effortlessly.',
+    role: 'PhD Candidate, Stanford University'
+  },
+  {
+    category: 'professional',
+    name: 'Lisa Rodriguez',
+    quote: 'The insights from SUMU directly inform our product development decisions.',
+    role: 'Head of R&D, TechCorp'
+  },
+  {
+    category: 'researcher',
+    name: 'Prof. David Kim',
+    quote: 'SUMU bridges the gap between complex research and practical application beautifully.',
+    role: 'Professor of Computer Science, UC Berkeley'
+  },
+  {
+    category: 'student',
+    name: 'Emma Thompson',
+    quote: 'Finally, a tool that makes academic papers accessible without losing the depth.',
+    role: 'Graduate Student, Harvard'
+  },
+  {
+    category: 'professional',
+    name: 'Alex Martinez',
+    quote: 'SUMU saves our team countless hours of research while improving decision quality.',
+    role: 'Strategy Director, Innovation Labs'
+  }
+];
 
 export function LandingPage() {
   const router = useRouter();
