@@ -35,7 +35,7 @@ interface Paper {
   dateAdded: string;
 }
 
-const samplePapers: Paper[] = [
+export const samplePapers: Paper[] = [
   {
     id: '1',
     title: 'Attention Is All You Need',
