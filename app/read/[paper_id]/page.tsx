@@ -144,46 +144,6 @@ export default function ReadPaperPage({ params }: { params: { paper_id: string }
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
-      {/* Header */}
-      <header className="border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 sticky top-0 z-50">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-3">
-              <div className="p-2 rounded-lg bg-black text-white">
-                <BookOpen className="h-5 w-5" />
-              </div>
-              <span className="text-xl font-bold">SUMU</span>
-              {paper && (
-                <>
-                  <Separator orientation="vertical" className="h-6" />
-                  <span className="text-sm text-gray-600 dark:text-gray-400">
-                    Paper ID: {paper.id}
-                  </span>
-                </>
-              )}
-            </div>
-            
-            <div className="flex items-center space-x-4">
-              {/* Add relevant buttons here if needed, e.g., Refresh, Share */}
-              <Button variant="outline" size="sm" className="text-xs">
-                <RefreshCw className="h-3 w-3 mr-1" />
-                Refresh
-              </Button>
-              <Button variant="default" size="sm" className="bg-blue-600 hover:bg-blue-700">
-                <Share className="h-3 w-3 mr-1" />
-                Share
-              </Button>
-              <Link href="/">
-                <Button variant="ghost" size="sm">
-                  <ArrowLeft className="h-4 w-4 mr-2" />
-                  Back to Home
-                </Button>
-              </Link>
-            </div>
-          </div>
-        </div>
-      </header>
-
       <div className="container mx-auto px-4 py-6">
         <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
           {/* Left Sidebar - Topics */}

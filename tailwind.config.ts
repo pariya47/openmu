@@ -97,6 +97,7 @@ const config: Config = {
           '"Segoe UI Emoji"',
           '"Segoe UI Symbol"',
         ],
+        lora: ['var(--font-lora)', 'serif'],
       },
     },
   },
