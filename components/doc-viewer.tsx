@@ -53,7 +53,7 @@ interface DocViewerProps {
 }
 
 // Mock data - in a real app, this would come from your backend
-const mockDocSections: DocSection[] = [
+export const mockDocSections: DocSection[] = [
   {
     id: 'overview',
     title: 'Overview',
