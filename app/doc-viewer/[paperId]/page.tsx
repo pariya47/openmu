@@ -1,4 +1,5 @@
-import { DocViewer, mockDocSections } from "@/components/doc-viewer";
+import { DocViewer } from '@/components/doc-viewer';
+import { mockDocSections } from '@/lib/mock-data';
 
 export async function generateStaticParams() {
   return mockDocSections.map((section) => ({
@@ -6,6 +7,12 @@ export async function generateStaticParams() {
   }));
 }
 
-export default function DocViewerPage({ params }: { params: { paperId: string } }) {
+interface DocViewerPageProps {
+  params: {
+    paperId: string;
+  };
+}
+
+export default function DocViewerPage({ params }: DocViewerPageProps) {
   return <DocViewer paperId={params.paperId} />;
 }
