@@ -5,17 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import Link from 'next/link';
-import { 
-  BookOpen, 
-  Search, 
-  Clock, 
-  AlertCircle,
-  Target,
-  Globe,
-  Sparkles,
-  Upload,
-  LucideIcon
-} from 'lucide-react';
+import { BookOpen, Search, Clock, AlertCircle, Target, Globe, Sparkles, Upload, DivideIcon as LucideIcon } from 'lucide-react';
 
 // Types for better type safety (SOLID - Interface Segregation)
 interface PainPoint {
