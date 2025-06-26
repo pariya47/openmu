@@ -61,6 +61,7 @@ const testimonials = [
 
 export function LandingPage() {
   const [isVisible, setIsVisible] = useState(false);
+  const [scrollY, setScrollY] = useState(0);
   const router = useRouter();
 
   useEffect(() => {
