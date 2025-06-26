@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -18,10 +19,16 @@ import {
 } from 'lucide-react';
 
 export function LandingPage() {
-  const [isVisible, setIsVisible] = useState(false);
+  const router = useRouter();
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [selectedFeature, setSelectedFeature] = useState(0);
+  const [testimonialFilter, setTestimonialFilter] = useState('all');
+  const [scrollY, setScrollY] = useState(0);
 
   useEffect(() => {
-    setIsVisible(true);
+    const handleScroll = () => setScrollY(window.scrollY);
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
   const painPoints = [
@@ -51,6 +58,19 @@ export function LandingPage() {
     }
   ];
 
+  const filteredTestimonials = testimonials.filter(t => 
+    testimonialFilter === 'all' || t.category === testimonialFilter
+  );
+
+  const scrollToSection = (sectionId: string) => {
+    document.getElementById(sectionId)?.scrollIntoView({ behavior: 'smooth' });
+    setIsMenuOpen(false);
+  };
+
+  // Navigation handler for Join Waitlist buttons
+  const handleJoinWaitlist = () => {
+    router.push('/papers');
+  };
   return (
     <div className="min-h-screen bg-white">
       {/* Header */}
@@ -77,18 +97,46 @@ export function LandingPage() {
               <button className="bg-black text-white px-4 py-2 rounded-full hover:bg-gray-800 transition-colors font-medium">
                 JoinUs
               </button>
+              <Button 
+                className="shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105"
+                onClick={handleJoinWaitlist}
+              >
+                Join Waitlist
+              </Button>
             </nav>
           </div>
+
+          {/* Mobile Navigation */}
+          {isMenuOpen && (
+            <nav className="md:hidden mt-4 pb-4 border-t pt-4 animate-in slide-in-from-top-2 duration-200 bg-background/95 backdrop-blur-md rounded-lg border shadow-lg">
+              <div className="flex flex-col space-y-2 px-4">
+                <button onClick={() => scrollToSection('features')} className="text-left text-muted-foreground hover:text-foreground transition-colors font-medium py-2">
+                  Features
+                </button>
+                <button onClick={() => scrollToSection('community')} className="text-left text-muted-foreground hover:text-foreground transition-colors font-medium py-2">
+                  Community
+                </button>
+                <button onClick={() => scrollToSection('audience')} className="text-left text-muted-foreground hover:text-foreground transition-colors font-medium py-2">
+                  For You
+                </button>
+                <button onClick={() => scrollToSection('impact')} className="text-left text-muted-foreground hover:text-foreground transition-colors font-medium py-2">
+                  Impact
+                </button>
+                <Button className="w-full mt-4" onClick={handleJoinWaitlist}>
+                  Join Waitlist
+                </Button>
+              </div>
+            </nav>
+          )}
         </div>
       </header>
 
       {/* Hero Section */}
-      <section className="pt-20 pb-16 px-4 relative">
-        <div className={`container mx-auto text-center max-w-4xl transition-all duration-1000 ${
-          isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
-        }`}>
-          <Badge variant="secondary" className="mb-8 text-sm px-4 py-2 bg-gray-100 text-gray-700 border-0">
-            <Sparkles className="h-4 w-4 mr-2" />
+      <section className="pt-24 sm:pt-32 pb-12 sm:pb-20 px-4 relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-secondary/5" />
+        <div className="container mx-auto text-center max-w-5xl relative animate-hero-fade-in">
+          <Badge variant="secondary" className="mb-6 sm:mb-8 text-xs sm:text-sm px-4 sm:px-6 py-2 sm:py-3 shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105">
+            <Sparkles className="h-3 w-3 sm:h-4 sm:w-4 mr-2" />
             Revolutionizing Academic Research
           </Badge>
           
@@ -103,23 +151,18 @@ export function LandingPage() {
             insights. Discover, understand, and apply knowledge faster than ever before.
           </p>
 
-          <div className="flex flex-col sm:flex-row gap-4 justify-center mb-16">
-            <Link href="/read">
-              <Button 
-                size="lg" 
-                className="text-lg px-8 py-6 bg-black text-white hover:bg-gray-800 rounded-full shadow-lg hover:shadow-xl transition-all duration-200"
-              >
-                <Upload className="mr-3 h-5 w-5" />
-                Upload a new one
-              </Button>
-            </Link>
+          <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 justify-center mb-12 sm:mb-16 px-4">
             <Button 
-              variant="outline" 
               size="lg" 
-              className="text-lg px-8 py-6 border-black text-black hover:bg-black hover:text-white rounded-full shadow-lg hover:shadow-xl transition-all duration-200"
+              className="text-base sm:text-lg px-8 sm:px-10 py-6 sm:py-7 shadow-xl hover:shadow-2xl transition-all duration-200 hover:scale-105"
+              onClick={handleJoinWaitlist}
             >
-              <Search className="mr-3 h-5 w-5" />
-              Explore researches
+              Join Waitlist
+              <ArrowRight className="ml-2 sm:ml-3 h-4 w-4 sm:h-5 sm:w-5" />
+            </Button>
+            <Button variant="outline" size="lg" className="text-base sm:text-lg px-8 sm:px-10 py-6 sm:py-7 shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105">
+              <Rocket className="mr-2 sm:mr-3 h-4 w-4 sm:h-5 sm:w-5" />
+              Watch Demo
             </Button>
           </div>
         </div>
@@ -164,10 +207,11 @@ export function LandingPage() {
             Join thousands of researchers, students, and professionals who are already using SUMU to accelerate their work and unlock new insights.
           </p>
           
-          <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
+          <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 justify-center mb-8 sm:mb-12 px-4">
             <Button 
               size="lg" 
-              className="text-lg px-8 py-6 bg-black text-white hover:bg-gray-800 rounded-full shadow-lg hover:shadow-xl transition-all duration-200"
+              className="text-base sm:text-lg px-8 sm:px-10 py-6 sm:py-7 shadow-xl hover:shadow-2xl transition-all duration-200 hover:scale-105"
+              onClick={handleJoinWaitlist}
             >
               Join Waitlist
             </Button>
