@@ -79,12 +79,21 @@ export function PaperDashboard() {
     fetchPapers();
   }, []);
 
+  // Helper function to normalize authors data
+  const normalizeAuthors = (authers: any): Author[] => {
+    if (!authers) return [];
+    if (Array.isArray(authers)) return authers;
+    if (typeof authers === 'object' && authers.name) return [authers];
+    return [];
+  };
+
   // Filter papers based on search query
   const filteredPapers = papers.filter(paper => {
     const searchLower = searchQuery.toLowerCase();
     const paperName = paper.paper_name?.toLowerCase() || '';
     const abstract = paper.abstract?.toLowerCase() || '';
-    const authors = paper.authers?.map(author => author.name.toLowerCase()).join(' ') || '';
+    const normalizedAuthors = normalizeAuthors(paper.authers);
+    const authors = normalizedAuthors.map(author => author.name.toLowerCase()).join(' ');
     
     return paperName.includes(searchLower) || 
            abstract.includes(searchLower) || 
@@ -108,12 +117,13 @@ export function PaperDashboard() {
     router.push(`/read/${paperId}`);
   };
 
-  const formatAuthors = (authors: Author[] | null) => {
-    if (!authors || authors.length === 0) return 'Unknown Author';
-    if (authors.length <= 2) {
-      return authors.map(author => author.name).join(', ');
+  const formatAuthors = (authers: any) => {
+    const normalizedAuthors = normalizeAuthors(authers);
+    if (normalizedAuthors.length === 0) return 'Unknown Author';
+    if (normalizedAuthors.length <= 2) {
+      return normalizedAuthors.map(author => author.name).join(', ');
     }
-    return `${authors[0].name} et al.`;
+    return `${normalizedAuthors[0].name} et al.`;
   };
 
   const truncateAbstract = (abstract: string | null, maxLength: number = 80) => {
