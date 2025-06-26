@@ -53,35 +53,6 @@ export function LandingPage() {
 
   return (
     <div className="min-h-screen bg-white">
-      {/* Header */}
-      <header className="border-b border-gray-200 bg-white">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-3">
-              <div className="p-2 rounded-lg bg-black text-white">
-                <BookOpen className="h-5 w-5" />
-              </div>
-              <span className="text-xl font-bold text-black">SUMU</span>
-            </div>
-            
-            <nav className="hidden md:flex items-center space-x-8">
-              <span className="text-black font-medium border-b-2 border-black pb-1">
-                HOME
-              </span>
-              <Link href="/plan" className="text-gray-600 hover:text-black transition-colors font-medium">
-                PLAN
-              </Link>
-              <Link href="/donate" className="text-gray-600 hover:text-black transition-colors font-medium">
-                DONATE
-              </Link>
-              <button className="bg-black text-white px-4 py-2 rounded-full hover:bg-gray-800 transition-colors font-medium">
-                JoinUs
-              </button>
-            </nav>
-          </div>
-        </div>
-      </header>
-
       {/* Hero Section */}
       <section className="pt-20 pb-16 px-4 relative">
         <div className={`container mx-auto text-center max-w-4xl transition-all duration-1000 ${
@@ -206,7 +177,7 @@ export function LandingPage() {
                 <div className="p-2 rounded-lg bg-black text-white">
                   <BookOpen className="h-5 w-5" />
                 </div>
-                <span className="text-xl font-bold text-black">SUMU</span>
+                <span className="text-xl font-bold text-black">mdscholar</span>
               </div>
               <p className="text-gray-600 leading-relaxed">
                 Making academic research accessible to everyone through AI-powered insights and intelligent search.
@@ -246,7 +217,7 @@ export function LandingPage() {
 
           <div className="border-t border-gray-200 mt-12 pt-8 flex flex-col md:flex-row justify-between items-center">
             <p className="text-gray-600">
-              © 2025 SUMU. All rights reserved.
+              © 2025 mdscholar. All rights reserved.
             </p>
             <div className="flex space-x-6 text-sm text-gray-600 mt-4 md:mt-0">
               <span className="hover:text-black transition-colors cursor-pointer">Privacy Policy</span>

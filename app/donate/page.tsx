@@ -67,42 +67,6 @@ export default function DonatePage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-rose-50 to-white">
-      {/* Header */}
-      <header className="border-b border-gray-200 bg-white/80 backdrop-blur-md sticky top-0 z-50">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-3">
-              <div className="p-2 rounded-lg bg-black text-white">
-                <BookOpen className="h-5 w-5" />
-              </div>
-              <span className="text-xl font-bold text-black">SUMU</span>
-            </div>
-            
-            <nav className="hidden md:flex items-center space-x-8">
-              <Link href="/" className="text-gray-600 hover:text-black transition-colors font-medium">
-                HOME
-              </Link>
-              <Link href="/plan" className="text-gray-600 hover:text-black transition-colors font-medium">
-                PLAN
-              </Link>
-              <span className="text-black font-medium border-b-2 border-black pb-1">
-                Donate
-              </span>
-              <button className="bg-black text-white px-4 py-2 rounded-full hover:bg-gray-800 transition-colors font-medium">
-                JoinUs
-              </button>
-            </nav>
-
-            <Link href="/" className="md:hidden">
-              <Button variant="ghost" size="sm">
-                <ArrowLeft className="h-4 w-4 mr-2" />
-                Back
-              </Button>
-            </Link>
-          </div>
-        </div>
-      </header>
-
       {/* Hero Section */}
       <section className="pt-20 pb-16 px-4">
         <div className={`container mx-auto text-center max-w-4xl transition-all duration-1000 ${
@@ -300,11 +264,11 @@ export default function DonatePage() {
               <div className="p-2 rounded-lg bg-black text-white">
                 <BookOpen className="h-5 w-5" />
               </div>
-              <span className="text-xl font-bold text-black">SUMU</span>
+              <span className="text-xl font-bold text-black">mdscholar</span>
             </div>
             
             <p className="text-gray-600">
-              © 2025 SUMU. Thank you for supporting accessible research.
+              © 2025 mdscholar. Thank you for supporting accessible research.
             </p>
           </div>
         </div>
