@@ -23,8 +23,7 @@ import {
   Share,
   Bookmark,
   Download,
-  Settings,
-  ArrowLeft
+  Settings
 } from 'lucide-react';
 import { mockDocSections, getDocSectionForPaper, samplePapers, type DocSection } from '@/lib/mock-data';
 
@@ -198,28 +197,15 @@ export function DocViewer({ paperId }: DocViewerProps) {
             </div>
           </div>
 
-          {/* Back to Papers Button */}
-          <div className="p-4 border-b border-slate-200">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleBackToPapers}
-              className="w-full justify-start"
-            >
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Back to Papers
-            </Button>
-          </div>
-
           {/* Navigation */}
           <ScrollArea className="flex-1 p-4">
-            <nav className="space-y-2">
+            <nav className="space-y-1">
               {mockDocSections.map((section) => (
                 <button
                   key={section.id}
                   onClick={() => handleSectionClick(section.id)}
                   className={`
-                    w-full text-left px-4 py-3 rounded-lg transition-all duration-200 flex items-center justify-between group
+                    w-full text-left px-3 py-2 rounded-lg transition-all duration-200 flex items-center justify-between group text-sm
                     ${activeSection === section.id || currentSection.id === section.id
                       ? 'bg-slate-200 text-slate-900 shadow-sm' 
                       : 'text-slate-700 hover:bg-slate-100 hover:text-slate-900'
