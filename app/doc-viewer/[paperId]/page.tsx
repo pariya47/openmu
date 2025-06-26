@@ -2,12 +2,12 @@ import { DocViewer } from '@/components/doc-viewer';
 import { mockDocSections, samplePapers } from '@/lib/mock-data';
 
 export async function generateStaticParams() {
-  // Combine IDs from both mockDocSections and samplePapers
-  const mockSectionParams = mockDocSections.map((section) => ({
+  // Safely handle the case where arrays might be undefined
+  const mockSectionParams = (mockDocSections || []).map((section) => ({
     paperId: section.id,
   }));
   
-  const samplePaperParams = samplePapers.map((paper) => ({
+  const samplePaperParams = (samplePapers || []).map((paper) => ({
     paperId: paper.id,
   }));
   
