@@ -594,8 +594,8 @@ export function DocViewer({ paperId }: DocViewerProps) {
       </div>
 
       {/* Bottom Search Bar - Fixed at bottom center like ChatGPT/Claude */}
-      <div className="fixed bottom-0 left-0 right-0 z-50 p-4 bg-gradient-to-t from-white via-white to-transparent">
-        <div className="max-w-4xl mx-auto lg:ml-40">
+      <div className="fixed bottom-0 left-0 right-0 z-50 p-4 bg-gradient-to-t from-white via-white to-transparent pointer-events-none">
+        <div className="max-w-4xl mx-auto lg:ml-40 pointer-events-auto">
           <div className="bg-white border border-slate-300 rounded-2xl shadow-2xl p-4">
             <div className="flex items-center space-x-4">
               <div className="flex-1 relative">
