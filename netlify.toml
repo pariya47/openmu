@@ -2,15 +2,6 @@
   command = "npm run build"
   publish = ".next"
 
-[functions]
-  directory = "netlify/functions"
-
-# API redirects for functions
-[[redirects]]
-  from = "/api/*"
-  to = "/.netlify/functions/:splat"
-  status = 200
-
 # Enable Next.js plugin for proper SSR support
 [[plugins]]
   package = "@netlify/plugin-nextjs"
