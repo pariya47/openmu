@@ -3,7 +3,6 @@
 import { useState, useCallback, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useDropzone } from 'react-dropzone';
-import { Turnstile } from '@marsidev/react-turnstile';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Progress } from '@/components/ui/progress';
@@ -13,7 +12,6 @@ import { Label } from '@/components/ui/label';
 import { DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { 
   Upload, 
-  Shield, 
   CheckCircle, 
   AlertTriangle, 
   FileText, 
@@ -26,17 +24,20 @@ interface UploadFormDialogContentProps {
   onClose: () => void;
 }
 
+interface CreateTaskResponse {
+  task_id: string;
+  status: string;
+  message: string;
+}
+
 export function UploadFormDialogContent({ onClose }: UploadFormDialogContentProps) {
   const router = useRouter();
   const [email, setEmail] = useState<string>('');
   const [isEmailValid, setIsEmailValid] = useState<boolean>(false);
-  const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
-  const [isTurnstileSolved, setIsTurnstileSolved] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [error, setError] = useState<string | null>(null);
-
-  const siteKey = process.env.NEXT_PUBLIC_CLOUDFLARE_TURNSTILE_SITE_KEY;
+  const [taskResponse, setTaskResponse] = useState<CreateTaskResponse | null>(null);
 
   // Email validation
   const validateEmail = (email: string) => {
@@ -48,14 +49,12 @@ export function UploadFormDialogContent({ onClose }: UploadFormDialogContentProp
     setIsEmailValid(validateEmail(email));
   }, [email]);
 
-  const canProceed = isEmailValid && isTurnstileSolved && !isUploading;
+  const canProceed = isEmailValid && !isUploading;
 
   const onDrop = useCallback(async (acceptedFiles: File[]) => {
     if (!canProceed) {
       if (!isEmailValid) {
         setError('Please enter a valid email address first');
-      } else if (!isTurnstileSolved) {
-        setError('Please complete the security verification first');
       }
       return;
     }
@@ -66,120 +65,74 @@ export function UploadFormDialogContent({ onClose }: UploadFormDialogContentProp
 
     try {
       const file = acceptedFiles[0];
-      const ext = file.name.split('.').pop()?.toLowerCase() || 'pdf';
-
-      // Simulate progress for better UX
-      setUploadProgress(10);
-
-      // Get signed upload URL
-      const res = await fetch('/.netlify/functions/get-upload-url', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ext, turnstileToken }),
-      });
+      
+      // Create FormData object
+      const formData = new FormData();
+      formData.append('email', email);
+      formData.append('file', file);
 
       setUploadProgress(30);
 
-      if (!res.ok) {
-        const errorData = await res.json();
-        throw new Error(errorData.error?.message || errorData.error || 'Failed to get upload URL');
-      }
-
-      const response = await res.json();
-      
-      // Handle the structured API response
-      if (!response.success || !response.data) {
-        throw new Error(response.error?.message || 'Invalid response from server');
-      }
-      
-      const { signedUrl, path } = response.data;
-      
-      if (!signedUrl) {
-        throw new Error('No signed URL received from server');
-      }
-      
-      setUploadProgress(50);
-
-      // Upload file to Supabase
-      const uploadRes = await fetch(signedUrl, {
-        method: 'PUT',
-        headers: { 'Content-Type': file.type },
-        body: file,
+      // Upload to the new API endpoint
+      const response = await fetch('https://api.mdscholar.net/v1/research/create', {
+        method: 'POST',
+        body: formData,
       });
 
-      setUploadProgress(80);
+      setUploadProgress(70);
 
-      if (!uploadRes.ok) {
-        throw new Error('Failed to upload file');
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.detail || `HTTP ${response.status}: ${response.statusText}`);
       }
 
+      const result: CreateTaskResponse = await response.json();
+      setTaskResponse(result);
       setUploadProgress(100);
 
-      // Close dialog and redirect to home
-      onClose();
-      router.push('/');
+      // Close dialog and redirect to home after a brief delay
+      setTimeout(() => {
+        onClose();
+        router.push('/');
+      }, 1500);
 
     } catch (err) {
       console.error('Upload error:', err);
-      setError(err instanceof Error ? err.message : 'Upload failed');
+      setError(err instanceof Error ? err.message : 'Upload failed. Please try again.');
     } finally {
       setIsUploading(false);
-      setUploadProgress(0);
+      if (!taskResponse) {
+        setUploadProgress(0);
+      }
     }
-  }, [canProceed, isEmailValid, isTurnstileSolved, turnstileToken, email, onClose, router]);
+  }, [canProceed, isEmailValid, email, onClose, router, taskResponse]);
 
   const { getRootProps, getInputProps, isDragActive, fileRejections } = useDropzone({
     onDrop,
-    maxSize: 10 * 1024 * 1024, // 10MB for academic papers
+    maxSize: 50 * 1024 * 1024, // 50MB for academic papers
     accept: {
       'application/pdf': ['.pdf'],
       'application/msword': ['.doc'],
       'application/vnd.openxmlformats-officedocument.wordprocessingml.document': ['.docx'],
+      'text/plain': ['.txt'],
+      'text/markdown': ['.md'],
     },
     disabled: !canProceed,
     multiple: false
   });
 
-  const handleTurnstileSuccess = (token: string) => {
-    setTurnstileToken(token);
-    setIsTurnstileSolved(true);
-    setError(null);
-  };
-
-  const handleTurnstileExpire = () => {
-    setTurnstileToken(null);
-    setIsTurnstileSolved(false);
-  };
-
-  const handleTurnstileError = () => {
-    setTurnstileToken(null);
-    setIsTurnstileSolved(false);
-    setError('Security verification failed. Please try again.');
-  };
-
   useEffect(() => {
     if (fileRejections.length > 0) {
       const rejection = fileRejections[0];
       if (rejection.errors.some(e => e.code === 'file-too-large')) {
-        setError('File is too large. Maximum size is 10MB for academic papers.');
+        setError('File is too large. Maximum size is 50MB for academic papers.');
       } else if (rejection.errors.some(e => e.code === 'file-invalid-type')) {
-        setError('Only PDF, DOC, and DOCX files are supported for academic papers.');
+        setError('Only PDF, DOC, DOCX, TXT, and MD files are supported for academic papers.');
       } else {
         setError('File upload failed. Please try again.');
       }
     }
   }, [fileRejections]);
-
-  if (!siteKey) {
-    return (
-      <Alert variant="destructive">
-        <AlertTriangle className="h-4 w-4" />
-        <AlertDescription>
-          Turnstile site key is not configured. Please add NEXT_PUBLIC_CLOUDFLARE_TURNSTILE_SITE_KEY to your environment variables.
-        </AlertDescription>
-      </Alert>
-    );
-  }
 
   return (
     <div className="space-y-6">
@@ -191,9 +144,24 @@ export function UploadFormDialogContent({ onClose }: UploadFormDialogContentProp
           Upload Academic Paper
         </DialogTitle>
         <DialogDescription className="text-base">
-          Secure upload with email verification for academic paper processing
+          Upload your academic paper for AI-powered processing and analysis
         </DialogDescription>
       </DialogHeader>
+
+      {/* Success Message */}
+      {taskResponse && (
+        <Alert className="border-green-500 bg-green-50 dark:bg-green-900/20">
+          <CheckCircle className="h-4 w-4 text-green-600" />
+          <AlertDescription className="text-green-700 dark:text-green-300">
+            <div className="space-y-1">
+              <p className="font-medium">Upload successful!</p>
+              <p className="text-sm">Task ID: {taskResponse.task_id}</p>
+              <p className="text-sm">{taskResponse.message}</p>
+              <p className="text-sm">Redirecting to dashboard...</p>
+            </div>
+          </AlertDescription>
+        </Alert>
+      )}
 
       {/* Email Input */}
       <div className="space-y-3">
@@ -217,34 +185,12 @@ export function UploadFormDialogContent({ onClose }: UploadFormDialogContentProp
             email && !isEmailValid ? 'border-destructive focus:border-destructive' : 
             isEmailValid ? 'border-green-500 focus:border-green-500' : ''
           }`}
+          disabled={isUploading || !!taskResponse}
           required
         />
         {email && !isEmailValid && (
           <p className="text-sm text-destructive">Please enter a valid email address</p>
         )}
-      </div>
-
-      {/* Security Verification */}
-      <div className="space-y-3">
-        <div className="flex items-center gap-2">
-          <Shield className="h-4 w-4 text-primary" />
-          <span className="font-medium">Security Verification</span>
-          {isTurnstileSolved && (
-            <Badge variant="secondary" className="ml-auto">
-              <CheckCircle className="h-3 w-3 mr-1" />
-              Verified
-            </Badge>
-          )}
-        </div>
-        
-        <div className="flex justify-center">
-          <Turnstile
-            siteKey={siteKey}
-            onSuccess={handleTurnstileSuccess}
-            onExpire={handleTurnstileExpire}
-            onError={handleTurnstileError}
-          />
-        </div>
       </div>
 
       {/* File Upload Area */}
@@ -259,7 +205,7 @@ export function UploadFormDialogContent({ onClose }: UploadFormDialogContentProp
           className={`
             border-2 border-dashed rounded-xl p-8 text-center transition-all duration-200 cursor-pointer
             ${isDragActive ? 'border-primary bg-primary/5 scale-105' : 'border-muted-foreground/25'}
-            ${!canProceed ? 'opacity-50 cursor-not-allowed' : 'hover:border-primary hover:bg-primary/5 hover:scale-105'}
+            ${!canProceed || taskResponse ? 'opacity-50 cursor-not-allowed' : 'hover:border-primary hover:bg-primary/5 hover:scale-105'}
           `}
         >
           <input {...getInputProps()} />
@@ -271,6 +217,20 @@ export function UploadFormDialogContent({ onClose }: UploadFormDialogContentProp
                 <p className="text-lg font-medium">Processing your academic paper...</p>
                 <Progress value={uploadProgress} className="w-full" />
                 <p className="text-sm text-muted-foreground">{uploadProgress}% complete</p>
+              </div>
+            </div>
+          ) : taskResponse ? (
+            <div className="space-y-4">
+              <div className="p-4 rounded-full bg-green-100 dark:bg-green-900/20 w-fit mx-auto">
+                <CheckCircle className="h-12 w-12 text-green-600" />
+              </div>
+              <div>
+                <p className="text-xl font-medium mb-2 text-green-700 dark:text-green-300">
+                  Upload Complete!
+                </p>
+                <p className="text-muted-foreground">
+                  Your paper is being processed. You'll receive updates via email.
+                </p>
               </div>
             </div>
           ) : (
@@ -287,19 +247,14 @@ export function UploadFormDialogContent({ onClose }: UploadFormDialogContentProp
                 </p>
                 <div className="inline-flex items-center gap-2 bg-muted/50 px-4 py-2 rounded-lg">
                   <FileText className="h-4 w-4" />
-                  <span className="text-sm font-medium">PDF, DOC, DOCX (max 10MB)</span>
+                  <span className="text-sm font-medium">PDF, DOC, DOCX, TXT, MD (max 50MB)</span>
                 </div>
               </div>
               {!canProceed && (
                 <div className="space-y-2">
                   {!isEmailValid && (
                     <p className="text-sm text-amber-600 dark:text-amber-400">
-                      ✓ Enter a valid email address
-                    </p>
-                  )}
-                  {!isTurnstileSolved && (
-                    <p className="text-sm text-amber-600 dark:text-amber-400">
-                      ✓ Complete security verification
+                      ✓ Enter a valid email address to continue
                     </p>
                   )}
                 </div>

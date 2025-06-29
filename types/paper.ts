@@ -1,7 +1,7 @@
 export interface Subtopic {
   subtopic_title: string;
-  content: string;
-  mermaid: string;
+  content?: string;
+  mermaid?: string;
 }
 
 export interface Topic {
@@ -10,7 +10,7 @@ export interface Topic {
 }
 
 export interface Paper {
-  id: number;
+  id: string;
   topics: Topic[];
   created_at?: string;
 }
