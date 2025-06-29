@@ -1,5 +1,5 @@
 [build]
-  command = "npm run build"
+  command = "rm -rf .next/cache && next build"
   publish = ".next"
 
 # Enable Next.js plugin for proper SSR support
