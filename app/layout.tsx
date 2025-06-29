@@ -29,7 +29,7 @@ export default function RootLayout({
         <div className="fixed bottom-8 left-8 z-50">
           <button
             className="group relative w-16 h-16 bg-white rounded-full shadow-2xl hover:shadow-3xl border border-gray-200 transition-all duration-300 ease-out hover:scale-110 hover:-translate-y-1 focus:outline-none focus:ring-4 focus:ring-black/20"
-            aria-label="Quick actions menu"
+            aria-label="Powered by Bolt.new"
           >
             {/* Icon Container */}
             <div className="relative w-full h-full rounded-full overflow-hidden">
@@ -51,7 +51,7 @@ export default function RootLayout({
             
             {/* Tooltip */}
             <div className="absolute left-full ml-4 top-1/2 -translate-y-1/2 px-3 py-2 bg-black text-white text-sm rounded-lg opacity-0 group-hover:opacity-100 transition-all duration-200 pointer-events-none whitespace-nowrap shadow-lg">
-              Quick Actions
+              Powered by Bolt.new
               <div className="absolute right-full top-1/2 -translate-y-1/2 w-0 h-0 border-t-4 border-b-4 border-r-4 border-transparent border-r-black" />
             </div>
           </button>
