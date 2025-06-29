@@ -18,8 +18,19 @@ export function Header() {
       <div className="container mx-auto px-4 py-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-3">
-            <Link href="/" className="text-2xl font-bold text-black font-lora">
-              mdscholar
+            <Link href="/" className="flex items-center space-x-3 group transition-all duration-200 hover:scale-105">
+              <div className="relative">
+                <Image 
+                  src="/assets/icons/black_circle_360x360.png" 
+                  alt="mdscholar logo" 
+                  width={40} 
+                  height={40}
+                  className="rounded-full shadow-sm group-hover:shadow-md transition-shadow duration-200"
+                />
+              </div>
+              <span className="text-2xl font-bold text-black font-lora group-hover:text-gray-800 transition-colors duration-200">
+                mdscholar
+              </span>
             </Link>
           </div>
 
@@ -42,7 +53,7 @@ export function Header() {
               target="_blank"
               rel="noopener noreferrer"
               aria-label="Join us on Discord"
-              className="text-gray-600 hover:text-black transition-colors"
+              className="text-gray-600 hover:text-black transition-all duration-200 hover:scale-110"
             >
               <Image 
                 src="/assets/icons/Discord-Symbol-Black.svg" 
