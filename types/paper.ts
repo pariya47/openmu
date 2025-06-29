@@ -1,7 +1,7 @@
 export interface Subtopic {
   subtopic_title: string;
-  content: string;
-  mermaid: string;
+  content?: string;
+  mermaid?: string;
 }
 
 export interface Topic {
