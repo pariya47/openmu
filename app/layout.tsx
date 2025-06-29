@@ -35,7 +35,7 @@ export default function RootLayout({
             <div className="relative w-full h-full rounded-full overflow-hidden">
               <Image
                 src="/assets/icons/black_circle_360x360.png"
-                alt="Quick actions"
+                alt="Powered by Bolt.new"
                 width={64}
                 height={64}
                 className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
