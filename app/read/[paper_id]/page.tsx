@@ -157,7 +157,15 @@ export default function ReadPaperPage({ params }: { params: { paper_id: string }
               <CardContent className="p-0">
                 <ScrollArea className="h-[calc(100vh-12rem)]">
                   <div className="px-4 pb-4">
-                    {loading && <Skeleton className="h-8 w-full mb-2" count={5} />}
+                    {loading && (
+                      <div className="space-y-2">
+                        <Skeleton className="h-8 w-full" />
+                        <Skeleton className="h-8 w-full" />
+                        <Skeleton className="h-8 w-full" />
+                        <Skeleton className="h-8 w-full" />
+                        <Skeleton className="h-8 w-full" />
+                      </div>
+                    )}
                     {!loading && error && <p className="text-red-500 p-2 text-sm">Error loading topics.</p>}
                     {!loading && !error && paper && sidebarTopicsList.length > 0 && renderSidebarTopicTree(sidebarTopicsList)}
                     {!loading && !error && paper && sidebarTopicsList.length === 0 && <p className="text-gray-500 p-2 text-sm">No topics found for this paper.</p>}
@@ -285,7 +293,13 @@ export default function ReadPaperPage({ params }: { params: { paper_id: string }
                             <p><strong>Created:</strong> {new Date(paper.created_at || Date.now()).toLocaleDateString()}</p>
                         </div>
                     )}
-                     {loading &&  <Skeleton className="h-4 w-full mb-2" count={3} />}
+                     {loading && (
+                       <div className="space-y-2">
+                         <Skeleton className="h-4 w-full" />
+                         <Skeleton className="h-4 w-full" />
+                         <Skeleton className="h-4 w-full" />
+                       </div>
+                     )}
                      {!loading && !paper && !error && <p className="text-gray-500">No paper loaded.</p>}
                 </CardContent>
              </Card>
