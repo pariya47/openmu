@@ -10,7 +10,7 @@ export interface Topic {
 }
 
 export interface Paper {
-  id: number;
+  id: string;
   topics: Topic[];
   created_at?: string;
 }
