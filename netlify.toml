@@ -1,22 +1,8 @@
 [build]
-  publish = "out"
   command = "npm run build"
 
 [functions]
   directory = "netlify/functions"
-
-[[redirects]]
-  from = "/*"
-  to = "/index.html"
-  status = 200
-  conditions = {Role = ["admin"], Country = ["!US"]}
-
-# Handle client-side routing for SPA
-[[redirects]]
-  from = "/*"
-  to = "/index.html"
-  status = 200
-  force = false
 
 # API redirects for functions
 [[redirects]]
@@ -24,7 +10,10 @@
   to = "/.netlify/functions/:splat"
   status = 200
 
+# Enable Next.js plugin for proper SSR support
+[[plugins]]
+  package = "@netlify/plugin-nextjs"
+
 [dev]
   command = "npm run dev"
   port = 3000
-  publish = "out"
