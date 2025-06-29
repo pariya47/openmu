@@ -34,7 +34,7 @@ interface FullscreenState {
   // Comment removed: isAnimating and shouldShowModal might be removed if Dialog handles them
 }
 
-export interface MermaidDiagramProps {
+interface MermaidDiagramProps {
   diagram: string;
   className?: string;
   onError?: (error: Error) => void;
