@@ -9,8 +9,6 @@ export function Header() {
 
   const navLinks = [
     { href: "/", label: "Home" },
-    { href: "/plan", label: "Plan" },
-    { href: "/donate", label: "Donate" },
   ];
 
   return (
