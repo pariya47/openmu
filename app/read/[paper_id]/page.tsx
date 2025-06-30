@@ -80,11 +80,11 @@ export default function ReadPaperPage({ params }: { params: { paper_id: string }
 
   useEffect(() => {
     if (paper) {
-      document.title = `SUMU - ${paper.topics[0]?.topic || `Paper ${paper.id}`}`;
+      document.title = `mdscholar - ${paper.topics[0]?.topic || `Paper ${paper.id}`}`;
     } else if (error) {
-      document.title = `SUMU - Error`;
+      document.title = `mdscholar - Error`;
     } else {
-      document.title = `SUMU - Loading Paper...`;
+      document.title = `mdscholar - Loading Paper...`;
     }
   }, [paper, error]);
 

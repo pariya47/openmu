@@ -24,25 +24,25 @@ const testimonials = [
   {
     category: 'researcher',
     name: 'Dr. Sarah Chen',
-    quote: 'SUMU has revolutionized how I approach literature reviews. What used to take weeks now takes days.',
+    quote: 'mdscholar has revolutionized how I approach literature reviews. What used to take weeks now takes days.',
     role: 'Research Scientist, MIT'
   },
   {
     category: 'student',
     name: 'Marcus Johnson',
-    quote: 'As a PhD student, SUMU helps me stay on top of the latest research in my field effortlessly.',
+    quote: 'As a PhD student, mdscholar helps me stay on top of the latest research in my field effortlessly.',
     role: 'PhD Candidate, Stanford University'
   },
   {
     category: 'professional',
     name: 'Lisa Rodriguez',
-    quote: 'The insights from SUMU directly inform our product development decisions.',
+    quote: 'The insights from mdscholar directly inform our product development decisions.',
     role: 'Head of R&D, TechCorp'
   },
   {
     category: 'researcher',
     name: 'Prof. David Kim',
-    quote: 'SUMU bridges the gap between complex research and practical application beautifully.',
+    quote: 'mdscholar bridges the gap between complex research and practical application beautifully.',
     role: 'Professor of Computer Science, UC Berkeley'
   },
   {
@@ -54,7 +54,7 @@ const testimonials = [
   {
     category: 'professional',
     name: 'Alex Martinez',
-    quote: 'SUMU saves our team countless hours of research while improving decision quality.',
+    quote: 'mdscholar saves our team countless hours of research while improving decision quality.',
     role: 'Strategy Director, Innovation Labs'
   }
 ];
@@ -119,7 +119,7 @@ export function LandingPage() {
           </h1>
           
           <p className="text-xl text-gray-600 mb-12 leading-relaxed max-w-3xl mx-auto">
-            SUMU transforms complex academic research into clear, actionable
+            mdscholar transforms complex academic research into clear, actionable
             insights. Discover, understand, and apply knowledge faster than ever before.
           </p>
 
@@ -182,7 +182,7 @@ export function LandingPage() {
         <div className="container mx-auto max-w-4xl text-center">
           <h2 className="text-4xl md:text-5xl font-bold mb-6 text-black">Ready to Transform Your Research?</h2>
           <p className="text-xl text-gray-600 mb-12 max-w-3xl mx-auto leading-relaxed">
-            Join thousands of researchers, students, and professionals who are already using SUMU to accelerate their work and unlock new insights.
+            Join thousands of researchers, students, and professionals who are already using mdscholar to accelerate their work and unlock new insights.
           </p>
           
           <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
