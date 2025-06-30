@@ -7,6 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
+import { toast } from 'sonner';
 import { 
   Search, 
   Plus, 
@@ -34,7 +35,7 @@ interface Author {
 interface Paper {
   id: number;
   paper_name: string | null;
-  authers: any | null; // Changed to any since the structure varies
+  authers: any | null;
   abstract: string | null;
   public_date: string | null;
   url: string | null;
@@ -71,6 +72,7 @@ export function PaperDashboard() {
       } catch (err) {
         console.error('Error fetching papers:', err);
         setError(err instanceof Error ? err.message : 'Failed to fetch papers');
+        toast.error('Failed to load papers. Please try again.');
       } finally {
         setLoading(false);
       }
@@ -83,12 +85,10 @@ export function PaperDashboard() {
   const normalizeAuthors = (authers: any): string[] => {
     if (!authers || typeof authers !== 'object') return [];
     
-    // Handle the case where authers has a 'name' property that is an array
     if (authers.name && Array.isArray(authers.name)) {
       return authers.name.filter((n: any) => typeof n === 'string');
     }
     
-    // Handle the case where authers is directly an array
     if (Array.isArray(authers)) {
       return authers.filter((author: any) => {
         if (typeof author === 'string') return true;
@@ -157,18 +157,24 @@ export function PaperDashboard() {
     }
   };
 
+  const handleCopyReference = () => {
+    const textToCopy = selectedPaper?.paper_name || selectedPaper?.url || '';
+    navigator.clipboard.writeText(textToCopy);
+    toast.success('Reference copied to clipboard!');
+  };
+
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-background">
       <div className="container mx-auto px-6 py-16 max-w-6xl">
         {/* Main Header */}
         <div className="text-center mb-12 mt-8">
-          <h1 className="text-3xl md:text-4xl font-bold text-slate-800 mb-3 leading-tight">
+          <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-3 leading-tight">
             Your research library,{' '}
-            <span className="text-slate-600">
+            <span className="text-muted-foreground">
               all in one place
             </span>
           </h1>
-          <p className="text-slate-500 text-base max-w-xl mx-auto">
+          <p className="text-muted-foreground text-base max-w-xl mx-auto">
             Discover, organize, and explore research papers with intelligent insights
           </p>
         </div>
@@ -176,13 +182,14 @@ export function PaperDashboard() {
         {/* Search Bar */}
         <div className="max-w-2xl mx-auto mb-10">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 h-4 w-4" />
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
             <Input
               type="text"
               placeholder="Search by title, author, or abstract..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10 pr-4 py-4 text-base border-2 border-slate-300 rounded-xl focus:border-slate-400 focus:ring-slate-200 shadow-sm hover:shadow-md transition-all duration-200 bg-white"
+              className="pl-10 pr-4 py-4 text-base border-2 rounded-xl shadow-sm hover:shadow-md transition-all duration-200"
+              aria-label="Search papers by title, author, or abstract"
             />
           </div>
         </div>
@@ -191,8 +198,8 @@ export function PaperDashboard() {
         {loading && (
           <div className="flex items-center justify-center py-12">
             <div className="text-center">
-              <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4 text-slate-600" />
-              <p className="text-slate-600">Loading papers...</p>
+              <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4 text-primary" />
+              <p className="text-muted-foreground">Loading papers...</p>
             </div>
           </div>
         )}
@@ -201,13 +208,12 @@ export function PaperDashboard() {
         {error && (
           <div className="flex items-center justify-center py-12">
             <div className="text-center max-w-md">
-              <AlertCircle className="h-8 w-8 mx-auto mb-4 text-red-500" />
-              <h3 className="text-lg font-semibold text-slate-800 mb-2">Error Loading Papers</h3>
-              <p className="text-slate-600 mb-4">{error}</p>
+              <AlertCircle className="h-8 w-8 mx-auto mb-4 text-destructive" />
+              <h3 className="text-lg font-semibold text-foreground mb-2">Error Loading Papers</h3>
+              <p className="text-muted-foreground mb-4">{error}</p>
               <Button 
                 onClick={() => window.location.reload()} 
                 variant="outline"
-                className="border-slate-300 hover:border-slate-400"
               >
                 Try Again
               </Button>
@@ -220,15 +226,15 @@ export function PaperDashboard() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 mb-8">
             {/* Add Paper Card */}
             <Card 
-              className="group cursor-pointer border-2 border-dashed border-slate-300 bg-slate-50 hover:border-slate-400 hover:shadow-lg transition-all duration-200 hover:scale-105 rounded-xl min-h-[210px] flex items-center justify-center"
+              className="group cursor-pointer border-2 border-dashed border-border bg-muted/30 hover:border-primary hover:shadow-lg transition-all duration-200 hover:scale-105 rounded-xl min-h-[210px] flex items-center justify-center"
               onClick={handleAddPaper}
             >
               <CardContent className="text-center p-4">
-                <div className="w-10 h-10 mx-auto mb-2 rounded-full bg-slate-600 flex items-center justify-center group-hover:scale-110 transition-transform duration-200">
-                  <Plus className="h-5 w-5 text-white" />
+                <div className="w-10 h-10 mx-auto mb-2 rounded-full bg-primary flex items-center justify-center group-hover:scale-110 transition-transform duration-200">
+                  <Plus className="h-5 w-5 text-primary-foreground" />
                 </div>
-                <h3 className="text-base font-semibold text-slate-700 mb-1">Add Paper</h3>
-                <p className="text-slate-500 text-sm">Import a new research paper to your library</p>
+                <h3 className="text-base font-semibold text-foreground mb-1">Add Paper</h3>
+                <p className="text-muted-foreground text-sm">Import a new research paper to your library</p>
               </CardContent>
             </Card>
 
@@ -236,31 +242,30 @@ export function PaperDashboard() {
             {filteredPapers.map((paper) => (
               <Card
                 key={paper.id}
-                className="group cursor-pointer border-2 border-slate-300 bg-slate-50 hover:shadow-lg transition-all duration-200 hover:scale-105 rounded-xl overflow-hidden min-h-[210px] flex flex-col"
+                className="group cursor-pointer border-2 border-border bg-card hover:shadow-lg transition-all duration-200 hover:scale-105 rounded-xl overflow-hidden min-h-[210px] flex flex-col"
                 onClick={() => handlePaperClick(paper)}
               >
                 <CardHeader className="pb-1 flex-shrink-0">
                   <div className="flex items-start justify-between mb-1">
-                    <Badge variant="secondary" className="text-xs font-medium bg-slate-200 text-slate-700 border border-slate-300">
+                    <Badge variant="secondary" className="text-xs font-medium">
                       {paper.public_date ? formatDate(paper.public_date) : formatDate(paper.created_at)}
                     </Badge>
                   </div>
-                  <CardTitle className="text-sm font-bold text-slate-800 leading-tight line-clamp-2 group-hover:text-slate-600 transition-colors duration-200">
+                  <CardTitle className="text-sm font-bold text-foreground leading-tight line-clamp-2 group-hover:text-primary transition-colors duration-200">
                     {paper.paper_name || 'Untitled Paper'}
                   </CardTitle>
-                  <CardDescription className="text-xs text-slate-600 flex items-center gap-1">
+                  <CardDescription className="text-xs text-muted-foreground flex items-center gap-1">
                     <User className="h-3 w-3" />
                     {formatAuthors(paper.authers)}
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="pt-0 flex-1 flex flex-col justify-between">
-                  <p className="text-xs text-slate-600 leading-relaxed line-clamp-2 mb-3">
+                  <p className="text-xs text-muted-foreground leading-relaxed line-clamp-2 mb-3">
                     {truncateAbstract(paper.abstract)}
                   </p>
                   
-                  {/* Bottom section with date */}
                   <div className="flex items-end justify-between mt-auto">
-                    <div className="flex items-center gap-1 text-xs text-slate-400">
+                    <div className="flex items-center gap-1 text-xs text-muted-foreground">
                       <Clock className="h-3 w-3" />
                       <span>Added {formatDate(paper.created_at)}</span>
                     </div>
@@ -274,16 +279,16 @@ export function PaperDashboard() {
         {/* Empty State */}
         {!loading && !error && filteredPapers.length === 0 && papers.length === 0 && (
           <div className="text-center py-12">
-            <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-slate-100 flex items-center justify-center border-2 border-slate-200">
-              <BookOpen className="h-10 w-10 text-slate-400" />
+            <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-muted flex items-center justify-center border-2 border-border">
+              <BookOpen className="h-10 w-10 text-muted-foreground" />
             </div>
-            <h3 className="text-xl font-semibold text-slate-700 mb-2">No papers yet</h3>
-            <p className="text-slate-500 max-w-md mx-auto text-sm mb-6">
+            <h3 className="text-xl font-semibold text-foreground mb-2">No papers yet</h3>
+            <p className="text-muted-foreground max-w-md mx-auto text-sm mb-6">
               Start building your research library by adding your first paper
             </p>
             <Button 
               onClick={handleAddPaper}
-              className="bg-slate-600 hover:bg-slate-700 text-white"
+              className="shadow-lg hover:shadow-xl transition-all duration-200"
             >
               <Plus className="h-4 w-4 mr-2" />
               Add Your First Paper
@@ -294,11 +299,11 @@ export function PaperDashboard() {
         {/* Search Empty State */}
         {!loading && !error && filteredPapers.length === 0 && papers.length > 0 && searchQuery && (
           <div className="text-center py-12">
-            <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-slate-100 flex items-center justify-center border-2 border-slate-200">
-              <Search className="h-10 w-10 text-slate-400" />
+            <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-muted flex items-center justify-center border-2 border-border">
+              <Search className="h-10 w-10 text-muted-foreground" />
             </div>
-            <h3 className="text-xl font-semibold text-slate-700 mb-2">No papers found</h3>
-            <p className="text-slate-500 max-w-md mx-auto text-sm">
+            <h3 className="text-xl font-semibold text-foreground mb-2">No papers found</h3>
+            <p className="text-muted-foreground max-w-md mx-auto text-sm">
               Try adjusting your search terms or add new papers to your library
             </p>
           </div>
@@ -306,14 +311,14 @@ export function PaperDashboard() {
 
         {/* Paper Detail Modal */}
         <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-          <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto rounded-2xl border-2 border-slate-300 shadow-xl bg-white">
+          <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto rounded-2xl border-2 shadow-xl">
             <DialogHeader className="pb-4">
               <div className="flex items-start justify-between">
                 <div className="flex-1">
-                  <DialogTitle className="text-xl font-bold text-slate-800 leading-tight mb-2">
+                  <DialogTitle className="text-xl font-bold text-foreground leading-tight mb-2">
                     {selectedPaper?.paper_name || 'Untitled Paper'}
                   </DialogTitle>
-                  <div className="flex flex-wrap items-center gap-3 text-sm text-slate-600">
+                  <div className="flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
                     <div className="flex items-center gap-1">
                       <Calendar className="h-4 w-4" />
                       <span>{selectedPaper?.public_date ? formatDate(selectedPaper.public_date) : formatDate(selectedPaper?.created_at || '')}</span>
@@ -329,7 +334,7 @@ export function PaperDashboard() {
                           href={selectedPaper.url} 
                           target="_blank" 
                           rel="noopener noreferrer"
-                          className="text-blue-600 hover:text-blue-800 underline"
+                          className="text-primary hover:text-primary/80 underline"
                         >
                           Original Paper
                         </a>
@@ -341,24 +346,24 @@ export function PaperDashboard() {
             </DialogHeader>
 
             <div className="space-y-4">
-              <Separator className="bg-slate-300" />
+              <Separator />
               
               <div>
-                <h3 className="text-base font-semibold text-slate-800 mb-2 flex items-center gap-2">
+                <h3 className="text-base font-semibold text-foreground mb-2 flex items-center gap-2">
                   <BookOpen className="h-4 w-4" />
                   Abstract
                 </h3>
-                <p className="text-slate-700 leading-relaxed text-sm">
+                <p className="text-muted-foreground leading-relaxed text-sm">
                   {selectedPaper?.abstract || 'No abstract available for this paper.'}
                 </p>
               </div>
 
-              <Separator className="bg-slate-300" />
+              <Separator />
 
               <div className="flex flex-col sm:flex-row gap-3">
                 <Button
                   size="default"
-                  className="flex-1 bg-slate-600 hover:bg-slate-700 text-white shadow-md hover:shadow-lg transition-all duration-200 hover:scale-105 rounded-lg"
+                  className="flex-1 shadow-md hover:shadow-lg transition-all duration-200 hover:scale-105 rounded-lg"
                   onClick={() => {
                     if (selectedPaper) {
                       handleViewFullPaper(selectedPaper.id);
@@ -372,13 +377,8 @@ export function PaperDashboard() {
                 <Button
                   variant="outline"
                   size="default"
-                  className="flex-1 border-2 border-slate-300 hover:border-slate-400 hover:bg-slate-50 rounded-lg transition-all duration-200"
-                  onClick={() => {
-                    // Copy paper title to clipboard
-                    const textToCopy = selectedPaper?.paper_name || selectedPaper?.url || '';
-                    navigator.clipboard.writeText(textToCopy);
-                    // In a real app, you'd show a toast notification here
-                  }}
+                  className="flex-1 rounded-lg transition-all duration-200"
+                  onClick={handleCopyReference}
                 >
                   <FileText className="mr-2 h-4 w-4" />
                   Copy Reference
