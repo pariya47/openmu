@@ -10,7 +10,6 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
-import { toast } from 'sonner';
 import { 
   Upload, 
   CheckCircle, 
@@ -56,7 +55,6 @@ export function UploadFormDialogContent({ onClose }: UploadFormDialogContentProp
     if (!canProceed) {
       if (!isEmailValid) {
         setError('Please enter a valid email address first');
-        toast.error('Please enter a valid email address first');
       }
       return;
     }
@@ -91,8 +89,6 @@ export function UploadFormDialogContent({ onClose }: UploadFormDialogContentProp
       const result: CreateTaskResponse = await response.json();
       setTaskResponse(result);
       setUploadProgress(100);
-      
-      toast.success('Upload successful! Your paper is being processed.');
 
       // Close dialog and redirect to home after a brief delay
       setTimeout(() => {
@@ -102,9 +98,7 @@ export function UploadFormDialogContent({ onClose }: UploadFormDialogContentProp
 
     } catch (err) {
       console.error('Upload error:', err);
-      const errorMessage = err instanceof Error ? err.message : 'Upload failed. Please try again.';
-      setError(errorMessage);
-      toast.error(errorMessage);
+      setError(err instanceof Error ? err.message : 'Upload failed. Please try again.');
     } finally {
       setIsUploading(false);
       if (!taskResponse) {
@@ -131,17 +125,11 @@ export function UploadFormDialogContent({ onClose }: UploadFormDialogContentProp
     if (fileRejections.length > 0) {
       const rejection = fileRejections[0];
       if (rejection.errors.some(e => e.code === 'file-too-large')) {
-        const errorMsg = 'File is too large. Maximum size is 50MB for academic papers.';
-        setError(errorMsg);
-        toast.error(errorMsg);
+        setError('File is too large. Maximum size is 50MB for academic papers.');
       } else if (rejection.errors.some(e => e.code === 'file-invalid-type')) {
-        const errorMsg = 'Only PDF, DOC, DOCX, TXT, and MD files are supported for academic papers.';
-        setError(errorMsg);
-        toast.error(errorMsg);
+        setError('Only PDF, DOC, DOCX, TXT, and MD files are supported for academic papers.');
       } else {
-        const errorMsg = 'File upload failed. Please try again.';
-        setError(errorMsg);
-        toast.error(errorMsg);
+        setError('File upload failed. Please try again.');
       }
     }
   }, [fileRejections]);
@@ -149,22 +137,22 @@ export function UploadFormDialogContent({ onClose }: UploadFormDialogContentProp
   return (
     <div className="space-y-6">
       <DialogHeader>
-        <DialogTitle className="flex items-center gap-3 text-2xl text-foreground">
+        <DialogTitle className="flex items-center gap-3 text-2xl">
           <div className="p-2 rounded-lg bg-primary/10">
             <Sparkles className="h-6 w-6 text-primary" />
           </div>
           Upload Academic Paper
         </DialogTitle>
-        <DialogDescription className="text-base text-muted-foreground">
+        <DialogDescription className="text-base">
           Upload your academic paper for AI-powered processing and analysis
         </DialogDescription>
       </DialogHeader>
 
       {/* Success Message */}
       {taskResponse && (
-        <Alert className="border-success bg-success/10">
-          <CheckCircle className="h-4 w-4 text-success" />
-          <AlertDescription className="text-success">
+        <Alert className="border-green-500 bg-green-50 dark:bg-green-900/20">
+          <CheckCircle className="h-4 w-4 text-green-600" />
+          <AlertDescription className="text-green-700 dark:text-green-300">
             <div className="space-y-1">
               <p className="font-medium">Upload successful!</p>
               <p className="text-sm">Task ID: {taskResponse.task_id}</p>
@@ -179,7 +167,7 @@ export function UploadFormDialogContent({ onClose }: UploadFormDialogContentProp
       <div className="space-y-3">
         <div className="flex items-center gap-2">
           <Mail className="h-4 w-4 text-primary" />
-          <Label htmlFor="email" className="font-medium text-foreground">Email Address *</Label>
+          <Label htmlFor="email" className="font-medium">Email Address *</Label>
           {isEmailValid && (
             <Badge variant="secondary" className="ml-auto">
               <CheckCircle className="h-3 w-3 mr-1" />
@@ -195,14 +183,13 @@ export function UploadFormDialogContent({ onClose }: UploadFormDialogContentProp
           onChange={(e) => setEmail(e.target.value)}
           className={`transition-colors ${
             email && !isEmailValid ? 'border-destructive focus:border-destructive' : 
-            isEmailValid ? 'border-success focus:border-success' : ''
+            isEmailValid ? 'border-green-500 focus:border-green-500' : ''
           }`}
           disabled={isUploading || !!taskResponse}
           required
-          aria-describedby={email && !isEmailValid ? "email-error" : undefined}
         />
         {email && !isEmailValid && (
-          <p id="email-error" className="text-sm text-destructive">Please enter a valid email address</p>
+          <p className="text-sm text-destructive">Please enter a valid email address</p>
         )}
       </div>
 
@@ -210,19 +197,16 @@ export function UploadFormDialogContent({ onClose }: UploadFormDialogContentProp
       <div className="space-y-3">
         <div className="flex items-center gap-2">
           <FileText className="h-4 w-4 text-primary" />
-          <span className="font-medium text-foreground">Academic Paper Upload</span>
+          <span className="font-medium">Academic Paper Upload</span>
         </div>
         
         <div
           {...getRootProps()}
           className={`
             border-2 border-dashed rounded-xl p-8 text-center transition-all duration-200 cursor-pointer
-            ${isDragActive ? 'border-primary bg-primary/5 scale-105' : 'border-border'}
+            ${isDragActive ? 'border-primary bg-primary/5 scale-105' : 'border-muted-foreground/25'}
             ${!canProceed || taskResponse ? 'opacity-50 cursor-not-allowed' : 'hover:border-primary hover:bg-primary/5 hover:scale-105'}
           `}
-          role="button"
-          tabIndex={0}
-          aria-label="Upload academic paper file"
         >
           <input {...getInputProps()} />
           
@@ -230,18 +214,18 @@ export function UploadFormDialogContent({ onClose }: UploadFormDialogContentProp
             <div className="space-y-4">
               <Loader2 className="h-12 w-12 animate-spin mx-auto text-primary" />
               <div className="space-y-2">
-                <p className="text-lg font-medium text-foreground">Processing your academic paper...</p>
+                <p className="text-lg font-medium">Processing your academic paper...</p>
                 <Progress value={uploadProgress} className="w-full" />
                 <p className="text-sm text-muted-foreground">{uploadProgress}% complete</p>
               </div>
             </div>
           ) : taskResponse ? (
             <div className="space-y-4">
-              <div className="p-4 rounded-full bg-success/10 w-fit mx-auto">
-                <CheckCircle className="h-12 w-12 text-success" />
+              <div className="p-4 rounded-full bg-green-100 dark:bg-green-900/20 w-fit mx-auto">
+                <CheckCircle className="h-12 w-12 text-green-600" />
               </div>
               <div>
-                <p className="text-xl font-medium mb-2 text-success">
+                <p className="text-xl font-medium mb-2 text-green-700 dark:text-green-300">
                   Upload Complete!
                 </p>
                 <p className="text-muted-foreground">
@@ -255,7 +239,7 @@ export function UploadFormDialogContent({ onClose }: UploadFormDialogContentProp
                 <Upload className="h-12 w-12 text-primary" />
               </div>
               <div>
-                <p className="text-xl font-medium mb-2 text-foreground">
+                <p className="text-xl font-medium mb-2">
                   {isDragActive ? 'Drop your academic paper here' : 'Upload Academic Paper'}
                 </p>
                 <p className="text-muted-foreground mb-4">
@@ -269,7 +253,7 @@ export function UploadFormDialogContent({ onClose }: UploadFormDialogContentProp
               {!canProceed && (
                 <div className="space-y-2">
                   {!isEmailValid && (
-                    <p className="text-sm text-warning">
+                    <p className="text-sm text-amber-600 dark:text-amber-400">
                       ✓ Enter a valid email address to continue
                     </p>
                   )}

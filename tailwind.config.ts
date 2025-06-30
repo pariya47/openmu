@@ -60,12 +60,6 @@ const config: Config = {
           '4': 'hsl(var(--chart-4))',
           '5': 'hsl(var(--chart-5))',
         },
-        // Custom accent colors for minimal palette
-        'accent-1': 'hsl(var(--accent-1))',
-        'accent-2': 'hsl(var(--accent-2))',
-        'success': 'hsl(var(--success))',
-        'warning': 'hsl(var(--warning))',
-        'info': 'hsl(var(--info))',
       },
       keyframes: {
         'accordion-down': {

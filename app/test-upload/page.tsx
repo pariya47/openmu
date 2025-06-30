@@ -26,7 +26,7 @@ export default function TestUploadPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-muted/30 to-background p-4">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-950 dark:to-slate-900 p-4">
       <div className="container mx-auto max-w-4xl py-8">
         {/* Header */}
         <div className="text-center mb-12">
@@ -34,7 +34,7 @@ export default function TestUploadPage() {
             <div className="p-4 rounded-xl bg-primary/10">
               <BookOpen className="h-10 w-10 text-primary" />
             </div>
-            <h1 className="text-4xl font-bold text-foreground">Academic Paper Upload</h1>
+            <h1 className="text-4xl font-bold">Academic Paper Upload</h1>
           </div>
           <p className="text-muted-foreground text-xl max-w-2xl mx-auto leading-relaxed">
             Upload your academic paper to process with AI-powered insights on{' '}
@@ -53,11 +53,11 @@ export default function TestUploadPage() {
         {/* Main Upload Card */}
         <Card className="shadow-2xl border-0 overflow-hidden">
           <CardHeader className="bg-gradient-to-r from-primary/5 to-primary/10 pb-8">
-            <CardTitle className="flex items-center gap-3 text-3xl text-foreground">
+            <CardTitle className="flex items-center gap-3 text-3xl">
               <Sparkles className="h-8 w-8 text-primary" />
               Ready to Upload?
             </CardTitle>
-            <CardDescription className="text-lg text-muted-foreground">
+            <CardDescription className="text-lg">
               Click the button below to start the secure upload process
             </CardDescription>
           </CardHeader>
@@ -67,7 +67,7 @@ export default function TestUploadPage() {
                 <div className="p-6 rounded-full bg-primary/10 w-fit mx-auto mb-6">
                   <Upload className="h-16 w-16 text-primary" />
                 </div>
-                <h3 className="text-2xl font-semibold mb-4 text-foreground">Upload Academic Paper</h3>
+                <h3 className="text-2xl font-semibold mb-4">Upload Academic Paper</h3>
                 <p className="text-muted-foreground text-lg mb-8 max-w-md mx-auto">
                   Secure three-step process: email verification, security check, and file upload
                 </p>
@@ -91,29 +91,29 @@ export default function TestUploadPage() {
 
         {/* Features Info */}
         <div className="mt-12 grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="text-center p-6 rounded-xl bg-card backdrop-blur-sm border shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
+          <div className="text-center p-6 rounded-xl bg-background/80 backdrop-blur-sm border shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
             <div className="p-4 rounded-xl bg-primary/10 w-fit mx-auto mb-4">
               <Shield className="h-8 w-8 text-primary" />
             </div>
-            <h3 className="font-semibold text-lg mb-2 text-foreground">Secure Upload</h3>
+            <h3 className="font-semibold text-lg mb-2">Secure Upload</h3>
             <p className="text-muted-foreground">
               Protected by Cloudflare Turnstile and encrypted transfer
             </p>
           </div>
-          <div className="text-center p-6 rounded-xl bg-card backdrop-blur-sm border shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
+          <div className="text-center p-6 rounded-xl bg-background/80 backdrop-blur-sm border shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
             <div className="p-4 rounded-xl bg-primary/10 w-fit mx-auto mb-4">
               <Sparkles className="h-8 w-8 text-primary" />
             </div>
-            <h3 className="font-semibold text-lg mb-2 text-foreground">AI Processing</h3>
+            <h3 className="font-semibold text-lg mb-2">AI Processing</h3>
             <p className="text-muted-foreground">
               Advanced analysis and insights on mdscholar.net
             </p>
           </div>
-          <div className="text-center p-6 rounded-xl bg-card backdrop-blur-sm border shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
+          <div className="text-center p-6 rounded-xl bg-background/80 backdrop-blur-sm border shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
             <div className="p-4 rounded-xl bg-primary/10 w-fit mx-auto mb-4">
               <BookOpen className="h-8 w-8 text-primary" />
             </div>
-            <h3 className="font-semibold text-lg mb-2 text-foreground">Academic Focus</h3>
+            <h3 className="font-semibold text-lg mb-2">Academic Focus</h3>
             <p className="text-muted-foreground">
               Optimized for research papers and academic content
             </p>

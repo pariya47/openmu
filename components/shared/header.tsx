@@ -2,8 +2,7 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
-import { usePathname } from 'next/navigation';
-import { Button } from '@/components/ui/button';
+import { usePathname } from 'next/navigation'; // To highlight active link
 
 export function Header() {
   const pathname = usePathname();
@@ -15,60 +14,52 @@ export function Header() {
   ];
 
   return (
-    <header className="border-b border-border bg-background/80 backdrop-blur-md sticky top-0 z-50">
+    <header className="border-b border-gray-200 bg-white/80 backdrop-blur-md sticky top-0 z-50">
       <div className="container mx-auto px-4 py-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-3">
-            <Link href="/" className="text-2xl font-bold text-foreground font-lora hover:text-primary transition-colors">
+            <Link href="/" className="text-2xl font-bold text-black font-lora">
               mdscholar
             </Link>
           </div>
 
-          <nav className="hidden md:flex items-center space-x-8" role="navigation" aria-label="Main navigation">
+          <nav className="hidden md:flex items-center space-x-8">
             {navLinks.map((link) => (
               <Link
                 key={link.href}
                 href={link.href}
                 className={`transition-colors font-medium pb-1 ${
                   pathname === link.href
-                    ? "text-primary border-b-2 border-primary"
-                    : "text-muted-foreground hover:text-foreground"
+                    ? "text-black border-b-2 border-black"
+                    : "text-gray-600 hover:text-black"
                 }`}
-                aria-current={pathname === link.href ? "page" : undefined}
               >
                 {link.label}
               </Link>
             ))}
-            <Button
-              variant="ghost"
-              size="sm"
-              asChild
-              className="text-muted-foreground hover:text-foreground"
+            <a
+              href="https://discord.gg/A5G9g8Bv9B"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Join us on Discord"
+              className="text-gray-600 hover:text-black transition-colors"
             >
-              <a
-                href="https://discord.gg/A5G9g8Bv9B"
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label="Join us on Discord - Opens in new tab"
-              >
-                <Image 
-                  src="/assets/icons/Discord-Symbol-Black.svg" 
-                  alt=""
-                  width={24} 
-                  height={24}
-                  className="h-6 w-6"
-                />
-              </a>
-            </Button>
+              <Image 
+                src="/assets/icons/Discord-Symbol-Black.svg" 
+                alt="Discord" 
+                width={24} 
+                height={24}
+                className="h-6 w-6"
+              />
+            </a>
           </nav>
 
-          {/* Mobile navigation */}
+          {/* Basic mobile navigation placeholder - can be improved later if needed */}
           <div className="md:hidden">
-            <Button variant="ghost" size="sm" asChild>
-              <Link href="/" className="text-muted-foreground hover:text-foreground">
+            {/* A simple menu button or link could go here for mobile */}
+            <Link href="/" className="text-gray-600 hover:text-black">
                 Menu
-              </Link>
-            </Button>
+            </Link>
           </div>
         </div>
       </div>
