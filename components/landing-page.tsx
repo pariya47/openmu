@@ -194,27 +194,6 @@ export function LandingPage() {
           </div>
         </div>
       </section>
-
-      {/* CTA Section */}
-      <section className="py-20 px-4 bg-white">
-        <div className="container mx-auto max-w-4xl text-center">
-          <h2 className="text-4xl md:text-5xl font-bold mb-6 text-black">Ready to Transform Your Research?</h2>
-          <p className="text-xl text-gray-600 mb-12 max-w-3xl mx-auto leading-relaxed">
-            Join thousands of researchers, students, and professionals who are already using mdscholar to accelerate their work and unlock new insights.
-          </p>
-          
-          <div className="flex justify-center mb-12">
-            <Button 
-              size="lg" 
-              className="text-lg px-8 py-6 bg-black text-white hover:bg-gray-800 rounded-full shadow-lg hover:shadow-xl transition-all duration-200"
-              onClick={handleExploreResearches}
-            >
-              <Search className="mr-3 h-5 w-5" />
-              Explore research
-            </Button>
-          </div>
-        </div>
-      </section>
     </div>
   );
 }
