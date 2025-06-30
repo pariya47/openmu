@@ -185,98 +185,16 @@ export function LandingPage() {
             Join thousands of researchers, students, and professionals who are already using mdscholar to accelerate their work and unlock new insights.
           </p>
           
-          <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
+          <div className="flex justify-center mb-12">
             <Button 
               size="lg" 
               className="text-lg px-8 py-6 bg-black text-white hover:bg-gray-800 rounded-full shadow-lg hover:shadow-xl transition-all duration-200"
             >
-              Join Waitlist
-            </Button>
-            <Button 
-              variant="outline" 
-              size="lg" 
-              className="text-lg px-8 py-6 border-black text-black hover:bg-black hover:text-white rounded-full shadow-lg hover:shadow-xl transition-all duration-200"
-            >
               Schedule Demo
             </Button>
           </div>
-
-          <div className="flex flex-col sm:flex-row items-center justify-center space-y-2 sm:space-y-0 sm:space-x-8 text-sm text-gray-500">
-            <div className="flex items-center space-x-2">
-              <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-              <span>Early access Q1 2025</span>
-            </div>
-            <div className="flex items-center space-x-2">
-              <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-              <span>No credit card required</span>
-            </div>
-            <div className="flex items-center space-x-2">
-              <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-              <span>Free trial included</span>
-            </div>
-          </div>
         </div>
       </section>
-
-      {/* Footer */}
-      <footer className="border-t border-gray-200 py-12 px-4 bg-white">
-        <div className="container mx-auto max-w-6xl">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-            <div className="space-y-4">
-              <div className="flex items-center space-x-3">
-                <div className="p-2 rounded-lg bg-black text-white">
-                  <BookOpen className="h-5 w-5" />
-                </div>
-                <span className="text-xl font-bold text-black">mdscholar</span>
-              </div>
-              <p className="text-gray-600 leading-relaxed">
-                Making academic research accessible to everyone through AI-powered insights and intelligent search.
-              </p>
-            </div>
-
-            <div>
-              <h3 className="font-semibold mb-4 text-black">Product</h3>
-              <div className="space-y-3 text-gray-600">
-                <p className="hover:text-black transition-colors cursor-pointer">Features</p>
-                <p className="hover:text-black transition-colors cursor-pointer">Pricing</p>
-                <p className="hover:text-black transition-colors cursor-pointer">API</p>
-                <p className="hover:text-black transition-colors cursor-pointer">Integrations</p>
-              </div>
-            </div>
-
-            <div>
-              <h3 className="font-semibold mb-4 text-black">Company</h3>
-              <div className="space-y-3 text-gray-600">
-                <p className="hover:text-black transition-colors cursor-pointer">About</p>
-                <p className="hover:text-black transition-colors cursor-pointer">Blog</p>
-                <p className="hover:text-black transition-colors cursor-pointer">Careers</p>
-                <p className="hover:text-black transition-colors cursor-pointer">Press</p>
-              </div>
-            </div>
-
-            <div>
-              <h3 className="font-semibold mb-4 text-black">Support</h3>
-              <div className="space-y-3 text-gray-600">
-                <p className="hover:text-black transition-colors cursor-pointer">Documentation</p>
-                <p className="hover:text-black transition-colors cursor-pointer">Community</p>
-                <p className="hover:text-black transition-colors cursor-pointer">Contact</p>
-                <p className="hover:text-black transition-colors cursor-pointer">Status</p>
-              </div>
-            </div>
-          </div>
-
-          <div className="border-t border-gray-200 mt-12 pt-8 flex flex-col md:flex-row justify-between items-center">
-            <p className="text-gray-600">
-              © 2025 mdscholar. All rights reserved.
-            </p>
-            <div className="flex space-x-6 text-sm text-gray-600 mt-4 md:mt-0">
-              <span className="hover:text-black transition-colors cursor-pointer">Privacy Policy</span>
-              <span className="hover:text-black transition-colors cursor-pointer">Terms of Service</span>
-              <span className="hover:text-black transition-colors cursor-pointer">Cookie Policy</span>
-            </div>
-          </div>
-        </div>
-      </footer>
     </div>
   );
 }
