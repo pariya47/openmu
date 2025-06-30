@@ -74,23 +74,23 @@ export function LandingPage() {
   };
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white font-sans">
       {/* Hero Section */}
       <section className="pt-20 sm:pt-24 md:pt-32 pb-12 sm:pb-16 md:pb-20 px-4 relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-slate-50/50 via-transparent to-gray-50/50" />
         <div className="container mx-auto text-center max-w-5xl relative animate-hero-fade-in">
-          <Badge variant="secondary" className="mb-6 sm:mb-8 text-xs sm:text-sm px-3 sm:px-4 md:px-6 py-2 sm:py-3 shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105 bg-slate-100 text-slate-700 border-slate-200">
+          <Badge variant="secondary" className="mb-6 sm:mb-8 text-xs sm:text-sm px-3 sm:px-4 md:px-6 py-2 sm:py-3 shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105 bg-slate-100 text-slate-700 border-slate-200 font-medium">
             <Sparkles className="h-3 w-3 sm:h-4 sm:w-4 mr-2" />
             Revolutionizing Academic Research
           </Badge>
           
-          <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold mb-6 sm:mb-8 leading-tight text-black px-2">
+          <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold mb-6 sm:mb-8 leading-tight text-black px-2 font-sans">
             Make Research Accessible
             <br />
             to Everyone
           </h1>
           
-          <p className="text-lg sm:text-xl text-gray-600 mb-8 sm:mb-12 leading-relaxed max-w-3xl mx-auto px-4">
+          <p className="text-lg sm:text-xl text-gray-600 mb-8 sm:mb-12 leading-relaxed max-w-3xl mx-auto px-4 font-normal">
             mdscholar transforms complex academic research into clear, actionable
             insights. Discover, understand, and apply knowledge faster than ever before.
           </p>
@@ -99,7 +99,7 @@ export function LandingPage() {
             <Link href="/test-upload" className="w-full sm:w-auto">
               <Button 
                 size="lg" 
-                className="w-full sm:w-auto text-base sm:text-lg px-6 sm:px-8 py-4 sm:py-6 bg-black text-white hover:bg-gray-800 rounded-full shadow-lg hover:shadow-xl transition-all duration-200"
+                className="w-full sm:w-auto text-base sm:text-lg px-6 sm:px-8 py-4 sm:py-6 bg-black text-white hover:bg-gray-800 rounded-full shadow-lg hover:shadow-xl transition-all duration-200 font-medium"
               >
                 <Upload className="mr-2 sm:mr-3 h-4 w-4 sm:h-5 sm:w-5" />
                 Upload a new one
@@ -108,7 +108,7 @@ export function LandingPage() {
             <Button 
               variant="outline" 
               size="lg" 
-              className="w-full sm:w-auto text-base sm:text-lg px-6 sm:px-8 py-4 sm:py-6 border-black text-black hover:bg-black hover:text-white rounded-full shadow-lg hover:shadow-xl transition-all duration-200"
+              className="w-full sm:w-auto text-base sm:text-lg px-6 sm:px-8 py-4 sm:py-6 border-black text-black hover:bg-black hover:text-white rounded-full shadow-lg hover:shadow-xl transition-all duration-200 font-medium"
               onClick={handleExploreResearches}
             >
               <Search className="mr-2 sm:mr-3 h-4 w-4 sm:h-5 sm:w-5" />
@@ -130,10 +130,10 @@ export function LandingPage() {
                 <Zap className="h-5 w-5 sm:h-6 sm:w-6 text-slate-700" />
               </div>
             </div>
-            <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-4 sm:mb-6 text-slate-900 tracking-tight px-4">
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-4 sm:mb-6 text-slate-900 tracking-tight px-4 font-sans">
               Research Challenges We Solve
             </h2>
-            <p className="text-lg sm:text-xl text-slate-600 max-w-3xl mx-auto leading-relaxed px-4">
+            <p className="text-lg sm:text-xl text-slate-600 max-w-3xl mx-auto leading-relaxed px-4 font-normal">
               Academic research faces fundamental barriers that limit knowledge accessibility and collaboration. 
               We're building solutions to bridge these gaps.
             </p>
@@ -149,12 +149,12 @@ export function LandingPage() {
                 <div className="absolute inset-0 bg-gradient-to-br from-white/50 to-transparent" />
                 
                 <CardHeader className="relative pb-4 sm:pb-6">
-                  <div className="flex items-start space-x-3 sm:space-x-4">
+                  <div className="flex items-center space-x-3 sm:space-x-4">
                     <div className={`flex-shrink-0 p-3 sm:p-4 rounded-xl sm:rounded-2xl ${challenge.iconBg} text-white shadow-lg group-hover:scale-105 sm:group-hover:scale-110 transition-transform duration-300`}>
                       {challenge.icon}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <CardTitle className="text-xl sm:text-2xl font-bold text-slate-900 mb-2 sm:mb-3 group-hover:text-slate-700 transition-colors duration-300 leading-tight">
+                      <CardTitle className="text-xl sm:text-2xl font-bold text-slate-900 mb-0 group-hover:text-slate-700 transition-colors duration-300 leading-tight font-sans">
                         {challenge.title}
                       </CardTitle>
                     </div>
@@ -162,7 +162,7 @@ export function LandingPage() {
                 </CardHeader>
                 
                 <CardContent className="relative pt-0">
-                  <p className="text-slate-700 leading-relaxed text-base sm:text-lg">
+                  <p className="text-slate-700 leading-relaxed text-base sm:text-lg font-normal">
                     {challenge.description}
                   </p>
                   
@@ -184,7 +184,7 @@ export function LandingPage() {
             </div>
             <Button 
               size="lg" 
-              className="w-full sm:w-auto bg-slate-900 hover:bg-slate-800 text-white px-6 sm:px-8 py-4 rounded-full shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105 text-base sm:text-lg"
+              className="w-full sm:w-auto bg-slate-900 hover:bg-slate-800 text-white px-6 sm:px-8 py-4 rounded-full shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105 text-base sm:text-lg font-medium"
               onClick={handleExploreResearches}
             >
               <Search className="mr-2 sm:mr-3 h-4 w-4 sm:h-5 sm:w-5" />
@@ -198,22 +198,22 @@ export function LandingPage() {
       {/* CTA Section */}
       <section className="py-20 px-4 bg-white">
         <div className="container mx-auto max-w-4xl text-center">
-          <h2 className="text-4xl md:text-5xl font-bold mb-6 text-black">Ready to Transform Your Research?</h2>
-          <p className="text-xl text-gray-600 mb-12 max-w-3xl mx-auto leading-relaxed">
+          <h2 className="text-4xl md:text-5xl font-bold mb-6 text-black font-sans">Ready to Transform Your Research?</h2>
+          <p className="text-xl text-gray-600 mb-12 max-w-3xl mx-auto leading-relaxed font-normal">
             Join thousands of researchers, students, and professionals who are already using mdscholar to accelerate their work and unlock new insights.
           </p>
           
           <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
             <Button 
               size="lg" 
-              className="text-lg px-8 py-6 bg-black text-white hover:bg-gray-800 rounded-full shadow-lg hover:shadow-xl transition-all duration-200"
+              className="text-lg px-8 py-6 bg-black text-white hover:bg-gray-800 rounded-full shadow-lg hover:shadow-xl transition-all duration-200 font-medium"
             >
               Join Waitlist
             </Button>
             <Button 
               variant="outline" 
               size="lg" 
-              className="text-lg px-8 py-6 border-black text-black hover:bg-black hover:text-white rounded-full shadow-lg hover:shadow-xl transition-all duration-200"
+              className="text-lg px-8 py-6 border-black text-black hover:bg-black hover:text-white rounded-full shadow-lg hover:shadow-xl transition-all duration-200 font-medium"
             >
               Schedule Demo
             </Button>
@@ -222,15 +222,15 @@ export function LandingPage() {
           <div className="flex flex-col sm:flex-row items-center justify-center space-y-2 sm:space-y-0 sm:space-x-8 text-sm text-gray-500">
             <div className="flex items-center space-x-2">
               <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-              <span>Early access Q1 2025</span>
+              <span className="font-medium">Early access Q1 2025</span>
             </div>
             <div className="flex items-center space-x-2">
               <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-              <span>No credit card required</span>
+              <span className="font-medium">No credit card required</span>
             </div>
             <div className="flex items-center space-x-2">
               <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-              <span>Free trial included</span>
+              <span className="font-medium">Free trial included</span>
             </div>
           </div>
         </div>
@@ -245,52 +245,52 @@ export function LandingPage() {
                 <div className="p-2 rounded-lg bg-black text-white">
                   <BookOpen className="h-5 w-5" />
                 </div>
-                <span className="text-xl font-bold text-black">mdscholar</span>
+                <span className="text-xl font-bold text-black font-sans">mdscholar</span>
               </div>
-              <p className="text-gray-600 leading-relaxed">
+              <p className="text-gray-600 leading-relaxed font-normal">
                 Making academic research accessible to everyone through AI-powered insights and intelligent search.
               </p>
             </div>
 
             <div>
-              <h3 className="font-semibold mb-4 text-black">Product</h3>
+              <h3 className="font-semibold mb-4 text-black font-sans">Product</h3>
               <div className="space-y-3 text-gray-600">
-                <p className="hover:text-black transition-colors cursor-pointer">Features</p>
-                <p className="hover:text-black transition-colors cursor-pointer">Pricing</p>
-                <p className="hover:text-black transition-colors cursor-pointer">API</p>
-                <p className="hover:text-black transition-colors cursor-pointer">Integrations</p>
+                <p className="hover:text-black transition-colors cursor-pointer font-normal">Features</p>
+                <p className="hover:text-black transition-colors cursor-pointer font-normal">Pricing</p>
+                <p className="hover:text-black transition-colors cursor-pointer font-normal">API</p>
+                <p className="hover:text-black transition-colors cursor-pointer font-normal">Integrations</p>
               </div>
             </div>
 
             <div>
-              <h3 className="font-semibold mb-4 text-black">Company</h3>
+              <h3 className="font-semibold mb-4 text-black font-sans">Company</h3>
               <div className="space-y-3 text-gray-600">
-                <p className="hover:text-black transition-colors cursor-pointer">About</p>
-                <p className="hover:text-black transition-colors cursor-pointer">Blog</p>
-                <p className="hover:text-black transition-colors cursor-pointer">Careers</p>
-                <p className="hover:text-black transition-colors cursor-pointer">Press</p>
+                <p className="hover:text-black transition-colors cursor-pointer font-normal">About</p>
+                <p className="hover:text-black transition-colors cursor-pointer font-normal">Blog</p>
+                <p className="hover:text-black transition-colors cursor-pointer font-normal">Careers</p>
+                <p className="hover:text-black transition-colors cursor-pointer font-normal">Press</p>
               </div>
             </div>
 
             <div>
-              <h3 className="font-semibold mb-4 text-black">Support</h3>
+              <h3 className="font-semibold mb-4 text-black font-sans">Support</h3>
               <div className="space-y-3 text-gray-600">
-                <p className="hover:text-black transition-colors cursor-pointer">Documentation</p>
-                <p className="hover:text-black transition-colors cursor-pointer">Community</p>
-                <p className="hover:text-black transition-colors cursor-pointer">Contact</p>
-                <p className="hover:text-black transition-colors cursor-pointer">Status</p>
+                <p className="hover:text-black transition-colors cursor-pointer font-normal">Documentation</p>
+                <p className="hover:text-black transition-colors cursor-pointer font-normal">Community</p>
+                <p className="hover:text-black transition-colors cursor-pointer font-normal">Contact</p>
+                <p className="hover:text-black transition-colors cursor-pointer font-normal">Status</p>
               </div>
             </div>
           </div>
 
           <div className="border-t border-gray-200 mt-12 pt-8 flex flex-col md:flex-row justify-between items-center">
-            <p className="text-gray-600">
+            <p className="text-gray-600 font-normal">
               © 2025 mdscholar. All rights reserved.
             </p>
             <div className="flex space-x-6 text-sm text-gray-600 mt-4 md:mt-0">
-              <span className="hover:text-black transition-colors cursor-pointer">Privacy Policy</span>
-              <span className="hover:text-black transition-colors cursor-pointer">Terms of Service</span>
-              <span className="hover:text-black transition-colors cursor-pointer">Cookie Policy</span>
+              <span className="hover:text-black transition-colors cursor-pointer font-normal">Privacy Policy</span>
+              <span className="hover:text-black transition-colors cursor-pointer font-normal">Terms of Service</span>
+              <span className="hover:text-black transition-colors cursor-pointer font-normal">Cookie Policy</span>
             </div>
           </div>
         </div>
