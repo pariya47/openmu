@@ -26,7 +26,6 @@ import {
   MessageCircle,
   Sparkles,
   Clock,
-  Bookmark,
   Download,
   Settings
 } from 'lucide-react';
@@ -363,15 +362,6 @@ export function DocViewer({ paperId }: DocViewerProps) {
                     {paperData?.paper_name || 'Loading paper data...'}
                   </p>
                 </div>
-              </div>
-              <div className="flex items-center space-x-2">
-                <Button variant="outline" size="sm">
-                  <Bookmark className="h-4 w-4 mr-2" />
-                  Bookmark
-                </Button>
-                <Button variant="outline" size="sm">
-                  <Settings className="h-4 w-4" />
-                </Button>
               </div>
             </div>
           </div>
