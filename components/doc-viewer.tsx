@@ -337,18 +337,6 @@ export function DocViewer({ paperId }: DocViewerProps) {
                 )}
               </nav>
             </ScrollArea>
-
-            {/* Action Buttons */}
-            <div className="p-4 border-t border-slate-200 space-y-2 flex-shrink-0">
-              <Button variant="outline" size="sm" className="w-full justify-start">
-                <Share className="h-4 w-4 mr-2" />
-                Share Paper
-              </Button>
-              <Button variant="outline" size="sm" className="w-full justify-start">
-                <Download className="h-4 w-4 mr-2" />
-                Export PDF
-              </Button>
-            </div>
           </div>
         </div>
 
