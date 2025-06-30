@@ -39,33 +39,33 @@ export function LandingPage() {
       icon: <Clock className="h-6 w-6 sm:h-8 sm:w-8" />,
       title: "Time-Intensive Analysis",
       description: "Researchers spend countless hours parsing dense academic papers, often struggling to extract key insights efficiently.",
-      gradient: "from-amber-500/10 to-orange-500/10",
-      iconBg: "bg-gradient-to-br from-amber-500 to-orange-500",
-      borderColor: "border-amber-200"
+      gradient: "from-slate-50 to-gray-50",
+      iconBg: "bg-gradient-to-br from-slate-600 to-slate-700",
+      borderColor: "border-slate-200"
     },
     {
       icon: <Brain className="h-6 w-6 sm:h-8 sm:w-8" />,
       title: "Complex Language Barriers",
       description: "Academic jargon and technical terminology create accessibility barriers for interdisciplinary collaboration.",
-      gradient: "from-blue-500/10 to-indigo-500/10",
-      iconBg: "bg-gradient-to-br from-blue-500 to-indigo-500",
-      borderColor: "border-blue-200"
+      gradient: "from-gray-50 to-slate-50",
+      iconBg: "bg-gradient-to-br from-gray-600 to-gray-700",
+      borderColor: "border-gray-200"
     },
     {
       icon: <Target className="h-6 w-6 sm:h-8 sm:w-8" />,
       title: "Information Fragmentation",
       description: "Critical insights are scattered across multiple papers, making it difficult to synthesize comprehensive understanding.",
-      gradient: "from-emerald-500/10 to-teal-500/10",
-      iconBg: "bg-gradient-to-br from-emerald-500 to-teal-500",
-      borderColor: "border-emerald-200"
+      gradient: "from-slate-50 to-zinc-50",
+      iconBg: "bg-gradient-to-br from-zinc-600 to-zinc-700",
+      borderColor: "border-zinc-200"
     },
     {
       icon: <Users className="h-6 w-6 sm:h-8 sm:w-8" />,
       title: "Knowledge Silos",
       description: "Valuable research remains isolated within academic circles, limiting its potential impact on real-world applications.",
-      gradient: "from-purple-500/10 to-pink-500/10",
-      iconBg: "bg-gradient-to-br from-purple-500 to-pink-500",
-      borderColor: "border-purple-200"
+      gradient: "from-zinc-50 to-slate-50",
+      iconBg: "bg-gradient-to-br from-slate-700 to-gray-700",
+      borderColor: "border-slate-200"
     }
   ];
 
@@ -77,9 +77,9 @@ export function LandingPage() {
     <div className="min-h-screen bg-white">
       {/* Hero Section */}
       <section className="pt-20 sm:pt-24 md:pt-32 pb-12 sm:pb-16 md:pb-20 px-4 relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-secondary/5" />
+        <div className="absolute inset-0 bg-gradient-to-br from-slate-50/50 via-transparent to-gray-50/50" />
         <div className="container mx-auto text-center max-w-5xl relative animate-hero-fade-in">
-          <Badge variant="secondary" className="mb-6 sm:mb-8 text-xs sm:text-sm px-3 sm:px-4 md:px-6 py-2 sm:py-3 shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105">
+          <Badge variant="secondary" className="mb-6 sm:mb-8 text-xs sm:text-sm px-3 sm:px-4 md:px-6 py-2 sm:py-3 shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105 bg-slate-100 text-slate-700 border-slate-200">
             <Sparkles className="h-3 w-3 sm:h-4 sm:w-4 mr-2" />
             Revolutionizing Academic Research
           </Badge>
@@ -119,7 +119,7 @@ export function LandingPage() {
       </section>
 
       {/* Research Challenge Section */}
-      <section className="py-16 sm:py-20 md:py-24 px-4 bg-gradient-to-b from-slate-50/50 to-white relative overflow-hidden">
+      <section className="py-16 sm:py-20 md:py-24 px-4 bg-gradient-to-b from-slate-50/30 to-white relative overflow-hidden">
         {/* Background decoration */}
         <div className="absolute inset-0 bg-grid-slate-100 [mask-image:linear-gradient(0deg,white,rgba(255,255,255,0.6))] -z-10" />
         
@@ -194,6 +194,107 @@ export function LandingPage() {
           </div>
         </div>
       </section>
+
+      {/* CTA Section */}
+      <section className="py-20 px-4 bg-white">
+        <div className="container mx-auto max-w-4xl text-center">
+          <h2 className="text-4xl md:text-5xl font-bold mb-6 text-black">Ready to Transform Your Research?</h2>
+          <p className="text-xl text-gray-600 mb-12 max-w-3xl mx-auto leading-relaxed">
+            Join thousands of researchers, students, and professionals who are already using mdscholar to accelerate their work and unlock new insights.
+          </p>
+          
+          <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
+            <Button 
+              size="lg" 
+              className="text-lg px-8 py-6 bg-black text-white hover:bg-gray-800 rounded-full shadow-lg hover:shadow-xl transition-all duration-200"
+            >
+              Join Waitlist
+            </Button>
+            <Button 
+              variant="outline" 
+              size="lg" 
+              className="text-lg px-8 py-6 border-black text-black hover:bg-black hover:text-white rounded-full shadow-lg hover:shadow-xl transition-all duration-200"
+            >
+              Schedule Demo
+            </Button>
+          </div>
+
+          <div className="flex flex-col sm:flex-row items-center justify-center space-y-2 sm:space-y-0 sm:space-x-8 text-sm text-gray-500">
+            <div className="flex items-center space-x-2">
+              <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+              <span>Early access Q1 2025</span>
+            </div>
+            <div className="flex items-center space-x-2">
+              <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+              <span>No credit card required</span>
+            </div>
+            <div className="flex items-center space-x-2">
+              <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+              <span>Free trial included</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Footer */}
+      <footer className="border-t border-gray-200 py-12 px-4 bg-white">
+        <div className="container mx-auto max-w-6xl">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+            <div className="space-y-4">
+              <div className="flex items-center space-x-3">
+                <div className="p-2 rounded-lg bg-black text-white">
+                  <BookOpen className="h-5 w-5" />
+                </div>
+                <span className="text-xl font-bold text-black">mdscholar</span>
+              </div>
+              <p className="text-gray-600 leading-relaxed">
+                Making academic research accessible to everyone through AI-powered insights and intelligent search.
+              </p>
+            </div>
+
+            <div>
+              <h3 className="font-semibold mb-4 text-black">Product</h3>
+              <div className="space-y-3 text-gray-600">
+                <p className="hover:text-black transition-colors cursor-pointer">Features</p>
+                <p className="hover:text-black transition-colors cursor-pointer">Pricing</p>
+                <p className="hover:text-black transition-colors cursor-pointer">API</p>
+                <p className="hover:text-black transition-colors cursor-pointer">Integrations</p>
+              </div>
+            </div>
+
+            <div>
+              <h3 className="font-semibold mb-4 text-black">Company</h3>
+              <div className="space-y-3 text-gray-600">
+                <p className="hover:text-black transition-colors cursor-pointer">About</p>
+                <p className="hover:text-black transition-colors cursor-pointer">Blog</p>
+                <p className="hover:text-black transition-colors cursor-pointer">Careers</p>
+                <p className="hover:text-black transition-colors cursor-pointer">Press</p>
+              </div>
+            </div>
+
+            <div>
+              <h3 className="font-semibold mb-4 text-black">Support</h3>
+              <div className="space-y-3 text-gray-600">
+                <p className="hover:text-black transition-colors cursor-pointer">Documentation</p>
+                <p className="hover:text-black transition-colors cursor-pointer">Community</p>
+                <p className="hover:text-black transition-colors cursor-pointer">Contact</p>
+                <p className="hover:text-black transition-colors cursor-pointer">Status</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="border-t border-gray-200 mt-12 pt-8 flex flex-col md:flex-row justify-between items-center">
+            <p className="text-gray-600">
+              © 2025 mdscholar. All rights reserved.
+            </p>
+            <div className="flex space-x-6 text-sm text-gray-600 mt-4 md:mt-0">
+              <span className="hover:text-black transition-colors cursor-pointer">Privacy Policy</span>
+              <span className="hover:text-black transition-colors cursor-pointer">Terms of Service</span>
+              <span className="hover:text-black transition-colors cursor-pointer">Cookie Policy</span>
+            </div>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 }
