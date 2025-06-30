@@ -66,10 +66,7 @@ export function DocViewer({ paperId }: DocViewerProps) {
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [aiQuery, setAiQuery] = useState('');
   const [activeTopicIndex, setActiveTopicIndex] = useState<number>(0);
-  const [isAiLoading, setIsAiLoading] = useState(false);
-  const [aiResponse, setAiResponse] = useState<string>('');
   const [activeSubsection, setActiveSubsection] = useState<string>('');
 
   // Helper function to normalize authors data
@@ -147,22 +144,6 @@ export function DocViewer({ paperId }: DocViewerProps) {
   // Handle back to papers
   const handleBackToPapers = () => {
     router.push('/papers');
-  };
-
-  // Handle AI query
-  const handleAiQuery = async () => {
-    if (!aiQuery.trim()) return;
-    
-    setIsAiLoading(true);
-    // Simulate AI response
-    setTimeout(() => {
-      const currentTopic = paperData?.topics[activeTopicIndex];
-      const contextInfo = currentTopic ? `the topic "${currentTopic.topic}"` : 'this content';
-      const paperTitle = paperData?.paper_name || 'this paper';
-      
-      setAiResponse(`Based on ${contextInfo} from "${paperTitle}", here's what I found about "${aiQuery}":\n\n• This is a simulated AI response that would normally come from vector search and LLM processing\n• The system would analyze the current paper content and provide contextual answers\n• Real implementation would use embeddings and retrieval-augmented generation\n• Context: Academic paper analysis`);
-      setIsAiLoading(false);
-    }, 2000);
   };
 
   // Enhanced content parser with better HTML structure
@@ -410,7 +391,7 @@ export function DocViewer({ paperId }: DocViewerProps) {
           {/* Main Content with Right TOC */}
           <div className="flex relative">
             {/* Center Content */}
-            <div className="flex-1 px-6 py-8 pb-40">
+            <div className="flex-1 px-6 py-8 pb-16">
               {loading && (
                 <div className="space-y-6">
                   <Skeleton className="h-8 w-3/4" />
@@ -522,64 +503,6 @@ export function DocViewer({ paperId }: DocViewerProps) {
                   <p className="text-slate-600">This paper doesn't contain any analyzed topics yet.</p>
                 </div>
               )}
-
-              {/* Bottom Search Bar - Positioned relative to center content */}
-              <div className="fixed bottom-0 left-0 right-0 z-50 pointer-events-none">
-                <div className="lg:ml-80 xl:mr-80 p-6 pointer-events-auto">
-                  <div className="bg-white border border-slate-300 rounded-2xl shadow-2xl backdrop-blur-sm">
-                    <div className="p-4">
-                      <div className="flex items-center space-x-4">
-                        <div className="flex-1 relative">
-                          <div className="absolute left-4 top-1/2 transform -translate-y-1/2">
-                            <Sparkles className="h-5 w-5 text-slate-400" />
-                          </div>
-                          <Input
-                            type="text"
-                            placeholder="Ask about this paper... (e.g., 'What are the key findings?')"
-                            value={aiQuery}
-                            onChange={(e) => setAiQuery(e.target.value)}
-                            onKeyDown={(e) => e.key === 'Enter' && handleAiQuery()}
-                            className="pl-12 pr-4 py-4 text-base border-0 focus:ring-0 focus:border-0 bg-transparent placeholder:text-slate-500"
-                          />
-                        </div>
-                        <Button 
-                          onClick={handleAiQuery}
-                          disabled={isAiLoading || !aiQuery.trim()}
-                          size="lg"
-                          className="px-6 py-4 bg-slate-900 hover:bg-slate-800 text-white rounded-xl transition-all duration-200 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
-                        >
-                          {isAiLoading ? (
-                            <div className="animate-spin h-5 w-5 border-2 border-white border-t-transparent rounded-full" />
-                          ) : (
-                            <Send className="h-5 w-5" />
-                          )}
-                        </Button>
-                      </div>
-
-                      {/* AI Response in bottom search area */}
-                      {aiResponse && (
-                        <div className="mt-4 p-4 bg-slate-50 border border-slate-200 rounded-xl">
-                          <div className="flex items-start space-x-3">
-                            <div className="p-2 bg-slate-200 rounded-lg flex-shrink-0">
-                              <MessageCircle className="h-4 w-4 text-slate-600" />
-                            </div>
-                            <div className="flex-1 min-w-0">
-                              <div className="text-sm font-medium text-slate-900 mb-2">AI Assistant</div>
-                              <div className="text-sm text-slate-700 whitespace-pre-line">{aiResponse}</div>
-                            </div>
-                            <button
-                              onClick={() => setAiResponse('')}
-                              className="p-1 hover:bg-slate-200 rounded transition-colors flex-shrink-0"
-                            >
-                              <X className="h-4 w-4 text-slate-500" />
-                            </button>
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              </div>
             </div>
 
             {/* Right TOC Panel */}
